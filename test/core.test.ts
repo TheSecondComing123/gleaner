@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
 import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
@@ -34,16 +34,17 @@ describe('clean', () => {
 })
 
 describe('resolveFile', () => {
-  const files = new Set(['/repo/app/src/a.ts', '/repo/src/a.ts', '/abs/x.c'])
+  // resolve() so the expected paths match the OS (a drive letter on Windows).
+  const files = new Set(['/repo/app/src/a.ts', '/repo/src/a.ts', '/abs/x.c'].map((p) => resolve(p)))
   const exists = async (p: string) => files.has(p)
 
   it('tries dirs in order', async () => {
-    expect(await resolveFile('src/a.ts', ['/repo/app', '/repo'], exists)).toBe('/repo/app/src/a.ts')
-    expect(await resolveFile('src/a.ts', ['/elsewhere', '/repo'], exists)).toBe('/repo/src/a.ts')
+    expect(await resolveFile('src/a.ts', ['/repo/app', '/repo'], exists)).toBe(resolve('/repo/app/src/a.ts'))
+    expect(await resolveFile('src/a.ts', ['/elsewhere', '/repo'], exists)).toBe(resolve('/repo/src/a.ts'))
   })
 
   it('checks absolute paths as they are', async () => {
-    expect(await resolveFile('/abs/x.c', ['/repo'], exists)).toBe('/abs/x.c')
+    expect(await resolveFile(resolve('/abs/x.c'), ['/repo'], exists)).toBe(resolve('/abs/x.c'))
     expect(await resolveFile('/abs/missing.c', ['/repo'], exists)).toBeUndefined()
   })
 
@@ -106,6 +107,14 @@ describe('python on Windows', () => {
       'json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)',
     ]
     expect(parsers.python(lines).map((p) => `${p.file}:${p.line}`)).toEqual(['C:\\repo\\app.py:4'])
+  })
+})
+
+describe('node file URLs', () => {
+  // Hand-written like the python case above: a drive-letter URL from Windows.
+  it('decodes a Windows file URL on any OS', () => {
+    const lines = ['Error: boom', '    at main (file:///C:/my%20app/app.mjs:3:7)']
+    expect(parsers.node(lines).map((p) => `${p.file}:${p.line}`)).toEqual(['C:/my app/app.mjs:3'])
   })
 })
 
