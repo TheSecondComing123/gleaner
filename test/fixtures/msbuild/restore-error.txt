@@ -1,0 +1,11 @@
+  Determining projects to restore...
+/private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/dnproj2/app.csproj : error NU1101: Unable to find package Does.Not.Exist. No packages exist with this id in source(s): /opt/homebrew/Cellar/dotnet/10.0.401/libexec/library-packs, /var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/dnproj2/emptyfeed
+  Failed to restore /private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/dnproj2/app.csproj (in 37 ms).
+
+Build FAILED.
+
+/private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/dnproj2/app.csproj : error NU1101: Unable to find package Does.Not.Exist. No packages exist with this id in source(s): /opt/homebrew/Cellar/dotnet/10.0.401/libexec/library-packs, /var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/dnproj2/emptyfeed
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.29

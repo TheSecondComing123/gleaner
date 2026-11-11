@@ -1,0 +1,10 @@
+[
+  {
+    "file": "/private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/dnproj2/app.csproj",
+    "line": 1,
+    "severity": "error",
+    "message": "Unable to find package Does.Not.Exist. No packages exist with this id in source(s): /opt/homebrew/Cellar/dotnet/10.0.401/libexec/library-packs, /var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/dnproj2/emptyfeed",
+    "code": "NU1101",
+    "source": "msbuild"
+  }
+]

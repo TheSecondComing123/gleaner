@@ -5,6 +5,10 @@ import type { Problem, Severity } from '../problem'
 const HEAD =
   /^\s*(?:\d+>)?(\S.*?)\((\d+)(?:,(\d+)(?:,(\d+),(\d+))?)?\): (?:\S+ )?(error|warning|info)(?: (\w+))?\s*: (.*?)(?: \[[^\]]+\])?$/
 
+// Restore and project errors name the project file with no position: `/abs/app.csproj : error NU1101: msg`.
+const PROJECT =
+  /^\s*(?:\d+>)?(\S.*?\.(?:csproj|fsproj|vbproj|sln|slnx|props|targets)) : (error|warning) (\w+): (.*?)(?: \[[^\]]+\])?$/
+
 const SEVERITY: Record<string, Severity> = { error: 'error', warning: 'warning', info: 'info' }
 
 export function msbuild(lines: string[]): Problem[] {
@@ -12,7 +16,8 @@ export function msbuild(lines: string[]): Problem[] {
   // dotnet build repeats every diagnostic in its summary.
   const seen = new Set<string>()
   for (const line of lines) {
-    const m = HEAD.exec(line)
+    const project = PROJECT.exec(line)
+    const m = HEAD.exec(line) ?? (project && [line, project[1], '1', '', '', '', project[2], project[3], project[4]])
     if (!m) continue
     const [, file, row, col, endRow, endCol, kind, code, message] = m
     const problem: Problem = {
