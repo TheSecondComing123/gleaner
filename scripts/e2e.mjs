@@ -198,6 +198,7 @@ try {
   console.error(error)
   failed = true
 } finally {
+  if (failed) await (await app.firstWindow()).screenshot({ path: join(root, 'e2e-failure.png') })
   await app.close()
 }
 process.exit(failed ? 1 : 0)

@@ -45,4 +45,6 @@ jobs:
         if: always()
         with:
           name: screenshot-${{ matrix.os }}
-          path: docs/screenshot.png
+          path: |
+            docs/screenshot.png
+            e2e-failure.png
