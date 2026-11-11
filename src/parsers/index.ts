@@ -102,7 +102,8 @@ const COMMANDS: Record<string, string[]> = {
   zig: ['zig', 'gcc'],
   shellcheck: ['shellcheck'],
   cppcheck: ['cppcheck'],
-  cmake: ['cmake'],
+  // `cmake --build` runs the compiler, MSBuild on Windows.
+  cmake: ['cmake', 'gcc', 'msbuild'],
 }
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.
@@ -205,20 +206,33 @@ function choose(commandLine: string, ignored: string[], scripts: Record<string, 
   // Each step of `tsc && make` picks its own parsers; a pipe's later commands can name the tool
   // (`npx tsc | tee`) but only its first one decides whether an unknown step is ignored.
   const chosen = new Set<string>()
-  for (const step of commandLine.split(/&&|\|\||;/)) {
-    const script = scriptName(step.split('|')[0], scripts)
+  for (const step of split(commandLine, /&&|\|\||;/g)) {
+    const pipes = split(step, /\|/g)
+    const script = scriptName(pipes[0], scripts)
     // A script that runs itself, or a long chain of them, stops here and gets every parser.
     if (script && depth < 5) {
       for (const name of [`pre${script}`, script, `post${script}`].filter((n) => Object.hasOwn(scripts, n)))
         for (const parser of choose(scripts[name], ignored, scripts, depth + 1)) chosen.add(parser)
       continue
     }
-    const pipes = step.split('|').map(commandName)
-    const names = pipes.flatMap((command) => COMMANDS[command ?? ''] ?? [])
+    const commands = pipes.map(commandName)
+    const names = commands.flatMap((command) => COMMANDS[command ?? ''] ?? [])
     if (names.length) for (const name of names) chosen.add(name)
-    else if (pipes[0] && !ignored.includes(pipes[0])) for (const name of Object.keys(parsers)) chosen.add(name)
+    else if (commands[0] && !ignored.includes(commands[0])) for (const name of Object.keys(parsers)) chosen.add(name)
   }
   return chosen
+}
+
+// Splits at separators outside quotes: `grep "a|b" src` and `cat "x;y.log"` are one command each.
+function split(line: string, separator: RegExp): string[] {
+  const masked = line.replace(/"(?:\\.|[^"\\])*"|'[^']*'/g, (quoted) => '_'.repeat(quoted.length))
+  const parts: string[] = []
+  let start = 0
+  for (const match of masked.matchAll(separator)) {
+    parts.push(line.slice(start, match.index))
+    start = match.index + match[0].length
+  }
+  return [...parts, line.slice(start)]
 }
 
 const firstLine = (p: Problem) => p.message.split('\n')[0]

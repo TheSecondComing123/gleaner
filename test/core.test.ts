@@ -105,6 +105,15 @@ describe('pickParsers', () => {
     expect(pickParsers('npm run build', undefined, { build: 'tsc' })).toEqual([parsers.tsc])
   })
 
+  it('keeps quoted separators inside their command', () => {
+    expect(pickParsers('cat "logs;old.txt"')).toEqual([])
+    expect(pickParsers("grep -E 'a|b' src && tsc")).toEqual([parsers.tsc])
+  })
+
+  it('reads compiler output from cmake --build', () => {
+    expect(pickParsers('cmake --build build')).toEqual([parsers.msbuild, parsers.cmake, parsers.gcc])
+  })
+
   it('reads only the first command of a pipeline', () => {
     expect(pickParsers('grep -n x src | wc -l')).toEqual([])
     expect(pickParsers('cargo build 2>&1 | tee log')).toEqual([parsers.rustc])
