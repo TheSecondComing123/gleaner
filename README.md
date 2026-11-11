@@ -28,17 +28,21 @@ vs code can already do this, but only through tasks.json and regex problem match
 
 ## supported tools
 
-| language               | tools                                                                                         |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| typescript, javascript | `tsc`, `vue-tsc`, `tsgo`, `eslint`, `jest`, `vitest`, node crashes (`node`, `tsx`, `ts-node`) |
-| c, c++, swift          | `gcc`, `g++`, `clang`, `clang++`, `cc`, `swiftc`, `swift build`                               |
-| rust                   | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc`                           |
-| go                     | `go build`, `go vet`, `go test`, `go run` panics                                              |
-| python                 | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint`                           |
-| java                   | `javac`                                                                                       |
-| c#                     | `dotnet build`, `msbuild`                                                                     |
+| language               | tools                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| typescript, javascript | `tsc`, `vue-tsc`, `tsgo`, `eslint`, `biome`, `esbuild`, `vite`, `jest`, `vitest`, `bun test`, `deno`    |
+| js runtimes            | crashes from `node`, `tsx`, `ts-node`, `bun`, `deno`                                                    |
+| c, c++, swift, zig     | `gcc`, `g++`, `clang`, `clang++`, `cc`, `swiftc`, `swift build`, `cppcheck`, `zig` (errors and panics) |
+| build files            | `make` (its own errors), `cmake`                                                                        |
+| rust                   | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc`                                     |
+| go                     | `go build`, `go vet`, `go test`, `go run` panics                                                        |
+| python                 | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint`                                     |
+| java                   | `javac`, uncaught exceptions from `java`                                                                |
+| c#                     | `dotnet build`, `msbuild`                                                                               |
+| ruby, lua              | crashes and syntax errors from `ruby`, `ruby -c`, `lua`, `luajit`                                       |
+| shell                  | `shellcheck`                                                                                            |
 
-a command gleaner doesn't know, like `make` or `npm run build`, goes through every parser. matches still have to point at a file that exists, so random output doesn't turn into problems.
+package scripts like `npm run build` or `pnpm test` are read through `package.json` to the commands they run. a command gleaner doesn't know goes through every parser. matches still have to point at a file that exists, so random output doesn't turn into problems.
 
 ## install
 
