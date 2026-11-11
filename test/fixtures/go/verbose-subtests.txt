@@ -1,0 +1,24 @@
+=== RUN   TestTable
+=== RUN   TestTable/a
+    util_test.go:13: Double(1) = 2, want 3
+=== RUN   TestTable/b
+=== RUN   TestTable/c
+    util_test.go:13: Double(3) = 6, want 7
+--- FAIL: TestTable (0.00s)
+    --- FAIL: TestTable/a (0.00s)
+    --- PASS: TestTable/b (0.00s)
+    --- FAIL: TestTable/c (0.00s)
+=== RUN   TestParallel
+=== RUN   TestParallel/p
+=== PAUSE TestParallel/p
+=== RUN   TestParallel/p#01
+=== PAUSE TestParallel/p#01
+=== CONT  TestParallel/p
+    util_test.go:24: parallel case 1 failed
+=== CONT  TestParallel/p#01
+--- FAIL: TestParallel (0.00s)
+    --- FAIL: TestParallel/p (0.00s)
+    --- PASS: TestParallel/p#01 (0.00s)
+FAIL
+FAIL	example.com/sub	0.147s
+FAIL

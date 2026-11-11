@@ -1,0 +1,23 @@
+[
+  {
+    "file": "util_test.go",
+    "line": 13,
+    "severity": "error",
+    "message": "Double(1) = 2, want 3",
+    "source": "go"
+  },
+  {
+    "file": "util_test.go",
+    "line": 13,
+    "severity": "error",
+    "message": "Double(3) = 6, want 7",
+    "source": "go"
+  },
+  {
+    "file": "util_test.go",
+    "line": 24,
+    "severity": "error",
+    "message": "parallel case 1 failed",
+    "source": "go"
+  }
+]

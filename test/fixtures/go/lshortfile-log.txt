@@ -1,0 +1,2 @@
+main.go:7: starting server on :8080
+main.go:8: request handled
