@@ -1,0 +1,21 @@
+{
+  "name": "e2e-ls",
+  "publisher": "local",
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "e2eLs.report",
+        "title": "E2E LS: Report"
+      },
+      {
+        "command": "e2eLs.drop",
+        "title": "E2E LS: Drop"
+      }
+    ]
+  }
+}

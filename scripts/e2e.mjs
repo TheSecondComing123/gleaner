@@ -150,6 +150,7 @@ const app = await electron.launch({
     `--extensions-dir=${join(work, 'extensions')}`,
     `--extensionDevelopmentPath=${root}`,
     `--extensionDevelopmentPath=${join(root, 'scripts', 'e2e-theme')}`,
+    `--extensionDevelopmentPath=${join(root, 'scripts', 'e2e-ls')}`,
     '--disable-extension=vscode.typescript-language-features',
     '--disable-workspace-trust',
     '--skip-release-notes',
@@ -307,6 +308,57 @@ try {
   await page.keyboard.press('Control+C')
   await page.waitForTimeout(3000)
   await status(5, 'watch, stopped')
+
+  const gleanerLog = () =>
+    readdirSync(logs, { recursive: true })
+      .filter((f) => f.endsWith('Gleaner.log'))
+      .map((f) => readFileSync(join(logs, f), 'utf8'))
+      .join('')
+  const runs = (command) => gleanerLog().split(`${command}: exit`).length - 1
+  const command = async (title) => {
+    await page.keyboard.press('F1')
+    await page.keyboard.type(title)
+    await page.waitForTimeout(500)
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(1000)
+  }
+
+  // the watch run already lists these three; a second command reporting them adds nothing
+  const before = runs('tsc -p .')
+  await page.keyboard.type('tsc -p .')
+  await page.keyboard.press('Enter')
+  for (let i = 0; i < 150 && runs('tsc -p .') === before; i++) await page.waitForTimeout(100)
+  await page.waitForTimeout(500)
+  await status(5, 'same errors from two commands')
+
+  // a language server reporting one of them hides gleaner's copy, and dropping it brings it back
+  await command('E2E LS: Report')
+  await status(4, 'language server reports one')
+  await command('E2E LS: Drop')
+  await status(5, 'language server drops it')
+
+  // positions follow edits: two lines above cart.ts:7:3, then typing right before it
+  const row = async (want, label) => {
+    await page.keyboard.press('ControlOrMeta+Shift+M')
+    await page.waitForTimeout(800)
+    const rows = await page.locator('.markers-panel .monaco-list-row').allInnerTexts()
+    if (rows.some((r) => r.includes(want))) console.log(`${label}: ${want}`)
+    else {
+      console.error(`${label}: want ${want}, rows: ${rows.map((r) => r.replace(/\s+/g, ' ')).join(' / ')}`)
+      failed = true
+    }
+  }
+  await page.locator('.view-line').first().click()
+  await page.keyboard.press('ControlOrMeta+Home')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await row('[Ln 9, Col 3]', 'lines inserted above')
+  await page.locator('.view-line').first().click()
+  await page.keyboard.press('Control+G')
+  await page.keyboard.type('9:3')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('x ')
+  await row('[Ln 9, Col 5]', 'typed before it')
 
   // turning off clears everything
   rmSync(join(demo, 'release'))
