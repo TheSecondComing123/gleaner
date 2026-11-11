@@ -1,0 +1,16 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-cap/pyh/tests/helpers.py",
+    "line": 2,
+    "severity": "error",
+    "message": "test_a: AssertionError",
+    "source": "pytest"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-cap/pyh/tests/test_a.py",
+    "line": 7,
+    "severity": "error",
+    "message": "test_b: assert 2 == 5",
+    "source": "pytest"
+  }
+]

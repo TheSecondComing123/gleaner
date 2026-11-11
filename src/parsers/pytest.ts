@@ -27,8 +27,10 @@ export function pytest(lines: string[]): Problem[] {
   const unlocated = new Map<string, string>()
   let section: Section | undefined
   let inErrors = false
-  let inFailures = false
-  const oneLine: Problem[] = []
+  // Under --tb=line, the one-line failures in the FAILURES or ERRORS section, in run order.
+  let oneLine: Problem[] | undefined
+  const failures: Problem[] = []
+  const errors: Problem[] = []
 
   const finish = () => {
     if (!section) return
@@ -73,12 +75,12 @@ export function pytest(lines: string[]): Problem[] {
     }
     if (RULE.test(line)) {
       finish()
-      inFailures = / (?:FAILURES|ERRORS) /.test(line)
+      oneLine = / FAILURES /.test(line) ? failures : / ERRORS /.test(line) ? errors : undefined
       continue
     }
     if (!section) {
-      const tb = inFailures && TB_LINE.exec(line)
-      if (tb) {
+      const tb = TB_LINE.exec(line)
+      if (oneLine && tb) {
         const problem: Problem = {
           file: tb[1],
           line: Number(tb[2]),
@@ -98,11 +100,11 @@ export function pytest(lines: string[]): Problem[] {
       // Sections are named by test alone; summary lines carry the file, so same-named tests stay apart.
       if (seen.has(name) || seen.has(summary[1])) continue
       seen.add(summary[1])
-      // Under --tb=line the failure already has its spot; the summary only names the test.
-      const at = oneLine.findIndex((p) => p.file.replace(/\\/g, '/').endsWith(`/${file}`) || p.file === file)
-      if (at >= 0) {
-        const [problem] = oneLine.splice(at, 1)
-        problem.message = `${name}: ${problem.message}`
+      // Under --tb=line the failure already has its spot (maybe in a helper file); the summary lists
+      // the same failures in the same order and only adds the test's name.
+      const located = (line.startsWith('FAILED') ? failures : errors).shift()
+      if (located) {
+        located.message = `${name}: ${located.message}`
         continue
       }
       problems.push({

@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.10.22, pytest-9.0.3, pluggy-1.6.0
+rootdir: /private/tmp/claude-501/gl-cap/pyh
+plugins: cov-7.1.0
+collected 2 items
+
+tests/test_a.py FF                                                       [100%]
+
+=================================== FAILURES ===================================
+E   AssertionError
+/private/tmp/claude-501/gl-cap/pyh/tests/helpers.py:2: AssertionError
+E   assert 2 == 5
+/private/tmp/claude-501/gl-cap/pyh/tests/test_a.py:7: assert 2 == 5
+=========================== short test summary info ============================
+FAILED tests/test_a.py::test_a - AssertionError
+FAILED tests/test_a.py::test_b - assert 2 == 5
+============================== 2 failed in 0.00s ===============================
