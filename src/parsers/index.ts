@@ -16,6 +16,7 @@ import { python } from './python'
 import { ruby } from './ruby'
 import { ruff } from './ruff'
 import { rustc } from './rustc'
+import { shellcheck } from './shellcheck'
 import { tsc } from './tsc'
 import { zig } from './zig'
 
@@ -41,6 +42,7 @@ export const parsers: Record<string, Parser> = {
   lua,
   node,
   make,
+  shellcheck,
   gcc,
 }
 
@@ -84,6 +86,7 @@ const COMMANDS: Record<string, string[]> = {
   lua: ['lua'],
   luajit: ['lua'],
   zig: ['zig', 'gcc'],
+  shellcheck: ['shellcheck'],
 }
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.

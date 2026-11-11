@@ -6,6 +6,9 @@ const HEAD = /^(.+?):(\d+):(?:(\d+):)? (fatal error|error|warning|note|remark): 
 
 const OTHER_LANGUAGES = /\.(?:pyi?|java|[cm]?[jt]sx?|rs|go|cs)$/
 
+// `shellcheck -f gcc` ends each message with its check code.
+const OTHER_TOOLS = / \[SC\d+\]$/
+
 const SEVERITY: Record<string, Severity> = {
   'fatal error': 'error',
   error: 'error',
@@ -20,7 +23,7 @@ export function gcc(lines: string[]): Problem[] {
     if (!m) continue
     const [, file, row, col, kind, message, flag] = m
     // javac, mypy and others print the same shape; their own parsers read it better.
-    if (OTHER_LANGUAGES.test(file)) continue
+    if (OTHER_LANGUAGES.test(file) || OTHER_TOOLS.test(message)) continue
     // A note explains the problem above it, so it rides along as related info.
     if (kind === 'note') {
       const last = problems.at(-1)

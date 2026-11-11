@@ -1,0 +1,119 @@
+[
+  {
+    "file": "a.sh",
+    "line": 3,
+    "col": 6,
+    "severity": "info",
+    "message": "Double quote to prevent globbing and word splitting.",
+    "code": "SC2086",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 4,
+    "col": 1,
+    "severity": "warning",
+    "message": "Use 'cd ... || exit' or 'cd ... || return' in case cd fails.",
+    "code": "SC2164",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 5,
+    "col": 1,
+    "severity": "info",
+    "message": "Use find instead of ls to better handle non-alphanumeric filenames.",
+    "code": "SC2012",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 5,
+    "col": 4,
+    "severity": "info",
+    "message": "Use ./*glob* or -- *glob* so names with dashes won't become options.",
+    "code": "SC2035",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 6,
+    "col": 6,
+    "severity": "warning",
+    "message": "x is referenced but not assigned.",
+    "code": "SC2154",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 6,
+    "col": 6,
+    "severity": "info",
+    "message": "Double quote to prevent globbing and word splitting.",
+    "code": "SC2086",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 7,
+    "col": 8,
+    "severity": "warning",
+    "message": "Quote this to prevent word splitting.",
+    "code": "SC2046",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 7,
+    "col": 8,
+    "severity": "info",
+    "message": "Useless echo? Instead of 'echo $(cmd)', just use 'cmd'.",
+    "code": "SC2005",
+    "source": "shellcheck"
+  },
+  {
+    "file": "a.sh",
+    "line": 7,
+    "col": 8,
+    "severity": "info",
+    "message": "Use $(...) notation instead of legacy backticks `...`.",
+    "code": "SC2006",
+    "source": "shellcheck"
+  },
+  {
+    "file": "tabs.sh",
+    "line": 3,
+    "col": 7,
+    "severity": "info",
+    "message": "Double quote to prevent globbing and word splitting.",
+    "code": "SC2086",
+    "source": "shellcheck"
+  },
+  {
+    "file": "tabs.sh",
+    "line": 3,
+    "col": 10,
+    "severity": "info",
+    "message": "Double quote to prevent globbing and word splitting.",
+    "code": "SC2086",
+    "source": "shellcheck"
+  },
+  {
+    "file": "tabs.sh",
+    "line": 4,
+    "col": 3,
+    "severity": "warning",
+    "message": "foo appears unused. Verify use (or export if used externally).",
+    "code": "SC2034",
+    "source": "shellcheck"
+  },
+  {
+    "file": "tabs.sh",
+    "line": 4,
+    "col": 7,
+    "severity": "info",
+    "message": "Use $(...) notation instead of legacy backticks `...`.",
+    "code": "SC2006",
+    "source": "shellcheck"
+  }
+]

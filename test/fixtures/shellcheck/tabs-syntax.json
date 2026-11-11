@@ -1,0 +1,83 @@
+[
+  {
+    "file": "tabs.sh",
+    "line": 3,
+    "col": 7,
+    "severity": "info",
+    "message": "Double quote to prevent globbing and word splitting.",
+    "code": "SC2086",
+    "source": "shellcheck"
+  },
+  {
+    "file": "tabs.sh",
+    "line": 3,
+    "col": 10,
+    "severity": "info",
+    "message": "Double quote to prevent globbing and word splitting.",
+    "code": "SC2086",
+    "source": "shellcheck"
+  },
+  {
+    "file": "tabs.sh",
+    "line": 4,
+    "col": 3,
+    "severity": "warning",
+    "message": "foo appears unused. Verify use (or export if used externally).",
+    "code": "SC2034",
+    "source": "shellcheck"
+  },
+  {
+    "file": "tabs.sh",
+    "line": 4,
+    "col": 7,
+    "severity": "info",
+    "message": "Use $(...) notation instead of legacy backticks `...`.",
+    "code": "SC2006",
+    "source": "shellcheck"
+  },
+  {
+    "file": "broken.sh",
+    "line": 2,
+    "col": 1,
+    "severity": "info",
+    "message": "The mentioned syntax error was in this for loop.",
+    "code": "SC1009",
+    "source": "shellcheck"
+  },
+  {
+    "file": "broken.sh",
+    "line": 4,
+    "col": 1,
+    "severity": "error",
+    "message": "Couldn't find 'fi' for this 'if'.",
+    "code": "SC1046",
+    "source": "shellcheck"
+  },
+  {
+    "file": "broken.sh",
+    "line": 4,
+    "col": 1,
+    "severity": "error",
+    "message": "Couldn't parse this if expression. Fix to allow more checks.",
+    "code": "SC1073",
+    "source": "shellcheck"
+  },
+  {
+    "file": "broken.sh",
+    "line": 6,
+    "col": 1,
+    "severity": "error",
+    "message": "Expected 'fi' matching previously mentioned 'if'.",
+    "code": "SC1047",
+    "source": "shellcheck"
+  },
+  {
+    "file": "broken.sh",
+    "line": 6,
+    "col": 1,
+    "severity": "error",
+    "message": "Expected 'fi'. Fix any mentioned problems and try again.",
+    "code": "SC1072",
+    "source": "shellcheck"
+  }
+]

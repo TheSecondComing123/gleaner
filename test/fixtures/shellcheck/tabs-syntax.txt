@@ -1,0 +1,39 @@
+
+In tabs.sh line 3:
+	echo $1 $2
+             ^-- SC2086 (info): Double quote to prevent globbing and word splitting.
+                ^-- SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean:
+	echo "$1" "$2"
+
+
+In tabs.sh line 4:
+		foo=`ls`
+                ^-^ SC2034 (warning): foo appears unused. Verify use (or export if used externally).
+                    ^--^ SC2006 (style): Use $(...) notation instead of legacy backticks `...`.
+
+Did you mean:
+		foo=$(ls)
+
+
+In broken.sh line 2:
+for f in *; do
+^-- SC1009 (info): The mentioned syntax error was in this for loop.
+
+
+In broken.sh line 4:
+if true; then
+^-- SC1046 (error): Couldn't find 'fi' for this 'if'.
+^-- SC1073 (error): Couldn't parse this if expression. Fix to allow more checks.
+
+
+In broken.sh line 6:
+
+^-- SC1047 (error): Expected 'fi' matching previously mentioned 'if'.
+^-- SC1072 (error): Expected 'fi'. Fix any mentioned problems and try again.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC1046 -- Couldn't find 'fi' for this 'if'.
+  https://www.shellcheck.net/wiki/SC2034 -- foo appears unused. Verify use (o...
+  https://www.shellcheck.net/wiki/SC2086 -- Double quote to prevent globbing ...
