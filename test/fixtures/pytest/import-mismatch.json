@@ -1,0 +1,9 @@
+[
+  {
+    "file": "tests/b/test_api.py",
+    "line": 1,
+    "severity": "error",
+    "message": "import file mismatch:\nimported module 'test_api' has this __file__ attribute:\n/private/tmp/claude-501/pymis/tests/a/test_api.py\nwhich is not the same as the test file we want to collect:\n/private/tmp/claude-501/pymis/tests/b/test_api.py\nHINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules",
+    "source": "pytest"
+  }
+]
