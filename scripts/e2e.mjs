@@ -89,7 +89,7 @@ try {
 
   const status = page.getByText(/\d+ from terminal/)
   await status.waitFor({ timeout: 30_000 })
-  const text = await status.innerText()
+  const text = (await status.textContent()) ?? ''
   console.log(`status bar: ${text}`)
 
   await page.keyboard.press('Meta+Shift+M')
