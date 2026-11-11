@@ -3,7 +3,7 @@
   "displayName": "Gleaner",
   "description": "Errors from any command you run in the terminal, in the Problems panel. No tasks.json.",
   "version": "0.1.0",
-  "publisher": "gleaner",
+  "publisher": "thesecondcoming123",
   "license": "MIT",
   "private": true,
   "engines": {
@@ -76,7 +76,7 @@
             "wget",
             "brew"
           ],
-          "markdownDescription": "Commands Gleaner never reads, even when their output looks like errors (for example ). Only applies to commands Gleaner has no parser for."
+          "markdownDescription": "Commands Gleaner never reads, even when their output looks like errors (for example `cat build.log`). Only applies to commands Gleaner has no parser for."
         }
       }
     }
