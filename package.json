@@ -22,6 +22,7 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
+    "onTerminalShellIntegration:*",
     "onStartupFinished"
   ],
   "contributes": {
