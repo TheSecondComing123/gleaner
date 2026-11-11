@@ -4,7 +4,7 @@ name: ci
 on:
   push:
     branches: [main]
-    paths: [src/**, test/**, scripts/**, package.json, pnpm-lock.yaml, .github/workflows/**]
+    paths: [src/**, test/**, scripts/**, package.json, pnpm-lock.yaml, tsconfig.json, biome.json, .github/workflows/**]
   workflow_dispatch:
 
 concurrency:
