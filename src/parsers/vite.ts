@@ -20,7 +20,8 @@ export function vite(lines: string[]): Problem[] {
       problems.push({
         file: file[1],
         line: file[2] ? Number(file[2]) : 1,
-        col: file[3] ? Number(file[3]) : undefined,
+        // Rollup counts columns from 0.
+        col: file[3] ? Number(file[3]) + 1 : undefined,
         severity: 'error',
         message: message.join('\n').replace(POSITION, ''),
         source: 'vite',
