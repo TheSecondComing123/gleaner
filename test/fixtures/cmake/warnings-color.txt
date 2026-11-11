@@ -1,0 +1,32 @@
+[33mCMake Warning (author) at CMakeLists.txt:3 (message):
+  author says hi
+This warning is for project developers.  Use -Wno-author to suppress it.
+[0m
+[33mCMake Warning at CMakeLists.txt:4 (message):
+  this is a warning
+
+  that spans two lines
+
+[0m
+[33mCMake Warning (deprecated) at CMakeLists.txt:6 (message):
+  old thing
+This warning is for project developers.  Use -Wno-author or -Wno-deprecated
+to suppress it.
+[0m
+[33mCMake Warning (author) at CMakeLists.txt:7 (set):
+  implicitly converting 'FOO' to 'STRING' type.
+This warning is for project developers.  Use -Wno-author to suppress it.
+[0m
+[33mCMake Warning (policy) at CMakeLists.txt:8 (exec_program):
+  Policy CMP0153 is not set: The exec_program command should not be called.
+  Run "cmake --help-policy CMP0153" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  Use execute_process() instead.
+This warning is for project developers.  Use -Wno-author or -Wno-policy to
+suppress it.
+[0m
+running true 2>&1
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/claude-501/cm/b5-warn

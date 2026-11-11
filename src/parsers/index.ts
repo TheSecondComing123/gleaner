@@ -1,4 +1,5 @@
 import type { Parser, Problem } from '../problem'
+import { cmake } from './cmake'
 import { cppcheck } from './cppcheck'
 import { eslint } from './eslint'
 import { gcc } from './gcc'
@@ -45,6 +46,7 @@ export const parsers: Record<string, Parser> = {
   make,
   shellcheck,
   cppcheck,
+  cmake,
   gcc,
 }
 
@@ -90,6 +92,7 @@ const COMMANDS: Record<string, string[]> = {
   zig: ['zig', 'gcc'],
   shellcheck: ['shellcheck'],
   cppcheck: ['cppcheck'],
+  cmake: ['cmake'],
 }
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.

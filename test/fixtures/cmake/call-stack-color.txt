@@ -1,0 +1,17 @@
+[33mCMake Warning (deprecated) at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+This warning is for project developers.  Use -Wno-author or -Wno-deprecated
+to suppress it.
+[0m
+[31mCMake Error at cmake/helpers.cmake:3 (message):
+  check_thing: 'abc' is not ok
+Call Stack (most recent call first):
+  CMakeLists.txt:6 (check_thing)
+
+[0m
+-- Configuring incomplete, errors occurred!

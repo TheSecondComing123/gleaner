@@ -1,0 +1,23 @@
+[
+  {
+    "file": "CMakeLists.txt",
+    "line": 1,
+    "severity": "warning",
+    "message": "Compatibility with CMake < 3.10 will be removed from a future version of CMake.\nUpdate the VERSION argument <min> value.  Or, use the <min>...<max> syntax to tell CMake that the project requires at least <min> but has been updated to work with policies introduced by <max> or earlier.",
+    "source": "cmake"
+  },
+  {
+    "file": "cmake/helpers.cmake",
+    "line": 3,
+    "severity": "error",
+    "message": "check_thing: 'abc' is not ok",
+    "source": "cmake",
+    "related": [
+      {
+        "file": "CMakeLists.txt",
+        "line": 6,
+        "message": "check_thing"
+      }
+    ]
+  }
+]

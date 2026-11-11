@@ -1,0 +1,18 @@
+-- The C compiler identification is AppleClang 21.0.0.21000101
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (0.3s)
+CMake Error at CMakeLists.txt:3 (add_executable):
+  Cannot find source file:
+
+    missing.c
+
+
+CMake Error at CMakeLists.txt:3 (add_executable):
+  No SOURCES given to target: app
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.

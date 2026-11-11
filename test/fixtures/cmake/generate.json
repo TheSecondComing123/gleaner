@@ -1,0 +1,16 @@
+[
+  {
+    "file": "CMakeLists.txt",
+    "line": 3,
+    "severity": "error",
+    "message": "Cannot find source file:\nmissing.c",
+    "source": "cmake"
+  },
+  {
+    "file": "CMakeLists.txt",
+    "line": 3,
+    "severity": "error",
+    "message": "No SOURCES given to target: app",
+    "source": "cmake"
+  }
+]

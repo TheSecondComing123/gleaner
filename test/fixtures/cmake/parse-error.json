@@ -1,0 +1,9 @@
+[
+  {
+    "file": "CMakeLists.txt",
+    "line": 4,
+    "severity": "error",
+    "message": "Parse error.  Function missing ending \")\".  Instead found unterminated string with text \"unterminated\n\".",
+    "source": "cmake"
+  }
+]

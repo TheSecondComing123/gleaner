@@ -1,0 +1,37 @@
+[
+  {
+    "file": "CMakeLists.txt",
+    "line": 3,
+    "severity": "warning",
+    "message": "author says hi",
+    "source": "cmake"
+  },
+  {
+    "file": "CMakeLists.txt",
+    "line": 4,
+    "severity": "warning",
+    "message": "this is a warning\nthat spans two lines",
+    "source": "cmake"
+  },
+  {
+    "file": "CMakeLists.txt",
+    "line": 6,
+    "severity": "warning",
+    "message": "old thing",
+    "source": "cmake"
+  },
+  {
+    "file": "CMakeLists.txt",
+    "line": 7,
+    "severity": "warning",
+    "message": "implicitly converting 'FOO' to 'STRING' type.",
+    "source": "cmake"
+  },
+  {
+    "file": "CMakeLists.txt",
+    "line": 8,
+    "severity": "warning",
+    "message": "Policy CMP0153 is not set: The exec_program command should not be called. Run \"cmake --help-policy CMP0153\" for policy details.  Use the cmake_policy command to set the policy and suppress this warning.\nUse execute_process() instead.",
+    "source": "cmake"
+  }
+]

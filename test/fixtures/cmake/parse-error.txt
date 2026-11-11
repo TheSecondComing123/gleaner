@@ -1,0 +1,8 @@
+CMake Error at CMakeLists.txt:4:
+  Parse error.  Function missing ending ")".  Instead found unterminated
+  string with text "unterminated
+
+  ".
+
+
+-- Configuring incomplete, errors occurred!
