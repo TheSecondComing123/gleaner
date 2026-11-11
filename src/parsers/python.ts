@@ -2,10 +2,14 @@ import type { Problem } from '../problem'
 
 // `  File "x.py", line 4, in compute`. SyntaxError frames have no `, in fn`.
 export const FRAME = /^ {2}File "(.+)", line (\d+)(?:, in (.+))?$/
-const START = /^Traceback \(most recent call last\):$/
+const START = /^(?:Exception Group )?Traceback \(most recent call last\):$/
 // Lines that end one traceback's exception message and lead into the next.
 const BREAK =
-  /^(Traceback \(most recent call last\):|During handling of the above exception|The above exception was the direct cause)/
+  /^((?:Exception Group )?Traceback \(most recent call last\):|During handling of the above exception|The above exception was the direct cause)/
+// An ExceptionGroup draws each traceback inside a tree: `  | ` in front of every line,
+// `  + ` on the first, and `  +-+---- 1 ----` rules between the grouped exceptions.
+const GROUP_PREFIX = /^ *[+|](?: |$)/
+const GROUP_RULE = /^ *\+-/
 // Unix `/lib/python3.x/`, Windows `C:\\Python313\\Lib\\`, any `site-packages`.
 export const LIBRARY = /\/lib\/python|[\\/]Lib[\\/]|site-packages|^<frozen |^<string>$/
 
@@ -20,7 +24,8 @@ export function python(lines: string[]): Problem[] {
   let frames: Frame[] = []
   let current: Problem | undefined
 
-  for (const line of lines) {
+  for (const raw of lines) {
+    const line = GROUP_RULE.test(raw) ? '' : raw.replace(GROUP_PREFIX, '')
     if (START.test(line)) {
       frames = []
       current = undefined

@@ -1,0 +1,30 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-cap/group.py",
+    "line": 7,
+    "severity": "error",
+    "message": "ExceptionGroup: unhandled errors in a TaskGroup (2 sub-exceptions)",
+    "source": "python",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-cap/group.py",
+        "line": 11,
+        "message": "called from here, in <module>"
+      }
+    ]
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-cap/group.py",
+    "line": 4,
+    "severity": "error",
+    "message": "ValueError: bad 1",
+    "source": "python"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-cap/group.py",
+    "line": 4,
+    "severity": "error",
+    "message": "ValueError: bad 2",
+    "source": "python"
+  }
+]
