@@ -1,0 +1,124 @@
+[
+  {
+    "file": "main.c",
+    "line": 1,
+    "col": 2,
+    "severity": "info",
+    "message": "Include file: <stdlib.h> not found. Please note: Standard library headers do not need to be provided to get proper results.",
+    "code": "missingIncludeSystem",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 4,
+    "col": 6,
+    "severity": "error",
+    "message": "Array 'a[10]' accessed at index 10, which is out of bounds.",
+    "code": "arrayIndexOutOfBounds",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 7,
+    "col": 5,
+    "severity": "error",
+    "message": "Memory leak: p",
+    "code": "memleak",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 5,
+    "col": 11,
+    "severity": "info",
+    "message": "Variable 'p' can be declared as pointer to const",
+    "code": "constVariablePointer",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 7,
+    "col": 12,
+    "severity": "error",
+    "message": "Uninitialized variable: x",
+    "code": "uninitvar",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 4,
+    "col": 11,
+    "severity": "info",
+    "message": "Variable 'a[10]' is assigned a value that is never used.",
+    "code": "unreadVariable",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 5,
+    "col": 13,
+    "severity": "info",
+    "message": "Variable 'p' is assigned a value that is never used.",
+    "code": "unreadVariable",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 5,
+    "col": 15,
+    "severity": "info",
+    "message": "Variable 'p' is allocated memory that is never used.",
+    "code": "unusedAllocatedMemory",
+    "source": "cppcheck"
+  },
+  {
+    "file": "main.c",
+    "line": 6,
+    "col": 9,
+    "severity": "info",
+    "message": "Variable 'x' is not assigned a value.",
+    "code": "unassignedVariable",
+    "source": "cppcheck"
+  },
+  {
+    "file": "util.cpp",
+    "line": 3,
+    "col": 5,
+    "severity": "info",
+    "message": "Class 'Foo' has a constructor with 1 argument that is not explicit.",
+    "code": "noExplicitConstructor",
+    "source": "cppcheck"
+  },
+  {
+    "file": "util.cpp",
+    "line": 6,
+    "col": 29,
+    "severity": "warning",
+    "message": "Either the condition 'p' is redundant or there is possible null pointer dereference: p.",
+    "code": "nullPointerRedundantCheck",
+    "source": "cppcheck",
+    "related": [
+      {
+        "file": "util.cpp",
+        "line": 6,
+        "col": 22,
+        "message": "Assuming that condition 'p' is not redundant"
+      },
+      {
+        "file": "util.cpp",
+        "line": 6,
+        "col": 29,
+        "message": "Null pointer dereference"
+      }
+    ]
+  },
+  {
+    "file": "util.cpp",
+    "line": 6,
+    "col": 6,
+    "severity": "info",
+    "message": "The function 'f' is never used.",
+    "code": "unusedFunction",
+    "source": "cppcheck"
+  }
+]

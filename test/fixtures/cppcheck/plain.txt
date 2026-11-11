@@ -1,0 +1,16 @@
+Checking src/buf.c ...
+src/buf.h:2:55: error: Array 'b->data[4]' accessed at index 4, which is out of bounds. [arrayIndexOutOfBounds]
+static inline int last(struct buf *b) { return b->data[4]; }
+                                                      ^
+1/2 files checked 36% done
+Checking src/main.c ...
+src/main.c:4:6: error: Array 'a[10]' accessed at index 10, which is out of bounds. [arrayIndexOutOfBounds]
+    a[10] = 0;
+     ^
+src/main.c:7:5: error: Memory leak: p [memleak]
+    return x;
+    ^
+src/main.c:7:12: error: Uninitialized variable: x [uninitvar]
+    return x;
+           ^
+2/2 files checked 100% done

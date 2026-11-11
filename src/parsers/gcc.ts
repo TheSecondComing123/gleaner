@@ -6,8 +6,9 @@ const HEAD = /^(.+?):(\d+):(?:(\d+):)? (fatal error|error|warning|note|remark): 
 
 const OTHER_LANGUAGES = /\.(?:pyi?|java|[cm]?[jt]sx?|rs|go|cs)$/
 
-// `shellcheck -f gcc` ends each message with its check code.
-const OTHER_TOOLS = / \[SC\d+\]$/
+// shellcheck -f gcc (`[SC2086]`) and cppcheck (`[memleak]`) end messages with a check id;
+// gcc's own are flags like `[-Wformat]`.
+const OTHER_TOOLS = / \[\w+\]$/
 
 const SEVERITY: Record<string, Severity> = {
   'fatal error': 'error',

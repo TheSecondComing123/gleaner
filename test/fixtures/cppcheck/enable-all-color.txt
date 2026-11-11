@@ -1,0 +1,48 @@
+[32mChecking main.c ...[0m
+[1mmain.c:1:2: [31minformation:[39m Include file: <stdlib.h> not found. Please note: Standard library headers do not need to be provided to get proper results. [missingIncludeSystem][0m
+#include <stdlib.h>
+ ^
+[1mmain.c:4:6: [31merror:[39m Array 'a[10]' accessed at index 10, which is out of bounds. [arrayIndexOutOfBounds][0m
+    a[10] = 0;
+     ^
+[1mmain.c:7:5: [31merror:[39m Memory leak: p [memleak][0m
+    return x;
+    ^
+[1mmain.c:5:11: [31mstyle:[39m Variable 'p' can be declared as pointer to const [constVariablePointer][0m
+    char *p = malloc(10);
+          ^
+[1mmain.c:7:12: [31merror:[39m Uninitialized variable: x [uninitvar][0m
+    return x;
+           ^
+[1mmain.c:4:11: [31mstyle:[39m Variable 'a[10]' is assigned a value that is never used. [unreadVariable][0m
+    a[10] = 0;
+          ^
+[1mmain.c:5:13: [31mstyle:[39m Variable 'p' is assigned a value that is never used. [unreadVariable][0m
+    char *p = malloc(10);
+            ^
+[1mmain.c:5:15: [31mstyle:[39m Variable 'p' is allocated memory that is never used. [unusedAllocatedMemory][0m
+    char *p = malloc(10);
+              ^
+[1mmain.c:6:9: [31mstyle:[39m Variable 'x' is not assigned a value. [unassignedVariable][0m
+    int x;
+        ^
+[34m1/2 files checked 55% done[0m
+[32mChecking util.cpp ...[0m
+[1mutil.cpp:3:5: [31mstyle:[39m Class 'Foo' has a constructor with 1 argument that is not explicit. [noExplicitConstructor][0m
+    Foo(int x) { v = x; }
+    ^
+[1mutil.cpp:6:29: [31mwarning:[39m Either the condition 'p' is redundant or there is possible null pointer dereference: p. [nullPointerRedundantCheck][0m
+void f(int *p) { if (p) {} *p = 1; }
+                            ^
+[1mutil.cpp:6:22: [2mnote:[0m Assuming that condition 'p' is not redundant
+void f(int *p) { if (p) {} *p = 1; }
+                     ^
+[1mutil.cpp:6:29: [2mnote:[0m Null pointer dereference
+void f(int *p) { if (p) {} *p = 1; }
+                            ^
+[34m2/2 files checked 100% done[0m
+[1mutil.cpp:6:6: [31mstyle:[39m The function 'f' is never used. [unusedFunction][0m
+void f(int *p) { if (p) {} *p = 1; }
+     ^
+[1mnofile:0:0: [31minformation:[39m Active checkers: 176/189 (use --checkers-report=<filename> to see details) [checkersReport][0m
+

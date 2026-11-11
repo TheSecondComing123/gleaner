@@ -1,0 +1,38 @@
+[
+  {
+    "file": "src/buf.h",
+    "line": 2,
+    "col": 55,
+    "severity": "error",
+    "message": "Array 'b->data[4]' accessed at index 4, which is out of bounds.",
+    "code": "arrayIndexOutOfBounds",
+    "source": "cppcheck"
+  },
+  {
+    "file": "src/main.c",
+    "line": 4,
+    "col": 6,
+    "severity": "error",
+    "message": "Array 'a[10]' accessed at index 10, which is out of bounds.",
+    "code": "arrayIndexOutOfBounds",
+    "source": "cppcheck"
+  },
+  {
+    "file": "src/main.c",
+    "line": 7,
+    "col": 5,
+    "severity": "error",
+    "message": "Memory leak: p",
+    "code": "memleak",
+    "source": "cppcheck"
+  },
+  {
+    "file": "src/main.c",
+    "line": 7,
+    "col": 12,
+    "severity": "error",
+    "message": "Uninitialized variable: x",
+    "code": "uninitvar",
+    "source": "cppcheck"
+  }
+]

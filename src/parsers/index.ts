@@ -1,4 +1,5 @@
 import type { Parser, Problem } from '../problem'
+import { cppcheck } from './cppcheck'
 import { eslint } from './eslint'
 import { gcc } from './gcc'
 import { go } from './go'
@@ -43,6 +44,7 @@ export const parsers: Record<string, Parser> = {
   node,
   make,
   shellcheck,
+  cppcheck,
   gcc,
 }
 
@@ -87,6 +89,7 @@ const COMMANDS: Record<string, string[]> = {
   luajit: ['lua'],
   zig: ['zig', 'gcc'],
   shellcheck: ['shellcheck'],
+  cppcheck: ['cppcheck'],
 }
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.
