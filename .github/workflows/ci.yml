@@ -44,5 +44,5 @@ jobs:
         with:
           name: screenshot-${{ matrix.os }}
           path: |
-            docs/screenshot.png
+            media/screenshot.png
             e2e-failure.png

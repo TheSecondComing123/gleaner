@@ -5,3 +5,4 @@ dist/
 .claude/
 spike/spike-log.jsonl
 e2e-failure.png
+docs/

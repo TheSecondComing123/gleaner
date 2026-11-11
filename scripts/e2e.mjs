@@ -142,8 +142,8 @@ try {
     failed = true
   }
 
-  await page.screenshot({ path: join(root, 'docs', 'screenshot.png') })
-  console.log('saved docs/screenshot.png')
+  await page.screenshot({ path: join(root, 'media', 'screenshot.png') })
+  console.log('saved media/screenshot.png')
 
   // rerun from a second terminal
   writeFileSync(

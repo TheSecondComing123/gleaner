@@ -10,7 +10,7 @@
 
 <br>
 
-![Gleaner turning tsc output into problems](docs/screenshot.png)
+![Gleaner turning tsc output into problems](media/screenshot.png)
 
 you type `tsc`, `cargo build` or `pytest` in the terminal like you always do. gleaner reads what scrolls by, finds the errors, and puts them in the problems panel with squiggles in your code. click one and you're on the line.
 
