@@ -63,7 +63,13 @@ describe('pickParsers', () => {
     expect(pickParsers('tsc; clang -c main.c')).toEqual([parsers.tsc, parsers.gcc])
   })
 
-  it('ignores commands it does not know', () => {
+  it('skips ignored commands', () => {
     expect(pickParsers('ls -la')).toEqual([])
+    expect(pickParsers('git diff | grep -n foo')).toEqual([])
+    expect(pickParsers('make', ['make'])).toEqual([])
+  })
+
+  it('tries every parser on a command it does not know', () => {
+    expect(pickParsers('make all')).toEqual(Object.values(parsers))
   })
 })

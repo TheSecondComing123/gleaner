@@ -18,6 +18,17 @@ export class Problems implements vscode.Disposable {
     }
   }
 
+  clear(): void {
+    this.byRun.clear()
+    this.collection.clear()
+  }
+
+  get count(): number {
+    let total = 0
+    for (const files of this.byRun.values()) for (const list of files.values()) total += list.length
+    return total
+  }
+
   dispose(): void {
     this.collection.dispose()
   }

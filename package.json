@@ -24,7 +24,63 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "contributes": {},
+  "contributes": {
+    "commands": [
+      {
+        "command": "gleaner.clear",
+        "title": "Clear Problems",
+        "category": "Gleaner"
+      }
+    ],
+    "configuration": {
+      "title": "Gleaner",
+      "properties": {
+        "gleaner.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Read terminal command output and show its errors in the Problems panel."
+        },
+        "gleaner.ignoredCommands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "cd",
+            "ls",
+            "cat",
+            "bat",
+            "less",
+            "more",
+            "head",
+            "tail",
+            "grep",
+            "rg",
+            "ag",
+            "find",
+            "fd",
+            "git",
+            "echo",
+            "printf",
+            "man",
+            "which",
+            "diff",
+            "jq",
+            "tree",
+            "code",
+            "vim",
+            "nvim",
+            "nano",
+            "ssh",
+            "curl",
+            "wget",
+            "brew"
+          ],
+          "markdownDescription": "Commands Gleaner never reads, even when their output looks like errors (for example ). Only applies to commands Gleaner has no parser for."
+        }
+      }
+    }
+  },
   "scripts": {
     "build": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js --sourcemap",
     "watch": "pnpm build --watch",
