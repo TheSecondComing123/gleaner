@@ -57,8 +57,9 @@ writeFileSync(join(demo, 'src', 'app', '[id]', 'page.ts'), `export const id: num
 // modes: old, new, hang
 writeFileSync(
   join(demo, 'build.mjs'),
-  `import { existsSync, readFileSync } from 'node:fs'
+  `import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 const mode = readFileSync('mode', 'utf8')
+writeFileSync('started', '')
 if (mode === 'hang') setInterval(() => {}, 1000)
 else {
   while (mode === 'old' && !existsSync('release')) await new Promise((r) => setTimeout(r, 100))
@@ -360,12 +361,18 @@ try {
   await page.keyboard.type('x ')
   await row('[Ln 9, Col 5]', 'typed before it')
 
-  // turning off clears everything
+  // turning off clears everything, including a run that's still going
   rmSync(join(demo, 'release'))
   mode('old')
+  await command('Terminal: Focus Terminal')
+  rmSync(join(demo, 'started'), { force: true })
   await page.keyboard.type('node build.mjs')
   await page.keyboard.press('Enter')
   await page.waitForTimeout(1500)
+  if (!existsSync(join(demo, 'started'))) {
+    console.error('turned off: node build.mjs never reached the terminal')
+    failed = true
+  }
   const settings = join(user, 'User', 'settings.json')
   writeFileSync(settings, JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.enable': false }))
   await page.waitForTimeout(3000)
