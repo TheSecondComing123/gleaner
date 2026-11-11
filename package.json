@@ -88,13 +88,15 @@
     "test": "vitest run",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "fixture": "esbuild scripts/fixture.ts --bundle --platform=node --log-level=warning --outfile=dist/fixture.js && node dist/fixture.js"
+    "fixture": "esbuild scripts/fixture.ts --bundle --platform=node --log-level=warning --outfile=dist/fixture.js && node dist/fixture.js",
+    "e2e": "pnpm build && node scripts/e2e.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.6",
     "@types/node": "^22.20.5",
     "@types/vscode": "1.93.0",
     "esbuild": "^0.28.2",
+    "playwright-core": "^1.65.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   },
