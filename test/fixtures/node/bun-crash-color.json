@@ -1,0 +1,24 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-bun/a.ts",
+    "line": 2,
+    "col": 13,
+    "severity": "error",
+    "message": "error: cannot load config.json",
+    "source": "node",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-bun/a.ts",
+        "line": 5,
+        "col": 3,
+        "message": "main"
+      },
+      {
+        "file": "/private/tmp/claude-501/gl-bun/a.ts",
+        "line": 7,
+        "col": 1,
+        "message": ""
+      }
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-bun/multi.test.ts",
+    "line": 5,
+    "col": 22,
+    "severity": "error",
+    "message": "error: expect(received).toEqual(expected)\n  {\n-   \"a\": 2,\n+   \"a\": 1,\n  }\n- Expected  - 1\n+ Received  + 1",
+    "source": "node"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-bun/multi.test.ts",
+    "line": 8,
+    "col": 31,
+    "severity": "error",
+    "message": "TypeError: nope",
+    "source": "node"
+  }
+]

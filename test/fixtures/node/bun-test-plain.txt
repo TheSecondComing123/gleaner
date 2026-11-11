@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+multi.test.ts:
+1 | import { describe, expect, test } from 'bun:test'
+2 | 
+3 | describe('math', () => {
+4 |   test('equal', () => {
+5 |     expect({ a: 1 }).toEqual({ a: 2 })
+                         ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "a": 2,
++   "a": 1,
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/private/tmp/claude-501/gl-bun/multi.test.ts:5:22)
+(fail) math > equal [0.96ms]
+3 | describe('math', () => {
+4 |   test('equal', () => {
+5 |     expect({ a: 1 }).toEqual({ a: 2 })
+6 |   })
+7 |   test('throws', () => {
+8 |     throw new TypeError('nope')
+                                  ^
+TypeError: nope
+      at <anonymous> (/private/tmp/claude-501/gl-bun/multi.test.ts:8:31)
+(fail) math > throws [0.03ms]
+
+ 0 pass
+ 2 fail
+ 1 expect() calls
+Ran 2 tests across 1 file. [4.00ms]
