@@ -33,7 +33,7 @@ vs code can already do this, but only through tasks.json and regex problem match
 | typescript, javascript | `tsc`, `vue-tsc`, `tsgo`, `eslint`, `biome`, `esbuild`, `vite`, `jest`, `vitest`, `bun test`, `deno`   |
 | js runtimes            | crashes from `node`, `tsx`, `ts-node`, `bun`, `deno`                                                   |
 | c, c++, swift, zig     | `gcc`, `g++`, `clang`, `clang++`, `cc`, `swiftc`, `swift build`, `cppcheck`, `zig` (errors and panics) |
-| build files            | `make` (its own errors), `cmake`                                                                       |
+| build files            | `make` (its own errors), `cmake`, compiler errors from `cmake --build`                                 |
 | rust                   | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc`                                    |
 | go                     | `go build`, `go vet`, `go test`, `go run` panics                                                       |
 | python                 | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint`                                    |

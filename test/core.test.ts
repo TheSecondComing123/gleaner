@@ -48,6 +48,18 @@ describe('resolveFile', () => {
     expect(await resolveFile('/abs/missing.c', ['/repo'], exists)).toBeUndefined()
   })
 
+  it('reads file URLs', async () => {
+    expect(
+      await resolveFile(
+        `file://${resolve('/abs/x.c')
+          .replace(/\\/g, '/')
+          .replace(/^(?=[A-Za-z]:)/, '/')}`,
+        [],
+        exists,
+      ),
+    ).toBe(resolve('/abs/x.c'))
+  })
+
   it('gives up when nothing exists', async () => {
     expect(await resolveFile('nope.ts', ['/repo'], exists)).toBeUndefined()
   })
@@ -96,7 +108,7 @@ describe('pickParsers', () => {
       check: 'pnpm lint',
       loop: 'npm run loop',
     }
-    expect(pickParsers('npm run build', undefined, scripts)).toEqual([parsers.tsc, parsers.esbuild])
+    expect(pickParsers('npm run build', undefined, scripts)).toEqual([parsers.tsc, parsers.esbuild, parsers.vite])
     expect(pickParsers('pnpm test', undefined, scripts)).toEqual([parsers.jest])
     expect(pickParsers('yarn test --watch=false', undefined, scripts)).toEqual([parsers.jest])
     expect(pickParsers('cd web && bun run check', undefined, scripts)).toEqual([parsers.tsc, parsers.eslint])

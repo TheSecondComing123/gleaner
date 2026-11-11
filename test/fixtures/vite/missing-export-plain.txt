@@ -1,0 +1,22 @@
+vite v7.3.8 building client environment for production...
+transforming...
+✓ 4 modules transformed.
+✗ Build failed in 184ms
+error during build:
+src/main.ts (1:9): "missing" is not exported by "src/util.ts", imported by "src/main.ts".
+file: /private/tmp/claude-501/gl-cap/js/src/main.ts:1:9
+
+1: import { missing } from "./util"
+            ^
+2: console.log(missing)
+
+    at getRollupError (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/parseAst.js:350:41)
+    at error (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/parseAst.js:346:42)
+    at Module.error (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:18349:16)
+    at Module.traceVariable (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:18786:29)
+    at ModuleScope.findVariable (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:16258:39)
+    at Identifier.bind (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:5945:40)
+    at CallExpression.bind (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:3222:28)
+    at CallExpression.bind (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:13390:15)
+    at ExpressionStatement.bind (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:3226:23)
+    at Program.bind (file:///private/var/folders/39/pwpx2sz15_1cwks1g_yvypkr0000gn/T/bunx-501-vite@7/node_modules/rollup/dist/es/shared/node-entry.js:3222:28)

@@ -1,0 +1,10 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-cap/js/src/main.ts",
+    "line": 1,
+    "col": 9,
+    "severity": "error",
+    "message": "\"missing\" is not exported by \"src/util.ts\", imported by \"src/main.ts\".",
+    "source": "vite"
+  }
+]

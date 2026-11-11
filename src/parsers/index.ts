@@ -23,6 +23,7 @@ import { ruff } from './ruff'
 import { rustc } from './rustc'
 import { shellcheck } from './shellcheck'
 import { tsc } from './tsc'
+import { vite } from './vite'
 import { zig } from './zig'
 
 // Order matters when several parsers match the same line: the specific ones come first
@@ -41,6 +42,7 @@ export const parsers: Record<string, Parser> = {
   ruff,
   eslint,
   esbuild,
+  vite,
   biome,
   deno,
   jest,
@@ -92,7 +94,7 @@ const COMMANDS: Record<string, string[]> = {
   eslint: ['eslint'],
   jest: ['jest'],
   esbuild: ['esbuild'],
-  vite: ['esbuild'],
+  vite: ['esbuild', 'vite'],
   biome: ['biome'],
   deno: ['deno'],
   vitest: ['jest'],
