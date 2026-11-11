@@ -175,15 +175,17 @@ export function activate(context: vscode.ExtensionContext): void {
       if (!pickParsers(execution.commandLine.value, ignored).length) return
       const command = execution.commandLine.value
       const key = `${execution.cwd?.fsPath ?? ''}\0${command.trim()}`
-      const generation = nextGeneration++
-      latest.set(key, generation)
+      // powershell can report the same running command again
+      const previous = [...runs.values()].find((run) => run.terminal === terminal && run.command === command)
+      const generation = previous?.generation ?? nextGeneration++
+      if (!previous) latest.set(key, generation)
       const run: Run = {
         terminal,
         command,
         key,
         generation,
         ignored,
-        cwds: execution.cwd ? [execution.cwd.fsPath] : [],
+        cwds: previous?.cwds ?? (execution.cwd ? [execution.cwd.fsPath] : []),
         raw: '',
         scanned: 0,
         cycle: 0,
