@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "file": "/private/tmp/claude-501/gl-node/throwstr.js",
+    "line": 1,
+    "severity": "error",
+    "message": "just a string",
+    "source": "node"
+  }
+]

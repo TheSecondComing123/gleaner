@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/private/tmp/claude-501/nodelog/server.js",
+    "line": 5,
+    "col": 9,
+    "severity": "error",
+    "message": "TypeError: Cannot read properties of undefined (reading 'id')",
+    "source": "node",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/nodelog/server.js",
+        "line": 8,
+        "col": 3,
+        "message": "Object.<anonymous>"
+      }
+    ]
+  }
+]
