@@ -1,7 +1,8 @@
 import type { Problem, Related } from '../problem'
 
 // `x.py:3: error: msg  [code]`, with `x.py:3:5:` under --show-column-numbers.
-const HEAD = /^(.+?):(\d+):(?:(\d+):)? (error|note): (.*)$/
+// Only .py files, so other tools' `file:line: error:` lines aren't read as mypy's.
+const HEAD = /^(.+?\.pyi?):(\d+):(?:(\d+):)? (error|note): (.*)$/
 const CODE = / {2}\[([\w-]+)\]$/
 // --pretty wraps long messages onto unindented lines, then prints the code and caret indented.
 // These unindented lines are not part of a wrapped message: the tally and

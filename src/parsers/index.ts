@@ -1,4 +1,4 @@
-import type { Parser } from '../problem'
+import type { Parser, Problem } from '../problem'
 import { eslint } from './eslint'
 import { gcc } from './gcc'
 import { go } from './go'
@@ -14,9 +14,12 @@ import { ruff } from './ruff'
 import { rustc } from './rustc'
 import { tsc } from './tsc'
 
+// Order matters when several parsers match the same line: the specific ones come first
+// so their richer result wins (javac over gcc for `Main.java:5: error:`, tsc over msbuild
+// for `a.ts(4,7): error TS2322`, jest over node for jest's stack frames).
 export const parsers: Record<string, Parser> = {
   tsc,
-  gcc,
+  javac,
   rustc,
   go,
   python,
@@ -24,11 +27,11 @@ export const parsers: Record<string, Parser> = {
   pyright,
   mypy,
   ruff,
-  javac,
-  msbuild,
-  node,
   eslint,
   jest,
+  msbuild,
+  node,
+  gcc,
 }
 
 // Which parsers read the output of which command.
@@ -139,12 +142,33 @@ export const DEFAULT_IGNORED = [
 // don't know (`make`, `npm run build`) gets every parser; a match only becomes a
 // problem if its file exists, which keeps that from guessing wildly.
 export function pickParsers(commandLine: string, ignored: string[] = DEFAULT_IGNORED): Parser[] {
-  const commands = commandLine
-    .split(/&&|\|\||;|\|/)
-    .map(commandName)
-    .filter((name): name is string => name !== undefined)
-  const names = commands.flatMap((command) => COMMANDS[command] ?? [])
-  if (names.length) return [...new Set(names)].map((name) => parsers[name])
-  if (!commands.length || ignored.includes(commands[0])) return []
-  return Object.values(parsers)
+  const steps = commandLine.split(/&&|\|\||;/)
+  const pipes = steps.flatMap((step) => step.split('|')).map(commandName)
+  const names = pipes.flatMap((command) => COMMANDS[command ?? ''] ?? [])
+  if (names.length)
+    return Object.keys(parsers)
+      .filter((name) => names.includes(name))
+      .map((name) => parsers[name])
+  // Only the first command of a pipeline writes to it, so `grep -n x | wc` stays ignored.
+  const unknown = steps.map((step) => commandName(step.split('|')[0])).filter((c) => c && !ignored.includes(c))
+  return unknown.length ? Object.values(parsers) : []
+}
+
+const firstLine = (p: Problem) => p.message.split('\n')[0]
+
+// Runs the parsers in order and drops a problem an earlier parser already reported:
+// same file, line and first message line, and the same column when both have one.
+export function parseAll(chosen: Parser[], lines: string[]): Problem[] {
+  const kept: Problem[] = []
+  const seen = new Map<string, Problem[]>()
+  for (const parse of chosen) {
+    for (const problem of parse(lines)) {
+      const key = `${problem.file}:${problem.line}:${firstLine(problem)}`
+      const twins = seen.get(key) ?? []
+      if (twins.some((t) => t.col === undefined || problem.col === undefined || t.col === problem.col)) continue
+      seen.set(key, [...twins, problem])
+      kept.push(problem)
+    }
+  }
+  return kept
 }

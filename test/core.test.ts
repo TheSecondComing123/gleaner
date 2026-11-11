@@ -1,6 +1,8 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
-import { commandName, parsers, pickParsers } from '../src/parsers'
+import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
 
 describe('clean', () => {
@@ -75,5 +77,27 @@ describe('pickParsers', () => {
 
   it('tries every parser on a command it does not know', () => {
     expect(pickParsers('make all')).toEqual(Object.values(parsers))
+    expect(pickParsers('cd web && npm run build')).toEqual(Object.values(parsers))
+    expect(pickParsers('echo hi && make')).toEqual(Object.values(parsers))
+  })
+
+  it('reads only the first command of a pipeline', () => {
+    expect(pickParsers('grep -n x src | wc -l')).toEqual([])
+    expect(pickParsers('cargo build 2>&1 | tee log')).toEqual([parsers.rustc])
+  })
+})
+
+describe('parseAll', () => {
+  const fixture = (path: string) => clean(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
+  const expected = (path: string) => JSON.parse(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
+
+  // An unknown command runs every parser; overlapping formats must not double up or drop anything.
+  const all = readdirSync(join(__dirname, 'fixtures')).flatMap((tool) =>
+    readdirSync(join(__dirname, 'fixtures', tool))
+      .filter((f) => f.endsWith('.txt'))
+      .map((f) => `${tool}/${f.slice(0, -4)}`),
+  )
+  it.each(all)('every parser on %s matches the specific parser alone', (name) => {
+    expect(parseAll(Object.values(parsers), fixture(`${name}.txt`))).toEqual(expected(`${name}.json`))
   })
 })

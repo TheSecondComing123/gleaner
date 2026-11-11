@@ -3,10 +3,11 @@ import type { Problem, Severity } from '../problem'
 // One line per problem, from ruff --output-format concise, flake8 and pylint:
 // `x.py:3:5: F401 [*] msg`, `x.py:1:7: invalid-syntax: msg`, `x.py:3:5: E501 msg`,
 // `x.py:3:0: C0114: msg (missing-module-docstring)`.
-const LINE = /^(.+?):(\d+):(\d+): ([A-Z]+\d+|[a-z][\w-]*)(:?) (?:\[\*\] )?(.*)$/
+// Only .py files: gcc's `main.c:5:9: error:` and rustc's ` --> src/a.rs` have the same shape.
+const LINE = /^(.+?\.pyi?):(\d+):(\d+): (?!(?:error|warning|note):)([A-Z]+\d+|[a-z][\w-]*)(:?) (?:\[\*\] )?(.*)$/
 // ruff's default full format puts `F401 [*] msg` above ` --> x.py:3:5`, then a code frame.
 const HEADER = /^([A-Z]+\d+|[a-z][\w-]*):? (?:\[\*\] )?(.*)$/
-const ARROW = /^\s*--> (.+?):(\d+):(\d+)$/
+const ARROW = /^\s*--> (.+?\.pyi?):(\d+):(\d+)$/
 const PYLINT_CODE = /^[CRWEFI]\d{4}$/
 const PYLINT_SYMBOL = / \([a-z\d-]+\)$/
 const SYNTAX = new Set(['invalid-syntax', 'E999'])

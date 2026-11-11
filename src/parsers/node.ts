@@ -21,7 +21,8 @@ export function node(lines: string[]): Problem[] {
 
   const finish = () => {
     const [first, ...rest] = crash?.frames ?? []
-    if (crash && first)
+    // jest and vitest print frames like these; with nothing above them there's no message to show.
+    if (crash && first && crash.message)
       problems.push({
         file: first.file,
         line: first.line,

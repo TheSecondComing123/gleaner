@@ -1,7 +1,7 @@
 import type { Problem, Severity } from '../problem'
 
 // `  /abs/x.py:3:5 - error: msg (reportAssignmentType)`, under a bare `/abs/x.py` file header.
-const HEAD = /^ {2}(\S.*?):(\d+):(\d+) - (error|warning|information): (.*)$/
+const HEAD = /^ {2}(\S.*?\.pyi?):(\d+):(\d+) - (error|warning|information): (.*)$/
 // The rule name trails the last line of a message, which may be a continuation line.
 const RULE = / \((report\w+)\)$/
 // Continuation lines are indented with two spaces, then two no-break spaces per level.
