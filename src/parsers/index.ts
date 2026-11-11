@@ -225,9 +225,10 @@ function choose(commandLine: string, ignored: string[], scripts: Record<string, 
   return chosen
 }
 
-// Splits at separators outside quotes and escapes: `grep "a|b" src` and `cat x\;y.log` are one command each.
+// Splits at separators outside quotes: `grep "a|b" src` is one command. An escaped quote doesn't open
+// one, but `\;` still splits: it's a path ending in `\` before `;` in PowerShell.
 function split(line: string, separator: RegExp): string[] {
-  const masked = line.replace(/\\.|"(?:\\.|[^"\\])*"|'[^']*'/g, (quoted) => '_'.repeat(quoted.length))
+  const masked = line.replace(/\\["']|"(?:\\.|[^"\\])*"|'[^']*'/g, (quoted) => '_'.repeat(quoted.length))
   const parts: string[] = []
   let start = 0
   for (const match of masked.matchAll(separator)) {

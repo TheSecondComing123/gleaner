@@ -120,7 +120,7 @@ describe('pickParsers', () => {
   it('keeps quoted separators inside their command', () => {
     expect(pickParsers('cat "logs;old.txt"')).toEqual([])
     expect(pickParsers("grep -E 'a|b' src && tsc")).toEqual([parsers.tsc])
-    expect(pickParsers('cat logs\\;old.txt')).toEqual([])
+    expect(pickParsers('cd C:\\repo\\; tsc')).toEqual([parsers.tsc])
     expect(pickParsers('echo \\" && tsc && echo "done"')).toEqual([parsers.tsc])
   })
 
