@@ -203,6 +203,7 @@ export function activate(context: vscode.ExtensionContext): void {
         }
       })()
       runs.set(execution, run)
+      log.appendLine(`${command}: started in ${terminal.name}${execution.cwd ? ` at ${execution.cwd.fsPath}` : ''}`)
     }),
     vscode.window.onDidEndTerminalShellExecution(({ execution, exitCode }) => void finish(execution, exitCode)),
     // `cd` updates cwd here

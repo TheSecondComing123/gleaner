@@ -341,8 +341,11 @@ try {
   // positions follow edits: two lines above cart.ts:7:3, then typing right before it
   const row = async (want, label) => {
     await page.keyboard.press('ControlOrMeta+Shift+M')
-    await page.waitForTimeout(800)
-    const rows = await page.locator('.markers-panel .monaco-list-row').allInnerTexts()
+    let rows = []
+    for (let i = 0; i < 50 && !rows.some((r) => r.includes(want)); i++) {
+      await page.waitForTimeout(100)
+      rows = await page.locator('.markers-panel .monaco-list-row').allInnerTexts()
+    }
     if (rows.some((r) => r.includes(want))) console.log(`${label}: ${want}`)
     else {
       console.error(`${label}: want ${want}, rows: ${rows.map((r) => r.replace(/\s+/g, ' ')).join(' / ')}`)
