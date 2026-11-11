@@ -45,14 +45,10 @@ no tasks.json. no problem matchers. nothing to set up.
 
 ## install
 
-gleaner isn't on the marketplace yet. build it and install the `.vsix`:
+get it from the [vs code marketplace](https://marketplace.visualstudio.com/items?itemName=thesecondcoming123.gleaner), or from the command line:
 
 ```bash
-git clone https://github.com/TheSecondComing123/gleaner.git
-cd gleaner
-pnpm install
-pnpm package
-code --install-extension gleaner-*.vsix
+code --install-extension thesecondcoming123.gleaner
 ```
 
 ## use it
@@ -94,4 +90,4 @@ pnpm e2e         # drives a real vs code window
 
 ## license
 
-[MIT](LICENSE)
+[MIT](LICENSE). made by [alan bagel](https://alanthebagel.com) ([github](https://github.com/TheSecondComing123)).

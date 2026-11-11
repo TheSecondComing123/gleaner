@@ -5,6 +5,10 @@
   "version": "0.1.0",
   "publisher": "thesecondcoming123",
   "license": "MIT",
+  "author": {
+    "name": "Alan Bagel",
+    "url": "https://alanthebagel.com"
+  },
   "private": true,
   "engines": {
     "vscode": "^1.93.0"
@@ -108,6 +112,14 @@
     "workspace"
   ],
   "icon": "media/icon.png",
+  "homepage": "https://github.com/TheSecondComing123/gleaner#readme",
+  "bugs": {
+    "url": "https://github.com/TheSecondComing123/gleaner/issues"
+  },
+  "galleryBanner": {
+    "color": "#1e1e2e",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/TheSecondComing123/gleaner.git"
