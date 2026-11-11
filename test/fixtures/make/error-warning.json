@@ -1,0 +1,16 @@
+[
+  {
+    "file": "sub/rules.mk",
+    "line": 2,
+    "severity": "warning",
+    "message": "X is 1",
+    "source": "make"
+  },
+  {
+    "file": "sub/rules.mk",
+    "line": 4,
+    "severity": "error",
+    "message": "X must not be 1",
+    "source": "make"
+  }
+]

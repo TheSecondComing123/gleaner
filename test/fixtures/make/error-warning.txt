@@ -1,0 +1,2 @@
+sub/rules.mk:2: X is 1
+sub/rules.mk:4: *** X must not be 1.  Stop.

@@ -1,0 +1,9 @@
+[
+  {
+    "file": "Makefile",
+    "line": 2,
+    "severity": "error",
+    "message": "missing separator",
+    "source": "make"
+  }
+]

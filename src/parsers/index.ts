@@ -4,6 +4,7 @@ import { gcc } from './gcc'
 import { go } from './go'
 import { javac } from './javac'
 import { jest } from './jest'
+import { make } from './make'
 import { msbuild } from './msbuild'
 import { mypy } from './mypy'
 import { node } from './node'
@@ -31,6 +32,7 @@ export const parsers: Record<string, Parser> = {
   jest,
   msbuild,
   node,
+  make,
   gcc,
 }
 
