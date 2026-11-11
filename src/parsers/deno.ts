@@ -1,4 +1,5 @@
 import type { Problem, Related } from '../problem'
+import { fromFileUrl } from '../resolve'
 
 // `deno check`: `TS2322 [ERROR]: msg`, more message lines, the source line and its underline, then
 // `    at file:///abs/a.ts:1:7`. Related info follows indented: a note, a code frame, a deeper `at`.
@@ -11,9 +12,6 @@ const UNDERLINE = /^\s*[~^]+$/
 // `deno lint`: `error[no-unused-vars]: msg`, then ` --> /abs/a.ts:1:5`. Lowercase, unlike rustc's `error[E0308]`.
 const LINT_HEAD = /^error\[([a-z][a-z-]*)\]: (.*)$/
 const ARROW = /^\s*--> (.+):(\d+):(\d+)$/
-
-// file:///C:/a.ts → C:/a.ts. Not fileURLToPath: it throws on a posix file URL when run on Windows.
-const toPath = (url: string) => decodeURIComponent(new URL(url).pathname).replace(/^\/([A-Za-z]:)/, '$1')
 
 export function deno(lines: string[]): Problem[] {
   const problems: Problem[] = []
@@ -51,7 +49,7 @@ export function deno(lines: string[]): Problem[] {
     const frame = FRAME.exec(line)
     if (frame) {
       const at = frame[2].startsWith('file://')
-        ? { file: toPath(frame[2]), line: Number(frame[3]), col: Number(frame[4]) }
+        ? { file: fromFileUrl(frame[2]), line: Number(frame[3]), col: Number(frame[4]) }
         : undefined
       if (at && !current.file) {
         Object.assign(current, at)

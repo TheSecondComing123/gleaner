@@ -1,4 +1,5 @@
 import type { Problem, Related } from '../problem'
+import { fromFileUrl } from '../resolve'
 
 // `    at fn (/abs/app.js:12:5)`, `    at /abs/app.js:12:5`, `    at async file:///abs/app.mjs:12:5`.
 // Native frames like `at JSON.parse (<anonymous>)` have no location. The last frame before an
@@ -15,11 +16,7 @@ const ERROR_LINE = /^(?:Uncaught )?\[?\w*(?:Error|Exception)\b/
 
 function location(path: string): string | undefined {
   if (path.startsWith('node:') || path.includes('node_modules')) return undefined
-  if (!path.startsWith('file://')) return path
-  // fileURLToPath throws on another OS's URL (a macOS path read on Windows) and that would end the
-  // whole parse, so decode by hand: `file:///C:/a.mjs` → `C:/a.mjs`, `file:///a.mjs` → `/a.mjs`.
-  const decoded = decodeURIComponent(new URL(path).pathname)
-  return /^\/[A-Za-z]:/.test(decoded) ? decoded.slice(1) : decoded
+  return path.startsWith('file://') ? fromFileUrl(path) : path
 }
 
 export function node(lines: string[]): Problem[] {
