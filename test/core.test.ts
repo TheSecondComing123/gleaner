@@ -96,7 +96,7 @@ describe('pickParsers', () => {
       check: 'pnpm lint',
       loop: 'npm run loop',
     }
-    expect(pickParsers('npm run build', undefined, scripts)).toEqual(Object.values(parsers))
+    expect(pickParsers('npm run build', undefined, scripts)).toEqual([parsers.tsc, parsers.esbuild])
     expect(pickParsers('pnpm test', undefined, scripts)).toEqual([parsers.jest])
     expect(pickParsers('yarn test --watch=false', undefined, scripts)).toEqual([parsers.jest])
     expect(pickParsers('cd web && bun run check', undefined, scripts)).toEqual([parsers.tsc, parsers.eslint])

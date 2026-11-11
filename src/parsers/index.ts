@@ -1,7 +1,7 @@
 import type { Parser, Problem } from '../problem'
+import { biome } from './biome'
 import { cmake } from './cmake'
 import { cppcheck } from './cppcheck'
-import { biome } from './biome'
 import { deno } from './deno'
 import { esbuild } from './esbuild'
 import { eslint } from './eslint'
