@@ -1,7 +1,8 @@
-// Opens a real VS Code window with Gleaner loaded, runs `tsc` in its terminal, and
-// checks that the errors reach the Problems panel. Saves docs/screenshot.png.
+// Opens a real VS Code window with Gleaner loaded, runs `tsc` in its terminal, and checks
+// each error reaches the Problems panel under the right file. Then fixes one error and reruns
+// from a second terminal: the old problems must be replaced, not doubled. Saves docs/screenshot.png.
 // usage: pnpm e2e   (needs VS Code in /Applications)
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { _electron as electron } from 'playwright-core'
@@ -40,6 +41,10 @@ export function receipt(items: Item[]): string {
 }
 `,
 )
+
+// A folder with glob characters in its name, like a Next.js route.
+mkdirSync(join(demo, 'src', 'app', '[id]'), { recursive: true })
+writeFileSync(join(demo, 'src', 'app', '[id]', 'page.ts'), `export const id: number = 'not a number'\n`)
 
 const user = join(work, 'user')
 mkdirSync(join(user, 'User'), { recursive: true })
@@ -86,35 +91,58 @@ try {
   await page.waitForTimeout(4000)
   await page.keyboard.type('tsc -p .')
   await page.keyboard.press('Enter')
-
-  const status = page.getByText(/\d+ from terminal/)
-  await status.waitFor({ timeout: 30_000 })
-  const text = (await status.textContent()) ?? ''
-  console.log(`status bar: ${text}`)
+  await page.getByText(/5 from terminal/).waitFor({ timeout: 30_000 })
 
   await page.keyboard.press('Meta+Shift+M')
   await page.waitForTimeout(1500)
-  const rows = await page.locator('.markers-panel .monaco-list-row').allInnerTexts()
-  console.log(`problems panel:\n  ${rows.map((r) => r.replace(/\n/g, ' ')).join('\n  ')}`)
-
-  const count = Number(text.match(/(\d+) from terminal/)?.[1])
-  if (count !== 4) {
-    console.error(`expected 4 problems from tsc, got ${count}`)
-    failed = true
+  // Rows come in order: a file header (no position), then its problems (with `tsc`), then related info.
+  let file = ''
+  const shown = []
+  for (const row of await page.locator('.markers-panel .monaco-list-row').allInnerTexts()) {
+    const text = row.replace(/\s+/g, ' ').trim()
+    if (!text.includes('[Ln')) file = text.match(/^.+?\.ts/)?.[0] ?? text
+    else if (text.includes('tsc')) shown.push(`${file} ${text.match(/TS\d+/)?.[0]} ${text.match(/\[Ln.*?\]/)?.[0]}`)
   }
-  // The diagnostics themselves, not just the status count: code and position of each tsc error.
-  const expected = ['TS2322 [Ln 7, Col 3]', 'TS2322 [Ln 10, Col 44]', 'TS2322 [Ln 4, Col 9]', 'TS2551 [Ln 5, Col 27]']
-  const shown = rows.map((r) => r.replace(/\s+/g, ' '))
+  console.log(`problems panel:\n  ${shown.join('\n  ')}`)
+  const expected = [
+    'cart.ts TS2322 [Ln 7, Col 3]',
+    'cart.ts TS2322 [Ln 10, Col 44]',
+    'checkout.ts TS2322 [Ln 4, Col 9]',
+    'checkout.ts TS2551 [Ln 5, Col 27]',
+    'page.ts TS2322 [Ln 1, Col 14]',
+  ]
   for (const want of expected) {
-    const [code, at] = [want.split(' ')[0], want.slice(want.indexOf('['))]
-    if (!shown.some((r) => r.includes('tsc') && r.includes(code) && r.includes(at))) {
+    if (!shown.includes(want)) {
       console.error(`missing from the problems panel: ${want}`)
       failed = true
     }
   }
+  if (shown.length !== expected.length) {
+    console.error(`expected ${expected.length} tsc problems in the panel, got ${shown.length}`)
+    failed = true
+  }
 
   await page.screenshot({ path: join(root, 'docs', 'screenshot.png') })
   console.log('saved docs/screenshot.png')
+
+  // Fix one error, then rerun the same command from a new terminal.
+  writeFileSync(
+    join(demo, 'src', 'cart.ts'),
+    readFileSync(join(demo, 'src', 'cart.ts'), 'utf8').replace("price: '4.50'", 'price: 4.5'),
+  )
+  await page.keyboard.press('Control+Shift+Backquote')
+  await page.waitForTimeout(4000)
+  await page.keyboard.type('tsc -p .')
+  await page.keyboard.press('Enter')
+  try {
+    await page.getByText(/4 from terminal/).waitFor({ timeout: 30_000 })
+    console.log('rerun from a second terminal: 4 from terminal')
+  } catch {
+    console.error(
+      `rerun should replace the old problems, status shows: ${await page.getByText(/from terminal/).textContent()}`,
+    )
+    failed = true
+  }
 } catch (error) {
   console.error(error)
   failed = true
