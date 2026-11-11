@@ -1,6 +1,6 @@
 // drives real VS Code; see checks below
 // needs VS Code or VSCODE_BIN
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { _electron as electron } from 'playwright-core'
@@ -96,12 +96,19 @@ try {
   const page = await app.firstWindow()
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.waitForSelector('.monaco-workbench', { timeout: 30_000 })
+  const logs = join(user, 'logs')
+  const activated = () =>
+    existsSync(logs) && readdirSync(logs, { recursive: true }).some((f) => f.endsWith('Gleaner.log'))
+  // gleaner is up and the prompt's circle shows shell integration is connected
+  const ready = async () => {
+    for (let i = 0; i < 300 && !activated(); i++) await page.waitForTimeout(100)
+    if (!activated()) throw new Error('gleaner never activated')
+    await page.locator('.codicon-terminal-decoration-incomplete:visible').first().waitFor({ timeout: 30_000 })
+  }
   await page.waitForTimeout(3000)
 
   await page.keyboard.press('Control+Backquote')
-  await page.waitForSelector('.xterm', { timeout: 15_000 })
-  // wait for shell integration
-  await page.waitForTimeout(4000)
+  await ready()
   await page.keyboard.type('tsc -p .')
   await page.keyboard.press('Enter')
   await page.getByText(/5 from terminal/).waitFor({ timeout: 30_000 })
@@ -144,7 +151,7 @@ try {
     readFileSync(join(demo, 'src', 'cart.ts'), 'utf8').replace("price: '4.50'", 'price: 4.5'),
   )
   await page.keyboard.press('Control+Shift+Backquote')
-  await page.waitForTimeout(4000)
+  await ready()
   await page.keyboard.type('tsc -p .')
   await page.keyboard.press('Enter')
   try {
@@ -174,7 +181,7 @@ try {
   await page.waitForTimeout(1500)
   mode('new')
   await page.keyboard.press('Control+Shift+Backquote')
-  await page.waitForTimeout(4000)
+  await ready()
   await page.keyboard.type('node build.mjs')
   await page.keyboard.press('Enter')
   await status(5, 'newer run')
