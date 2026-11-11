@@ -1,0 +1,17 @@
+{
+  "name": "e2e-theme",
+  "publisher": "local",
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "label": "Catppuccin Mocha",
+        "uiTheme": "vs-dark",
+        "path": "./mocha.json"
+      }
+    ]
+  }
+}

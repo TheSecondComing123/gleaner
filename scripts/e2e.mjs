@@ -74,6 +74,62 @@ writeFileSync(
     'workbench.secondarySideBar.defaultVisibility': 'hidden',
     'typescript.validate.enable': false,
     'window.zoomLevel': 0,
+    // the README screenshot comes from this window
+    'workbench.colorTheme': 'Catppuccin Mocha',
+    'editor.fontFamily': "'Comic Mono', monospace",
+    'editor.fontSize': 15,
+    'editor.lineHeight': 1.8,
+    'editor.letterSpacing': 0.4,
+    'editor.fontLigatures': false,
+    'editor.padding.top': 20,
+    'editor.glyphMargin': false,
+    'editor.lightbulb.enabled': 'off',
+    'editor.renderLineHighlight': 'none',
+    'editor.guides.indentation': false,
+    'editor.guides.bracketPairs': false,
+    'editor.stickyScroll.enabled': false,
+    'editor.occurrencesHighlight': 'off',
+    'editor.matchBrackets': 'never',
+    'editor.overviewRulerBorder': false,
+    'editor.hideCursorInOverviewRuler': true,
+    'editor.scrollbar.vertical': 'hidden',
+    'editor.scrollbar.horizontal': 'hidden',
+    'breadcrumbs.enabled': false,
+    'workbench.activityBar.location': 'hidden',
+    'workbench.layoutControl.enabled': false,
+    'workbench.navigationControl.enabled': false,
+    'workbench.editor.showIcons': false,
+    'workbench.editor.editorActionsLocation': 'hidden',
+    'workbench.tree.renderIndentGuides': 'none',
+    'window.commandCenter': false,
+    'window.titleBarStyle': 'native',
+    'terminal.integrated.initialHint': false,
+    'workbench.colorCustomizations': {
+      '[Catppuccin Mocha]': {
+        focusBorder: '#00000000',
+        'list.focusOutline': '#00000000',
+        'list.activeSelectionBackground': '#313244',
+        'list.inactiveSelectionBackground': '#313244',
+        'titleBar.activeBackground': '#11111b',
+        'titleBar.inactiveBackground': '#11111b',
+        'titleBar.border': '#00000000',
+        'editorGroupHeader.tabsBackground': '#181825',
+        'editorGroupHeader.tabsBorder': '#00000000',
+        'tab.inactiveBackground': '#181825',
+        'tab.border': '#00000000',
+        'tab.activeBorderTop': '#f9e2af',
+        'editorGroup.border': '#00000000',
+        'panel.background': '#181825',
+        'panel.border': '#00000000',
+        'panelTitle.activeBorder': '#f9e2af',
+        'statusBar.background': '#11111b',
+        'statusBar.border': '#00000000',
+        'statusBar.noFolderBackground': '#11111b',
+        'badge.background': '#f9e2af',
+        'badge.foreground': '#11111b',
+        'activityBarBadge.background': '#f9e2af',
+      },
+    },
   }),
 )
 
@@ -83,6 +139,8 @@ const app = await electron.launch({
     `--user-data-dir=${user}`,
     `--extensions-dir=${join(work, 'extensions')}`,
     `--extensionDevelopmentPath=${root}`,
+    `--extensionDevelopmentPath=${join(root, 'scripts', 'e2e-theme')}`,
+    '--disable-extension=vscode.typescript-language-features',
     '--disable-workspace-trust',
     '--skip-release-notes',
     '--new-window',
@@ -94,7 +152,7 @@ const app = await electron.launch({
 let failed = false
 try {
   const page = await app.firstWindow()
-  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.setViewportSize({ width: 1440, height: 820 })
   await page.waitForSelector('.monaco-workbench', { timeout: 30_000 })
   const logs = join(user, 'logs')
   const activated = () =>
@@ -142,7 +200,21 @@ try {
     failed = true
   }
 
-  await page.screenshot({ path: join(root, 'media', 'screenshot.png') })
+  await page.keyboard.press('ControlOrMeta+B')
+  // the squiggle sits under the text layer: put the cursor on it, then show the hover
+  const squiggle = await page.locator('.squiggly-error').last().boundingBox()
+  await page.mouse.click(squiggle.x + squiggle.width / 2, squiggle.y + squiggle.height / 2)
+  await page.keyboard.press('ControlOrMeta+K')
+  await page.keyboard.press('ControlOrMeta+I')
+  await page.locator('.monaco-hover:not(.hidden)').first().waitFor({ timeout: 10_000 })
+  await page.waitForTimeout(800)
+  // 2x, so the README image is sharp
+  const cdp = await page.context().newCDPSession(page)
+  const { data } = await cdp.send('Page.captureScreenshot', {
+    format: 'png',
+    clip: { x: 0, y: 0, width: 1440, height: 820, scale: 2 },
+  })
+  writeFileSync(join(root, 'media', 'screenshot.png'), Buffer.from(data, 'base64'))
   console.log('saved media/screenshot.png')
 
   // rerun from a second terminal
