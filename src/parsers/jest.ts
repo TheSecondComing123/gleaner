@@ -80,7 +80,8 @@ export function jest(lines: string[]): Problem[] {
     const babel = !block.inTrace && BABEL.exec(line)
     if (babel) {
       block.lines = [`${babel[1]}: ${babel[3]}`]
-      block.at = { file: babel[2], line: Number(babel[4]), col: Number(babel[5]) }
+      // Babel counts columns from 0.
+      block.at = { file: babel[2], line: Number(babel[4]), col: Number(babel[5]) + 1 }
       block.inTrace = true
       continue
     }
