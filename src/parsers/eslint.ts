@@ -1,13 +1,12 @@
 import type { Problem, Severity } from '../problem'
 
-// stylish (the default): an absolute file path, then `  3:7  error  msg  rule-id` rows under it.
-// The rule id is missing for parse errors.
+// stylish (default)
 const FILE = /^(?:\/|[A-Za-z]:[\\/])\S.*$/
 const ROW = /^\s+(\d+):(\d+)\s+(error|warning)\s+(.*?)(?:\s{2,}(\S+))?$/
-// compact: `/a.js: line 3, col 7, Error - msg (rule-id)`
+// compact
 const COMPACT =
   /^(?<file>.+): line (?<line>\d+), col (?<col>\d+), (?<kind>Error|Warning) - (?<message>.*?)(?: \((?<code>\S+)\))?$/
-// unix: `/a.js:3:7: msg [Error/rule-id]`
+// unix
 const UNIX = /^(?<file>.+?):(?<line>\d+):(?<col>\d+): (?<message>.*) \[(?<kind>Error|Warning)(?:\/(?<code>\S+))?\]$/
 
 const SEVERITY: Record<string, Severity> = { error: 'error', warning: 'warning' }

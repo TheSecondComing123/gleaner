@@ -1,16 +1,16 @@
 import type { Problem } from '../problem'
 import { FRAME, LIBRARY } from './python'
 
-// `____ test_add ____`, `____ ERROR collecting tests/x.py ____`, `____ ERROR at setup of test_y ____`
+// section headers
 const SECTION = /^_{3,} (?:ERROR collecting |ERROR at (?:setup|teardown) of )?(.+?) _{3,}$/
-// `=== short test summary info ===` and the final tally close the last section.
+// closes the last section
 const RULE = /^={3,}/
-// `tests/x.py:5: AssertionError`, `calc.py:5: in div` (--tb=short), bare `tests/x.py:3` (fixture errors)
+// `tests/x.py:5: AssertionError`
 const LOCATION = /^(.+?):(\d+)(?::(.*))?$/
 const ERROR_LINE = /^E( |$)/
-// `FAILED tests/x.py::TestA::test_b - AssertionError: msg`, `ERROR tests/x.py`
+// summary lines
 const SUMMARY = /^(?:FAILED|ERROR) (.+?)(?: - (.*))?$/
-// `--tb=line` prints one `/abs/tests/x.py:5: assert 1 == 2` per failure instead of sections.
+// --tb=line
 const TB_LINE = /^(\S.*\.py):(\d+): (.+)$/
 
 interface Section {
@@ -23,11 +23,11 @@ interface Section {
 export function pytest(lines: string[]): Problem[] {
   const problems: Problem[] = []
   const seen = new Set<string>()
-  // Sections with no location (an import file mismatch) lend their text to the summary line instead.
+  // unlocated sections lend text
   const unlocated = new Map<string, string>()
   let section: Section | undefined
   let inErrors = false
-  // Under --tb=line, the one-line failures in the FAILURES or ERRORS section, in run order.
+  // --tb=line failures, in order
   let oneLine: Problem[] | undefined
   const failures: Problem[] = []
   const errors: Problem[] = []
@@ -40,8 +40,7 @@ export function pytest(lines: string[]): Problem[] {
     const indent = Math.min(...errors.filter(Boolean).map((e) => e.search(/\S/)))
     let message = errors.filter((e) => e.trim()).map((e) => e.slice(indent))
     const user = locations.filter((l) => !LIBRARY.test(l.file))
-    // A SyntaxError while collecting only shows its real spot inside the E lines,
-    // as a `File` line, the code and a caret before the `SyntaxError:` line.
+    // SyntaxError spot is in the E lines
     const frame = message.map((m) => FRAME.exec(m)).find(Boolean)
     if (!user.length && frame) message = message.filter((m) => !m.startsWith(' '))
     const at = user.at(-1) ?? (frame ? { file: frame[1], line: Number(frame[2]), rest: '' } : undefined)
@@ -92,16 +91,15 @@ export function pytest(lines: string[]): Problem[] {
         oneLine.push(problem)
         continue
       }
-      // The summary only adds tests that had no traceback section, e.g. under --tb=no.
+      // tests without a section
       const summary = SUMMARY.exec(line)
       if (!summary) continue
       const [file, ...test] = summary[1].split('::')
       const name = test.length ? test.join('.') : file
-      // Sections are named by test alone; summary lines carry the file, so same-named tests stay apart.
+      // file keeps same names apart
       if (seen.has(name) || seen.has(summary[1])) continue
       seen.add(summary[1])
-      // Under --tb=line the failure already has its spot (maybe in a helper file); the summary lists
-      // the same failures in the same order and only adds the test's name. A strict XPASS has no spot.
+      // same order; strict XPASS has none
       const located = summary[2]?.startsWith('[XPASS')
         ? undefined
         : (line.startsWith('FAILED') ? failures : errors).shift()
@@ -122,7 +120,7 @@ export function pytest(lines: string[]): Problem[] {
     }
 
     if (ERROR_LINE.test(line)) {
-      // Only the last run of E lines is the error that ended the test.
+      // last E block only
       if (!inErrors) section.errors = []
       inErrors = true
       section.errors.push(line.slice(1))

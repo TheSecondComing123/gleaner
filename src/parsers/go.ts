@@ -1,24 +1,21 @@
 import type { Problem } from '../problem'
 
-// Build and vet: `./main.go:5:2: msg`, paths relative to where `go` ran, under `# pkg` headers.
-// Continuation lines (`have`/`want`) are tab-indented.
-// Compile and vet errors always have a column; without one, only trust lines under a `# pkg` header,
-// because `log.Lshortfile` output (`main.go:42: starting`) looks the same.
+// `./main.go:5:2: msg`
+// no column: only under `# pkg`
 const BUILD = /^(.+?\.go):(\d+)(?::(\d+))?: (.*)$/
 const PKG = /^# \S/
-// Test logs: `    util_test.go:7: msg`, path relative to the package dir; continuations indent 4 more.
+// test logs
 const LOG = /^(\s+)(\S+\.go):(\d+): (.*)$/
 const RESULT = /^\s*--- (PASS|FAIL|SKIP): (\S+)/
 const RUN = /^=== (?:RUN|PAUSE|CONT|NAME)\s+(\S+)/
 const PANIC = /^panic: (.*)$/
 const FRAME = /^\t(.+\.go):(\d+)(?: \+0x[\da-f]+)?$/
-// ponytail: guesses the panic site as the first frame outside these; a panic inside another stdlib package lands there
+// ponytail: first non-stdlib frame
 const RUNTIME = /^(?:runtime\.|testing\.|panic\(|created by )/
 
 export function go(lines: string[]): Problem[] {
   const problems: Problem[] = []
-  // `go test -v` prints a test's logs before its `--- PASS/FAIL`, and subtest and parallel
-  // results come after their parent finishes, so hold logs per test until its result.
+  // hold logs until the test's result
   const held = new Map<string, Problem[]>()
   let current = ''
   let failing = false

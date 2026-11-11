@@ -26,9 +26,7 @@ import { tsc } from './tsc'
 import { vite } from './vite'
 import { zig } from './zig'
 
-// Order matters when several parsers match the same line: the specific ones come first
-// so their richer result wins (javac over gcc for `Main.java:5: error:`, tsc over msbuild
-// for `a.ts(4,7): error TS2322`, jest over node for jest's stack frames).
+// specific parsers first
 export const parsers: Record<string, Parser> = {
   tsc,
   javac,
@@ -58,7 +56,7 @@ export const parsers: Record<string, Parser> = {
   gcc,
 }
 
-// Which parsers read the output of which command.
+// command → parsers
 const COMMANDS: Record<string, string[]> = {
   tsc: ['tsc'],
   tsgo: ['tsc'],
@@ -104,11 +102,11 @@ const COMMANDS: Record<string, string[]> = {
   zig: ['zig', 'gcc'],
   shellcheck: ['shellcheck'],
   cppcheck: ['cppcheck'],
-  // `cmake --build` runs the compiler, MSBuild on Windows.
+  // --build runs the compiler
   cmake: ['cmake', 'gcc', 'msbuild'],
 }
 
-// Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.
+// `npx tsc`, `uv run pytest`
 const WRAPPERS = new Set([
   'npx',
   'pnpx',
@@ -132,17 +130,16 @@ export function commandName(segment: string): string | undefined {
   const tokens = segment.trim().split(/\s+/)
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]
-    // ponytail: a wrapper flag that takes a value (`uv run --with x pytest`) makes `x` look like the command
+    // ponytail: `--with x` misreads x
     if (!token || token.startsWith('-') || /^\w+=/.test(token) || WRAPPERS.has(token)) continue
     const name = token.split('/').pop()
-    // `python -m pytest` runs pytest
     if (name && /^python[\d.]*$/.test(name) && tokens[i + 1] === '-m' && tokens[i + 2]) return tokens[i + 2]
     return name
   }
   return undefined
 }
 
-// Commands whose output looks like errors but isn't (`grep -n` prints `file:12:...`).
+// error-looking output, not errors
 export const DEFAULT_IGNORED = [
   'cd',
   'ls',
@@ -177,22 +174,20 @@ export const DEFAULT_IGNORED = [
 
 const PACKAGE_MANAGERS = new Set(['npm', 'pnpm', 'yarn', 'bun'])
 
-// `npm run build`, `pnpm build`, `yarn test` → `build`/`test`, when package.json has that script.
+// `npm run build` → `build`
 function scriptName(segment: string, scripts: Record<string, string>): string | undefined {
   const tokens = segment
     .trim()
     .split(/\s+/)
     .filter((token) => token && !/^\w+=/.test(token))
   if (!PACKAGE_MANAGERS.has(tokens[0] ?? '')) return undefined
-  // ponytail: a flag that takes a value (`npm --prefix web run build`) hides the script; it runs every parser
+  // ponytail: `--prefix web` hides it
   const words = tokens.slice(1).filter((token) => !token.startsWith('-'))
   const name = words[0] === 'run' || words[0] === 'run-script' ? words[1] : words[0]
   return name && Object.hasOwn(scripts, name) ? name : undefined
 }
 
-// The parsers for every known command in a chain like `cd app && tsc`. A package script is read
-// through to the commands it runs. A command we don't know (`make`) gets every parser; a match
-// only becomes a problem if its file exists, which keeps that from guessing wildly.
+// unknown commands get every parser
 export function pickParsers(
   commandLine: string,
   ignored: string[] = DEFAULT_IGNORED,
@@ -205,13 +200,12 @@ export function pickParsers(
 }
 
 function choose(commandLine: string, ignored: string[], scripts: Record<string, string>, depth: number): Set<string> {
-  // Each step of `tsc && make` picks its own parsers; a pipe's later commands can name the tool
-  // (`npx tsc | tee`) but only its first one decides whether an unknown step is ignored.
+  // per step; pipes can name the tool
   const chosen = new Set<string>()
   for (const step of split(commandLine, /&&|\|\||;/g)) {
     const pipes = split(step, /\|/g)
     const script = scriptName(pipes[0], scripts)
-    // A script that runs itself, or a long chain of them, stops here and gets every parser.
+    // recursion limit
     if (script && depth < 5) {
       for (const name of [`pre${script}`, script, `post${script}`].filter((n) => Object.hasOwn(scripts, n)))
         for (const parser of choose(scripts[name], ignored, scripts, depth + 1)) chosen.add(parser)
@@ -225,8 +219,7 @@ function choose(commandLine: string, ignored: string[], scripts: Record<string, 
   return chosen
 }
 
-// Splits at separators outside quotes: `grep "a|b" src` is one command. An escaped quote doesn't open
-// one, but `\;` still splits: it's a path ending in `\` before `;` in PowerShell.
+// outside quotes; `\;` is a pwsh path
 function split(line: string, separator: RegExp): string[] {
   const masked = line.replace(/\\["']|"(?:\\.|[^"\\])*"|'[^']*'/g, (quoted) => '_'.repeat(quoted.length))
   const parts: string[] = []
@@ -240,8 +233,7 @@ function split(line: string, separator: RegExp): string[] {
 
 const firstLine = (p: Problem) => p.message.split('\n')[0]
 
-// Runs the parsers in order and drops a problem an earlier parser already reported:
-// same file, line and first message line, and the same column when both have one.
+// dedupe across parsers
 export function parseAll(chosen: Parser[], lines: string[]): Problem[] {
   const kept: Problem[] = []
   const seen = new Map<string, Problem[]>()

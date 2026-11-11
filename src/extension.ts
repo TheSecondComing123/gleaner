@@ -8,18 +8,16 @@ import { resolveFile } from './resolve'
 
 const MAX_BYTES = 4_000_000
 const MAX_PROBLEMS = 500
-// Matches checked against the filesystem per run; unknown commands can produce many bogus ones.
 const MAX_CANDIDATES = 2000
-// read() can still be flushing its last chunk when the end event fires.
+// read() may still be flushing
 const DRAIN_MS = 500
-// Shell integration usually connects within a second or two of the terminal opening.
 const INTEGRATION_GRACE_MS = 5000
 const SHELL_INTEGRATION_DOCS = 'https://code.visualstudio.com/docs/terminal/shell-integration'
 
 interface Run {
   terminal: vscode.Terminal
   command: string
-  // Problems are grouped by command and folder, so a rerun replaces them even from another terminal.
+  // rerun replaces, any terminal
   key: string
   generation: number
   ignored: string[]
@@ -72,10 +70,10 @@ export function activate(context: vscode.ExtensionContext): void {
   }
   vscode.window.terminals.forEach(watchIntegration)
 
-  // The newest run of each command wins, even if an older one finishes resolving later.
+  // newest run wins
   const latest = new Map<string, number>()
   let nextGeneration = 0
-  // Bumped by Clear: a run that had already ended doesn't publish after it; one still running does.
+  // Clear drops ended runs
   let clears = 0
 
   const finish = async (execution: vscode.TerminalShellExecution, exitCode?: number): Promise<void> => {
@@ -85,11 +83,10 @@ export function activate(context: vscode.ExtensionContext): void {
     const cleared = clears
     await Promise.race([run.reading, new Promise((resolve) => setTimeout(resolve, DRAIN_MS))])
 
-    // Picked now, not at start: `cd web && npm run build` reads web/package.json.
+    // cwd may have changed
     const parsers = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
     const found = parseAll(parsers, clean(run.raw)).slice(0, MAX_CANDIDATES)
-    // Only a clean exit means "no problems left". A failed run with nothing readable (Ctrl+C, which
-    // is exit 130 in bash and zsh but 1 in PowerShell, or a crash we can't parse) keeps the last list.
+    // failed, nothing found: keep last
     if (exitCode !== 0 && !found.length) {
       log.appendLine(`${run.command}: exit ${exitCode ?? '?'} with no problems found, kept the last result`)
       return
@@ -166,14 +163,14 @@ export function activate(context: vscode.ExtensionContext): void {
       runs.set(execution, run)
     }),
     vscode.window.onDidEndTerminalShellExecution(({ execution, exitCode }) => void finish(execution, exitCode)),
-    // `cd sub && make` keeps the old execution.cwd; the shell reports the new one here.
+    // `cd` updates cwd here
     vscode.window.onDidChangeTerminalShellIntegration(({ terminal, shellIntegration }) => {
       if (withoutIntegration.delete(terminal)) updateStatus()
       const cwd = shellIntegration.cwd?.fsPath
       if (!cwd) return
       for (const run of runs.values()) if (run.terminal === terminal) run.cwds.push(cwd)
     }),
-    // A terminal closed mid-command never fires an end event (microsoft/vscode#341547).
+    // no end event (vscode#341547)
     vscode.window.onDidCloseTerminal((terminal) => {
       withoutIntegration.delete(terminal)
       for (const [execution, run] of runs) if (run.terminal === terminal) void finish(execution)
@@ -181,8 +178,8 @@ export function activate(context: vscode.ExtensionContext): void {
   )
 }
 
-// Passing any exclude to findFiles drops the files.exclude default, so it's added back by hand.
-// ponytail: a files.exclude glob that has its own {a,b} group nests braces, which globs don't support.
+// re-add files.exclude defaults
+// ponytail: nested braces unsupported
 function excludes(): string {
   const configured = vscode.workspace.getConfiguration('files').get<Record<string, boolean>>('exclude', {})
   const globs = Object.keys(configured).filter((glob) => configured[glob] === true)
@@ -235,17 +232,14 @@ async function toDiagnostic(
   return diagnostic
 }
 
-// Some tools print paths relative to a package, not to where the command ran
-// (`go test ./...` prints `util_test.go`). If exactly one file in the workspace
-// ends with that path, it's the one.
+// unique workspace suffix match
 async function locate(file: string, dirs: string[]): Promise<string | undefined> {
   const direct = await resolveFile(file, dirs, exists)
   if (direct || path.isAbsolute(file) || file.startsWith('..')) return direct
   const relative = file.replace(/^\.\//, '')
-  // Glob characters in a real path (`app/[id]/page.tsx`) become `?`, then the match is checked literally.
+  // glob chars → `?`, checked literally
   const glob = `**/${relative.replace(/[[\]{}*?]/g, '?')}`
-  // ponytail: up to 50 candidates, then a literal match must be unique; a name shared by more
-  // files than that (or copies in dist/) is skipped rather than guessed.
+  // ponytail: 50 candidates, else skip
   const suffix = `${path.sep}${relative.split('/').join(path.sep)}`
   const matches = (await vscode.workspace.findFiles(glob, excludes(), 50)).filter((m) => m.fsPath.endsWith(suffix))
   return matches.length === 1 ? matches[0].fsPath : undefined

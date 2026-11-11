@@ -1,17 +1,14 @@
 import type { Problem, Related } from '../problem'
 import { fromFileUrl } from '../resolve'
 
-// `    at fn (/abs/app.js:12:5)`, `    at /abs/app.js:12:5`, `    at async file:///abs/app.mjs:12:5`.
-// Native frames like `at JSON.parse (<anonymous>)` have no location. The last frame before an
-// error's properties ends in ` {`.
+// `    at fn (/abs/app.js:12:5)`
 const FRAME = /^\s+at (?:async )?(?:(.+?) \()?(?:(.+?):(\d+):(\d+)|<anonymous>)\)?(?: \{)?$/
 const CARET = /^\s*\^+$/
-// An uncaught crash starts with `/abs/app.js:12`, the source line and a caret, and ends with `Node.js v25.9.0`.
+// crash header `/abs/app.js:12`
 const HEADER = /^((?:\/|file:\/\/|[A-Za-z]:\\).+):(\d+)$/
 const VERSION = /^Node\.js v\d/
 const HINT = /^\(Use `node --trace-/
-// Without a header, the error is the last line that names one (`TypeError: x`), not the logs above it.
-// Frames under anything else (deno's `TS2322 [ERROR]`, a code frame) are not a node error.
+// last line naming an error
 const ERROR_LINE = /^(?:Uncaught )?\[?\w*(?:Error|Exception)\b/
 
 function location(path: string): string | undefined {
@@ -21,7 +18,6 @@ function location(path: string): string | undefined {
 
 export function node(lines: string[]): Problem[] {
   const problems: Problem[] = []
-  // The error text since the crash header's caret line, or since the last blank line without one.
   let text: string[] = []
   let afterCaret = false
   let header: { file: string; line: number } | undefined
@@ -36,10 +32,10 @@ export function node(lines: string[]): Problem[] {
 
   const finish = () => {
     const [first, ...rest] = crash?.frames ?? []
-    // With no user frame (a thrown string, an all-internal stack) the header still says where it crashed.
+    // no user frame: use the header
     const at = first ?? (header && afterCaret ? { ...header, col: undefined } : undefined)
     const message = crash?.message ?? errorText()
-    // jest and vitest print frames like these; with nothing above them there's no message to show.
+    // no message: skip
     if (at && message)
       problems.push({
         file: at.file,
@@ -62,12 +58,12 @@ export function node(lines: string[]): Problem[] {
       crash ??= { message: errorText(), frames: [] }
       const file = frame[2] && location(frame[2])
       const at = { file, line: Number(frame[3]), col: Number(frame[4]) }
-      // A `[cause]` stack repeats the frames it shares with the outer one.
+      // `[cause]` repeats frames
       if (file && !crash.frames.some((f) => f.file === at.file && f.line === at.line && f.col === at.col))
         crash.frames.push({ file, line: at.line, col: at.col, message: frame[1] ?? '' })
       continue
     }
-    // Error properties, `[cause]` stacks and `... N lines matching ...` stay part of the crash.
+    // still part of the crash
     if (crash && (/^\s/.test(line) || line === '}')) continue
     if (crash) finish()
     if (header && afterCaret && VERSION.test(line)) {

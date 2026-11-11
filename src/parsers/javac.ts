@@ -1,7 +1,6 @@
 import type { Problem, Severity } from '../problem'
 
-// `Main.java:5: error: msg`, then the source line, a caret line, and indented detail lines.
-// Lint warnings carry their category: `warning: [unchecked] msg`.
+// `Main.java:5: error: msg`
 const HEAD = /^(.+\.java):(\d+): (error|warning): (?:\[([\w-]+)\] )?(.*)$/
 const CARET = /^\s*\^$/
 
@@ -33,7 +32,7 @@ export function javac(lines: string[]): Problem[] {
       state = 'caret'
       continue
     }
-    // javac prints no column, but the caret line keeps the source line's tabs, so its index is the column.
+    // caret index is the column
     if (state === 'caret' && CARET.test(line)) {
       current.col = line.indexOf('^') + 1
       state = 'detail'

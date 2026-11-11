@@ -1,16 +1,14 @@
 import type { Problem } from '../problem'
 
-// `a.rb:3:in 'Object#greet': msg (NoMethodError)`, then `\tfrom a.rb:6:in '<main>'` frames.
-// Ruby before 3.4 quotes the method as `greet'.
+// `a.rb:3:in 'greet': msg (Error)`
 const HEAD = /^(.+?):(\d+):in [`']([^`']*)': (.*)$/
 const FROM = /^\tfrom (.+?):(\d+):in [`'](.*)'$/
-// `ruby -c` puts ruby's own path in front. Prism says `syntax errors found` and annotates the code
-// below; parse.y prints one `a.rb:3: syntax error, unexpected 'end'` line per error.
+// `ruby -c`: prism or parse.y
 const SYNTAX = /^(?:\S*ruby[\d.]*(?:\.exe)?: )?(.+?):(\d+): (syntax error.*?)(?: \(SyntaxError\))?$/
-// Prism's snippet: `> 5 | end` marks a line with errors, `    | ^~~ unexpected 'end'` points into it.
+// prism snippet
 const SOURCE = /^> +(\d+) \| /
 const NOTE = /^ +\| ( *)\^~* (.+)$/
-// Unix `/lib/ruby/3.4.0/`, Windows `C:\Ruby34-x64\lib\ruby\`, any installed gem, `<internal:kernel>`.
+// stdlib and gems
 const LIBRARY = /[\\/]lib[\\/]ruby[\\/]|[\\/]gems[\\/]|^<internal:/
 
 interface Frame {
@@ -36,7 +34,7 @@ export function ruby(lines: string[]): Problem[] {
         message: crash.message,
         source: 'ruby',
       }
-      // A block and the iterator that ran it share a line, so keep each spot once.
+      // block and iterator share a line
       const seen = new Set([`${at.file}:${at.line}`])
       for (const f of user) {
         const key = `${f.file}:${f.line}`
@@ -49,7 +47,7 @@ export function ruby(lines: string[]): Problem[] {
       }
       problems.push(problem)
     }
-    // Without a snippet to read, the header line is all prism gave us.
+    // no snippet: header only
     if (syntax && !syntax.notes)
       problems.push({
         file: syntax.file,

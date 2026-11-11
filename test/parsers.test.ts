@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
 import { parsers } from '../src/parsers'
 
-// test/fixtures/<parser>/<case>.txt is real terminal output; <case>.json is what we expect from it.
+// real output → expected .json
 const root = join(__dirname, 'fixtures')
 
 for (const name of readdirSync(root)) {

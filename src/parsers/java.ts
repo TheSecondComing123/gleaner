@@ -1,11 +1,10 @@
 import type { Problem } from '../problem'
 
-// `Exception in thread "main" java.lang.IllegalStateException: msg` or `Caused by: ...`, then
-// `\tat Main.load(Main.java:10)` frames, innermost first. Each exception in the chain is one problem.
+// `Exception in thread`, `Caused by:`
 const HEAD = /^(?:Exception in thread "[^"]*" |Caused by: )(.+)$/
-// Only the file name, no path; `(Native Method)` and `(Unknown Source)` have no line.
+// `(Native Method)` has no line
 const FRAME = /^\s+at (.+)\(([^():/\\]+):(\d+)\)$/
-// `java.base/java.lang.Integer.parseInt`, `jdk.compiler/com.sun...`, and Java 8's unprefixed `java.lang...`.
+// JDK frames
 const LIBRARY = /^(?:[^/]*\/)*(?:java|javax|jdk|sun|com\.sun)\./
 
 interface Frame {
@@ -24,7 +23,7 @@ export function java(lines: string[]): Problem[] {
     const at = user[0] ?? frames[0]
     if (message !== undefined && at) {
       const problem: Problem = { file: at.file, line: at.line, severity: 'error', message, source: 'java' }
-      // Recursion repeats the same frame, so keep each spot once.
+      // recursion repeats frames
       const seen = new Set([`${at.file}:${at.line}`])
       for (const f of user) {
         const key = `${f.file}:${f.line}`
@@ -54,9 +53,8 @@ export function java(lines: string[]): Problem[] {
       frames.push({ fn: frame[1], file: frame[2], line: Number(frame[3]) })
       continue
     }
-    // `... 1 more` points back at the frames of the exception above.
     if (/^\s+\.\.\. \d+ more$/.test(line)) continue
-    // Before the first frame, more lines belong to a multi-line exception message.
+    // multi-line message
     if (!frames.length) message += `\n${line}`
     else flush()
   }

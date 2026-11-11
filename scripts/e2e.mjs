@@ -1,9 +1,5 @@
-// Opens a real VS Code window with Gleaner loaded, runs `tsc` in its terminal, and checks
-// each error reaches the Problems panel under the right file. Then fixes one error and reruns
-// from a second terminal: the old problems must be replaced, not doubled. Last, an older run ending
-// after a newer one, and a Ctrl+C before any output, must both leave the newer result. Turning gleaner off
-// clears everything, even a run that was still going. Saves docs/screenshot.png.
-// usage: pnpm e2e   (needs VS Code in /Applications, or its executable in VSCODE_BIN)
+// drives real VS Code; see checks below
+// needs VS Code or VSCODE_BIN
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -44,12 +40,11 @@ export function receipt(items: Item[]): string {
 `,
 )
 
-// A folder with glob characters in its name, like a Next.js route.
+// glob chars in a folder name
 mkdirSync(join(demo, 'src', 'app', '[id]'), { recursive: true })
 writeFileSync(join(demo, 'src', 'app', '[id]', 'page.ts'), `export const id: number = 'not a number'\n`)
 
-// The same command behaving differently per run: `old` waits for `release` and prints two stacks,
-// `new` prints one at once, `hang` prints nothing until Ctrl+C.
+// modes: old, new, hang
 writeFileSync(
   join(demo, 'build.mjs'),
   `import { existsSync, readFileSync } from 'node:fs'
@@ -105,7 +100,7 @@ try {
 
   await page.keyboard.press('Control+Backquote')
   await page.waitForSelector('.xterm', { timeout: 15_000 })
-  // give shell integration time to connect before typing
+  // wait for shell integration
   await page.waitForTimeout(4000)
   await page.keyboard.type('tsc -p .')
   await page.keyboard.press('Enter')
@@ -113,7 +108,7 @@ try {
 
   await page.keyboard.press('ControlOrMeta+Shift+M')
   await page.waitForTimeout(1500)
-  // Rows come in order: a file header (no position), then its problems (with `tsc`), then related info.
+  // header row, problems, related info
   let file = ''
   const shown = []
   for (const row of await page.locator('.markers-panel .monaco-list-row').allInnerTexts()) {
@@ -143,7 +138,7 @@ try {
   await page.screenshot({ path: join(root, 'docs', 'screenshot.png') })
   console.log('saved docs/screenshot.png')
 
-  // Fix one error, then rerun the same command from a new terminal.
+  // rerun from a second terminal
   writeFileSync(
     join(demo, 'src', 'cart.ts'),
     readFileSync(join(demo, 'src', 'cart.ts'), 'utf8').replace("price: '4.50'", 'price: 4.5'),
@@ -172,7 +167,7 @@ try {
     }
   }
 
-  // An older run that ends after a newer run of the same command must not overwrite it.
+  // older run ends later
   mode('old')
   await page.keyboard.type('node build.mjs')
   await page.keyboard.press('Enter')
@@ -187,7 +182,7 @@ try {
   await page.waitForTimeout(3000)
   await status(5, 'older run ending later')
 
-  // Ctrl+C before any output keeps the last result.
+  // Ctrl+C keeps the last result
   mode('hang')
   await page.keyboard.type('node build.mjs')
   await page.keyboard.press('Enter')
@@ -196,7 +191,7 @@ try {
   await page.waitForTimeout(3000)
   await status(5, 'ctrl+c')
 
-  // Clear empties the list; a run that was still going when it was cleared publishes when it ends.
+  // Clear; a running run still publishes
   rmSync(join(demo, 'release'))
   mode('old')
   await page.keyboard.type('node build.mjs')
@@ -214,7 +209,7 @@ try {
   writeFileSync(join(demo, 'release'), '')
   await status(2, 'run going during clear')
 
-  // Turning gleaner off clears its problems, and a run still going when it's turned off adds none.
+  // turning off clears everything
   rmSync(join(demo, 'release'))
   mode('old')
   await page.keyboard.type('node build.mjs')
@@ -235,7 +230,7 @@ try {
 } finally {
   if (failed) {
     await (await app.firstWindow()).screenshot({ path: join(root, 'e2e-failure.png') })
-    // Gleaner's output channel says whether a run found nothing or found files it couldn't resolve.
+    // dump the Gleaner log
     for (const log of readdirSync(join(user, 'logs'), { recursive: true }).filter((f) => f.endsWith('Gleaner.log')))
       console.error(`--- ${log}\n${readFileSync(join(user, 'logs', log), 'utf8')}`)
   }

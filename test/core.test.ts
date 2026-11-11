@@ -34,7 +34,7 @@ describe('clean', () => {
 })
 
 describe('resolveFile', () => {
-  // resolve() so the expected paths match the OS (a drive letter on Windows).
+  // OS-native paths
   const files = new Set(['/repo/app/src/a.ts', '/repo/src/a.ts', '/abs/x.c'].map((p) => resolve(p)))
   const exists = async (p: string) => files.has(p)
 
@@ -135,7 +135,7 @@ describe('pickParsers', () => {
 })
 
 describe('python on Windows', () => {
-  // Hand-written: no Windows machine to capture from. Shape matches CPython's traceback printer.
+  // hand-written, no Windows capture
   it('skips the standard library under C:\\PythonXY\\Lib', () => {
     const lines = [
       'Traceback (most recent call last):',
@@ -152,7 +152,7 @@ describe('python on Windows', () => {
 })
 
 describe('node file URLs', () => {
-  // Hand-written like the python case above: a drive-letter URL from Windows.
+  // hand-written
   it('decodes a Windows file URL on any OS', () => {
     const lines = ['Error: boom', '    at main (file:///C:/my%20app/app.mjs:3:7)']
     expect(parsers.node(lines).map((p) => `${p.file}:${p.line}`)).toEqual(['C:/my app/app.mjs:3'])
@@ -160,7 +160,7 @@ describe('node file URLs', () => {
 })
 
 describe('ruby on Windows', () => {
-  // Hand-written: no Windows machine to capture from. RubyInstaller keeps the stdlib under C:\RubyXY-x64\lib\ruby.
+  // hand-written, no Windows capture
   it('skips the standard library under lib\\ruby', () => {
     const lines = [
       "C:/Ruby26-x64/lib/ruby/2.6.0/json/common.rb:156:in `parse': 767: unexpected token at '{nope' (JSON::ParserError)",
@@ -172,7 +172,7 @@ describe('ruby on Windows', () => {
 })
 
 describe('lua on Windows', () => {
-  // Hand-written: no Windows machine to capture from. luarocks installs modules under ...\share\lua\5.4.
+  // hand-written, no Windows capture
   it('skips luarocks modules', () => {
     const lines = [
       'lua: C:\\Users\\me\\AppData\\Roaming\\luarocks\\share\\lua\\5.4\\json.lua:12: bad json',
@@ -187,7 +187,7 @@ describe('lua on Windows', () => {
 })
 
 describe('zig on Windows', () => {
-  // Hand-written: no Windows machine to capture from. Shape matches zig's stack trace printer.
+  // hand-written, no Windows capture
   it('skips the standard library under C:\\zig\\lib\\std', () => {
     const lines = [
       'error: InvalidCharacter',
@@ -206,7 +206,7 @@ describe('parseAll', () => {
   const fixture = (path: string) => clean(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
   const expected = (path: string) => JSON.parse(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
 
-  // An unknown command runs every parser; overlapping formats must not double up or drop anything.
+  // no doubles, no drops
   const all = readdirSync(join(__dirname, 'fixtures')).flatMap((tool) =>
     readdirSync(join(__dirname, 'fixtures', tool))
       .filter((f) => f.endsWith('.txt'))

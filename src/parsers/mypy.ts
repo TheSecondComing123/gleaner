@@ -1,12 +1,9 @@
 import type { Problem, Related } from '../problem'
 
-// `x.py:3: error: msg  [code]`, with `x.py:3:5:` under --show-column-numbers.
-// Only .py files, so other tools' `file:line: error:` lines aren't read as mypy's.
+// `x.py:3: error: msg  [code]`
 const HEAD = /^(.+?\.pyi?):(\d+):(?:(\d+):)? (error|note): (.*)$/
 const CODE = / {2}\[([\w-]+)\]$/
-// --pretty wraps long messages onto unindented lines, then prints the code and caret indented.
-// These unindented lines are not part of a wrapped message: the tally and
-// --show-error-context's `x.py: note: In function "f":`.
+// --pretty wraps messages
 const STOP = /^(Found \d+ errors? in|Success: |.+?: (?:note|error): )/
 
 export function mypy(lines: string[]): Problem[] {
@@ -23,7 +20,7 @@ export function mypy(lines: string[]): Problem[] {
     const [, file, row, col, kind, message] = head
     const at = { file, line: Number(row), col: col ? Number(col) : undefined }
     const last = problems.at(-1)
-    // Notes about an error share its line. A note on its own line (reveal_type) stands alone.
+    // notes join their error
     if (kind === 'note' && last && last.file === at.file && last.line === at.line) {
       target = { ...at, message }
       last.related = [...(last.related ?? []), target]

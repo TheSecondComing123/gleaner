@@ -1,13 +1,11 @@
 import type { Problem, Severity } from '../problem'
 
-// `main.c:5:9: error: msg [-Wint-conversion]`, shared by gcc, clang and swiftc.
-// Column is optional (`file:3: error:`). Shape follows vscode-cpptools' $gcc matcher (MIT).
+// shape from cpptools' $gcc (MIT)
 const HEAD = /^(.+?):(\d+):(?:(\d+):)? (fatal error|error|warning|note|remark): (.*?)(?: \[(-W[^\]]+)\])?$/
 
 const OTHER_LANGUAGES = /\.(?:pyi?|java|[cm]?[jt]sx?|rs|go|cs)$/
 
-// shellcheck -f gcc (`[SC2086]`) and cppcheck (`[memleak]`) end messages with a check id;
-// gcc's own are flags like `[-Wformat]`.
+// shellcheck/cppcheck ids, not `-W` flags
 const OTHER_TOOLS = / \[\w+\]$/
 
 const SEVERITY: Record<string, Severity> = {
@@ -23,9 +21,9 @@ export function gcc(lines: string[]): Problem[] {
     const m = HEAD.exec(line)
     if (!m) continue
     const [, file, row, col, kind, message, flag] = m
-    // javac, mypy and others print the same shape; their own parsers read it better.
+    // javac, mypy: their parsers win
     if (OTHER_LANGUAGES.test(file) || OTHER_TOOLS.test(message)) continue
-    // A note explains the problem above it, so it rides along as related info.
+    // notes become related info
     if (kind === 'note') {
       const last = problems.at(-1)
       if (last)

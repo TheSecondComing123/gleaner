@@ -1,11 +1,9 @@
 import type { Problem, Severity } from '../problem'
 
-// One line per problem, from ruff --output-format concise, flake8 and pylint:
-// `x.py:3:5: F401 [*] msg`, `x.py:1:7: invalid-syntax: msg`, `x.py:3:5: E501 msg`,
-// `x.py:3:0: C0114: msg (missing-module-docstring)`.
-// Only .py files: gcc's `main.c:5:9: error:` and rustc's ` --> src/a.rs` have the same shape.
+// ruff concise, flake8, pylint
+// .py only
 const LINE = /^(.+?\.pyi?):(\d+):(\d+): (?!(?:error|warning|note):)([A-Z]+\d+|[a-z][\w-]*)(:?) (?:\[\*\] )?(.*)$/
-// ruff's default full format puts `F401 [*] msg` above ` --> x.py:3:5`, then a code frame.
+// ruff full format
 const HEADER = /^([A-Z]+\d+|[a-z][\w-]*):? (?:\[\*\] )?(.*)$/
 const ARROW = /^\s*--> (.+?\.pyi?):(\d+):(\d+)$/
 const PYLINT_CODE = /^[CRWEFI]\d{4}$/
@@ -41,7 +39,7 @@ export function ruff(lines: string[]): Problem[] {
       problems.push({
         file,
         line: Number(row),
-        // pylint columns are 0-based, except a syntax error's, which is Python's own 1-based offset.
+        // pylint: 0-based, except syntax errors
         col: Number(col) + (code === 'E0001' ? 0 : 1),
         severity: PYLINT_SEVERITY[code[0]] ?? 'info',
         message: message.replace(PYLINT_SYMBOL, ''),

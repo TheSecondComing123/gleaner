@@ -1,11 +1,10 @@
 import type { Problem, Severity } from '../problem'
 
-// `Program.cs(5,13): error CS0103: msg [app.csproj]`, also `(5,13,5,20)` ranges and an `N>` node prefix.
-// The terminal logger indents it and drops the project. Shape follows VS Code's $msCompile matcher (MIT).
+// shape from VS Code's $msCompile (MIT)
 const HEAD =
   /^\s*(?:\d+>)?(\S.*?)\((\d+)(?:,(\d+)(?:,(\d+),(\d+))?)?\): (?:\S+ )?(error|warning|info)(?: (\w+))?\s*: (.*?)(?: \[[^\]]+\])?$/
 
-// Restore and project errors name the project file with no position: `/abs/app.csproj : error NU1101: msg`.
+// project errors, no position
 const PROJECT =
   /^\s*(?:\d+>)?(\S.*?\.(?:csproj|fsproj|vbproj|sln|slnx|props|targets)) : (error|warning) (\w+): (.*?)(?: \[[^\]]+\])?$/
 
@@ -13,7 +12,7 @@ const SEVERITY: Record<string, Severity> = { error: 'error', warning: 'warning',
 
 export function msbuild(lines: string[]): Problem[] {
   const problems: Problem[] = []
-  // dotnet build repeats every diagnostic in its summary.
+  // summary repeats diagnostics
   const seen = new Set<string>()
   for (const line of lines) {
     const project = PROJECT.exec(line)

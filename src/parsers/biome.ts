@@ -1,8 +1,6 @@
 import type { Problem, Severity } from '../problem'
 
-// `src/a.ts:3:5 lint/suspicious/noDebugger  FIXABLE  ━━━━`, then `  × msg` after a blank line
-// (`✖`, `⚠` and `ℹ` in color).
-// Whole-file diagnostics like `src/a.ts format ━━━━` have no position.
+// `src/a.ts:3:5 lint/x/y ━━━`
 const HEAD = /^(.+?)(?::(\d+):(\d+))? ([\w/]+)(?: {2}FIXABLE )? ━+$/
 const MESSAGE = /^ {2}([×!i✖⚠ℹ]) (.*)$/
 
@@ -28,7 +26,6 @@ export function biome(lines: string[]): Problem[] {
       continue
     }
     if (current) {
-      // The message runs until the blank `  ` line before its code frame.
       if (line.trim()) current.message += `\n${line.trim()}`
       else current = undefined
       continue

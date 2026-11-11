@@ -1,16 +1,15 @@
 import type { Problem, Severity } from '../problem'
 
-// `error[E0308]: msg` then ` --> src/main.rs:4:18`. Headers with no `-->` after them
-// (`error: could not compile`, `warning: \`x\` generated 2 warnings`) are summaries, not problems.
+// `error[E0308]: msg`, then `-->`
 const HEAD = /^(error|warning)(?:\[(\w+)\])?: (.*)$/
-// Unindented `note:`/`help:` after a problem; only the ones with their own `-->` become related info.
+// `note:`/`help:` with `-->`
 const SUB = /^(?:note|help): (.*)$/
 const ARROW = /^\s*--> (.+):(\d+):(\d+)$/
-// Lint name from `= note: \`#[warn(clippy::len_zero)]\` on by default`; rustc prints it once per lint.
+// lint name
 const LINT = /^\s*= note: `#\[(?:warn|deny|forbid)\(([\w:]+)\)\]`/
-// cargo test / cargo run: `thread 'tests::adds' (7997879) panicked at src/util.rs:13:9:`, message below.
+// panics
 const PANIC = /^thread '.*'(?: \(\d+\))? panicked at (.+):(\d+):(\d+):$/
-// `--message-format short`: `src/main.rs:2:18: error[E0308]: mismatched types: expected ...`
+// --message-format short
 const SHORT = /^(.+\.rs):(\d+):(\d+): (error|warning)(?:\[(\w+)\])?: (.*)$/
 
 export function rustc(lines: string[]): Problem[] {

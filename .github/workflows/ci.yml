@@ -1,6 +1,5 @@
 name: ci
-# Private repo minutes are billed, so only code changes run it, a newer push cancels an older run,
-# and there's no macOS runner (e2e covers macOS locally).
+# billed minutes: code changes only, no macOS
 on:
   push:
     branches: [main]
@@ -32,8 +31,7 @@ jobs:
       - if: runner.os == 'Linux'
         run: pnpm lint && pnpm typecheck
       - run: pnpm test
-      # The e2e types `tsc` into VS Code's terminal, which uses the runner's default shell
-      # (bash on ubuntu, PowerShell on windows).
+      # bash on ubuntu, pwsh on windows
       - run: npm install -g typescript
       - name: download vs code
         shell: bash

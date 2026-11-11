@@ -1,17 +1,16 @@
 import type { Problem } from '../problem'
 
-// `  File "x.py", line 4, in compute`. SyntaxError frames have no `, in fn`.
+// `  File "x.py", line 4, in fn`
 export const FRAME = /^ {2}File "(.+)", line (\d+)(?:, in (.+))?$/
 const START = /^(?:Exception Group )?Traceback \(most recent call last\):$/
-// Lines that end one traceback's exception message and lead into the next.
+// starts the next traceback
 const BREAK =
   /^((?:Exception Group )?Traceback \(most recent call last\):|During handling of the above exception|The above exception was the direct cause)/
-// An ExceptionGroup draws each traceback inside a tree: `  | ` in front of every line,
-// `  + ` on the first, and `  +-+---- 1 ----` rules between the grouped exceptions.
+// ExceptionGroup tree
 const GROUP_START = /^ *\+ Exception Group Traceback/
 const GROUP_PREFIX = /^ *[+|](?: |$)/
 const GROUP_RULE = /^ *\+-/
-// Unix `/lib/python3.x/`, Windows `C:\\Python313\\Lib\\`, any `site-packages`.
+// stdlib and site-packages
 export const LIBRARY = /\/lib\/python|[\\/]Lib[\\/]|site-packages|^<frozen |^<string>$/
 
 interface Frame {
@@ -27,7 +26,7 @@ export function python(lines: string[]): Problem[] {
   let group = false
 
   for (const raw of lines) {
-    // The tree's decorations only mean something inside a group; a message line can start with `+ ` too.
+    // `+ ` is decoration only in a group
     if (GROUP_START.test(raw)) group = true
     else if (group && !GROUP_PREFIX.test(raw) && !GROUP_RULE.test(raw)) group = false
     const line = !group ? raw : GROUP_RULE.test(raw) ? '' : raw.replace(GROUP_PREFIX, '')
@@ -38,7 +37,7 @@ export function python(lines: string[]): Problem[] {
     }
     const frame = FRAME.exec(line)
     if (frame) {
-      // A SyntaxError in the script itself prints a bare `File` line with no Traceback header.
+      // bare SyntaxError frame
       current = undefined
       frames.push({ file: frame[1], line: Number(frame[2]), fn: frame[3] })
       continue
@@ -48,13 +47,12 @@ export function python(lines: string[]): Problem[] {
       else current.message += `\n${line}`
       continue
     }
-    // Code, carets and `[Previous line repeated N more times]` are all indented.
     if (!frames.length || !line || line.startsWith(' ')) continue
 
     const user = frames.filter((f) => !LIBRARY.test(f.file))
     const at = user.at(-1) ?? (frames.at(-1) as Frame)
     current = { file: at.file, line: at.line, severity: 'error', message: line, source: 'python' }
-    // Innermost caller first; recursion repeats the same frame, so keep each spot once.
+    // recursion repeats frames
     const seen = new Set([`${at.file}:${at.line}`])
     for (const f of user.reverse()) {
       const key = `${f.file}:${f.line}`

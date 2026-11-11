@@ -1,7 +1,6 @@
 import type { Problem } from '../problem'
 
-// `✘ [ERROR] msg` or `▲ [WARNING] msg [rule]`, a blank line, then `    src/a.ts:3:5:` and a code frame.
-// Notes follow as `  text`, each with its own location when it points somewhere.
+// `✘ [ERROR] msg`, then location
 const HEAD = /^[✘▲] \[(ERROR|WARNING)\] (.*?)(?: \[([\w-]+)\])?$/
 const LOCATION = /^ {4}(\S.*?):(\d+):(\d+):$/
 const NOTE = /^ {2}(\S.*)$/
@@ -35,7 +34,7 @@ export function esbuild(lines: string[]): Problem[] {
 
     const location = LOCATION.exec(line)
     if (location) {
-      // esbuild counts columns from 0.
+      // 0-based columns
       const at = { file: location[1], line: Number(location[2]), col: Number(location[3]) + 1 }
       if (!current.file && !note) {
         Object.assign(current, at)
@@ -51,7 +50,7 @@ export function esbuild(lines: string[]): Problem[] {
       flushNote()
       note = text[1]
     } else if (/^\S/.test(line)) {
-      // `1 error`, `2 warnings`: the end of the log.
+      // end of log
       flushNote()
       current = undefined
     }

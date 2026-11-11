@@ -1,21 +1,21 @@
 import type { Problem } from '../problem'
 
-// Jest: `FAIL src/a.test.js`, then a `● suite › test` block per failure.
+// jest
 const SUITE = /^\s*(?:FAIL|PASS)\s+(.+)$/
 const JEST_TEST = /^\s+● (.+)$/
-// Vitest: `FAIL  src/a.test.ts > suite > test`, or `FAIL  src/a.test.ts [ src/a.test.ts ]` when the file fails to load.
+// vitest
 const VITEST_TEST = /^\s*FAIL\s+(.+?) > (.+)$/
 const VITEST_SUITE = /^\s*FAIL\s+(.+?) \[ .+ \]$/
-// Stack frames: `at fn (src/a.js:5:15)` (jest) and `❯ fn src/a.ts:5:15` (vitest).
+// stack frames
 const AT = /^\s*at (?:.+? \()?(.+?):(\d+):(\d+)\)?$/
 const ARROW = /^\s*❯ (?:\S+ )?(.+?):(\d+):(\d+)$/
-// Vitest's parse error box: `╭─[ src/a.ts:2:6 ]`
+// vitest parse error box
 const BOX = /─\[ (.+):(\d+):(\d+) \]$/
-// Babel's syntax error, which jest prints when a file fails to parse: `SyntaxError: /abs/a.js: msg (2:5)`
+// babel syntax error
 const BABEL = /^\s*(\w*Error): (.+?): (.+) \((\d+):(\d+)\)$/
-// Code frames: `> 5 | code`, `    |   ^` (jest) and `5| code` (vitest).
+// code frames
 const FRAME = /^\s*>?\s*\d*\s?\|/
-// End of the failures: section separators and the final summary.
+// end of failures
 const END = /^(?:⎯|\s*Test (?:Suites|Files)|Summary of all failing tests)/
 
 interface Block {
@@ -50,7 +50,7 @@ export function jest(lines: string[]): Problem[] {
     const vitest = VITEST_TEST.exec(line) ?? VITEST_SUITE.exec(line)
     if (vitest) {
       const failure = { file: vitest[1], title: vitest[2] }
-      // Vitest prints one error under several FAIL lines when the tests failed the same way.
+      // one error, several FAIL lines
       if (block?.source === 'vitest' && !block.lines.length && !block.inTrace) block.titles.push(failure)
       else {
         finish()
@@ -80,7 +80,7 @@ export function jest(lines: string[]): Problem[] {
     const babel = !block.inTrace && BABEL.exec(line)
     if (babel) {
       block.lines = [`${babel[1]}: ${babel[3]}`]
-      // Babel counts columns from 0.
+      // 0-based columns
       block.at = { file: babel[2], line: Number(babel[4]), col: Number(babel[5]) + 1 }
       block.inTrace = true
       continue
@@ -91,7 +91,7 @@ export function jest(lines: string[]): Problem[] {
       if (line.trim()) block.lines.push(block.source === 'jest' ? line.replace(/^ {4}/, '') : line)
       continue
     }
-    // The first frame in the user's own code, not in a dependency.
+    // first user frame
     if (frame && !block.at && !/node_modules|^node:/.test(frame[1])) {
       block.at = { file: frame[1], line: Number(frame[2]), col: Number(frame[3]) }
     }

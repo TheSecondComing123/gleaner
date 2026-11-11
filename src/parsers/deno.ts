@@ -1,15 +1,13 @@
 import type { Problem, Related } from '../problem'
 import { fromFileUrl } from '../resolve'
 
-// `deno check`: `TS2322 [ERROR]: msg`, more message lines, the source line and its underline, then
-// `    at file:///abs/a.ts:1:7`. Related info follows indented: a note, a code frame, a deeper `at`.
+// `deno check`
 const TS_HEAD = /^(TS\d+) \[(ERROR|WARNING)\]: (.*)$/
-// `deno run`: `error: Uncaught (in promise) Error: x`, `error: SyntaxError: x`, `error: Module not found ...`,
-// then an optional code frame and the stack.
+// `deno run`
 const ERROR_HEAD = /^error: (?:Uncaught (?:\(in promise\) )?)?(.*)$/
 const FRAME = /^\s+at (?:async )?(?:(.+?) \()?(\S+?):(\d+):(\d+)\)?$/
 const UNDERLINE = /^\s*[~^]+$/
-// `deno lint`: `error[no-unused-vars]: msg`, then ` --> /abs/a.ts:1:5`. Lowercase, unlike rustc's `error[E0308]`.
+// `deno lint`
 const LINT_HEAD = /^error\[([a-z][a-z-]*)\]: (.*)$/
 const ARROW = /^\s*--> (.+):(\d+):(\d+)$/
 
@@ -53,7 +51,6 @@ export function deno(lines: string[]): Problem[] {
         : undefined
       if (at && !current.file) {
         Object.assign(current, at)
-        // Message lines continue up to the source line and its underline.
         if (current.code) {
           const extra = UNDERLINE.test(body.at(-1) ?? '') ? body.slice(0, -2) : body
           current.message = [current.message, ...extra.map((l) => l.slice(2))].join('\n')

@@ -1,9 +1,9 @@
 import type { Problem } from '../problem'
 
-// `vite build` failing in its bundler: `error during build:`, the message, then `file: /abs/a.ts:1:9`.
+// `error during build:` … `file: a.ts:1:9`
 const START = /^error during build:$/
 const FILE = /^file: (.+?)(?::(\d+):(\d+))?$/
-// Rollup puts the position in front of its message too: `src/main.ts (1:9): "x" is not exported by ...`
+// rollup's position prefix
 const POSITION = /^.+? \(\d+:\d+\): /
 
 export function vite(lines: string[]): Problem[] {
@@ -20,7 +20,7 @@ export function vite(lines: string[]): Problem[] {
       problems.push({
         file: file[1],
         line: file[2] ? Number(file[2]) : 1,
-        // Rollup counts columns from 0.
+        // 0-based columns
         col: file[3] ? Number(file[3]) + 1 : undefined,
         severity: 'error',
         message: message.join('\n').replace(POSITION, ''),
@@ -28,7 +28,7 @@ export function vite(lines: string[]): Problem[] {
       })
       message = undefined
     } else if (line) message.push(line)
-    // The `file:` line comes right after the message; a blank line means this error has none.
+    // blank line: no location
     else message = undefined
   }
   return problems

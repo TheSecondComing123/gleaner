@@ -1,7 +1,6 @@
 import * as path from 'node:path'
 
-// First existing match wins. `dirs` is in priority order: the newest cwd the shell
-// reported during the run, the cwd the command started in, then workspace folders.
+// first existing dir wins
 export async function resolveFile(
   file: string,
   dirs: string[],
@@ -16,7 +15,6 @@ export async function resolveFile(
   return undefined
 }
 
-// file:///C:/a.ts → C:/a.ts, file:///a.ts → /a.ts. Not fileURLToPath: it throws on another OS's URL
-// (a macOS path read on Windows), which would end the whole parse.
+// fileURLToPath throws cross-OS
 export const fromFileUrl = (url: string): string =>
   decodeURIComponent(new URL(url).pathname).replace(/^\/([A-Za-z]:)/, '$1')

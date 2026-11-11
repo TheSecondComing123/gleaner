@@ -1,7 +1,6 @@
 import * as vscode from 'vscode'
 
-// Problems are grouped by the run that produced them (terminal + command), so
-// rerunning a command replaces only its own problems.
+// grouped per run
 export class Problems implements vscode.Disposable {
   private readonly collection = vscode.languages.createDiagnosticCollection('gleaner')
   private readonly byRun = new Map<string, Map<string, vscode.Diagnostic[]>>()

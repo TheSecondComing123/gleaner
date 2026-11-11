@@ -1,10 +1,8 @@
 import type { Problem } from '../problem'
 
-// `CMake Error at CMakeLists.txt:3 (add_executable):` with the message indented below it.
-// Warnings can carry a kind: `(dev)`, or `(author)`/`(policy)`/`(deprecated)` since CMake 4.
-// Parse errors have no command: `CMake Error at CMakeLists.txt:4:`.
+// `CMake Error at CMakeLists.txt:3 (cmd):`
 const HEAD = /^CMake (Error|Warning|Deprecation Error|Deprecation Warning)(?: \(\w+\))? at (.+?):(\d+)(?: \(\w+\))?:$/
-// Frames under `Call Stack (most recent call first):`, e.g. `  CMakeLists.txt:6 (check_thing)`.
+// call stack frames
 const FRAME = /^ {2}(.+?):(\d+) \((\w+)\)$/
 
 export function cmake(lines: string[]): Problem[] {
@@ -31,7 +29,7 @@ export function cmake(lines: string[]): Problem[] {
     }
     if (!current) continue
     if (mode === 'message') {
-      // CMake wraps long messages at about 77 columns; a blank line separates paragraphs.
+      // wrapped at ~77 columns
       if (line.startsWith(' ')) {
         const text = line.trim()
         current.message += !current.message ? text : paragraph ? `\n${text}` : ` ${text}`

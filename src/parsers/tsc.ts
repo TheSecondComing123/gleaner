@@ -1,9 +1,8 @@
 import type { Problem, Severity } from '../problem'
 
-// `src/a.ts(4,7): error TS2322: msg` (plain) or `src/a.ts:4:7 - error TS2322: msg` (pretty).
-// Shape follows VS Code's $tsc problem matcher (MIT).
+// shape from VS Code's $tsc (MIT)
 const HEAD = /^(\S.*?)(?:\((\d+),(\d+)\): |:(\d+):(\d+) - )(error|warning|message) (TS\d+): (.*)$/
-// Pretty mode prints related locations as `  src/a.ts:6:32`, then a code frame, then the message.
+// pretty related locations
 const RELATED = /^ {2}(\S.*?):(\d+):(\d+)$/
 const FRAME = /^\s*(\d+ |~|$)/
 

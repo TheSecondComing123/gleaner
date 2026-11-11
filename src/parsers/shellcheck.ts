@@ -1,10 +1,9 @@
 import type { Problem, Severity } from '../problem'
 
-// Default tty format: `In a.sh line 3:`, the source line, then one caret line per problem:
-// `     ^---^ SC2086 (info): msg`.
+// default tty format
 const HEAD = /^In (.+) line (\d+):$/
 const CARET = /^( *)\^-*\^? (SC\d+) \((error|warning|info|style)\): (.*)$/
-// `-f gcc`: `a.sh:3:6: note: msg [SC2086]`, where note covers both info and style.
+// `-f gcc`
 const GCC = /^(.+?):(\d+):(\d+): (error|warning|note): (.*) \[(SC\d+)\]$/
 
 const SEVERITY: Record<string, Severity> = {
@@ -15,7 +14,7 @@ const SEVERITY: Record<string, Severity> = {
   note: 'info',
 }
 
-// The caret line expands tabs to stops of 8; VS Code counts a tab as one column.
+// tabs expand to 8
 function column(source: string, caret: number): number {
   let visual = 0
   for (let i = 0; i < source.length; i++) {
