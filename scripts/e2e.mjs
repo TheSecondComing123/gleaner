@@ -298,6 +298,16 @@ try {
   writeFileSync(join(demo, 'release'), '')
   await status(2, 'run going during clear')
 
+  // tsc --watch publishes each pass while it keeps running; ctrl+c keeps the last one
+  await page.keyboard.type('tsc --watch -p .')
+  await page.keyboard.press('Enter')
+  await status(6, 'watch, first pass')
+  writeFileSync(join(demo, 'src', 'app', '[id]', 'page.ts'), 'export const id: number = 1\n')
+  await status(5, 'watch, after a fix')
+  await page.keyboard.press('Control+C')
+  await page.waitForTimeout(3000)
+  await status(5, 'watch, stopped')
+
   // turning off clears everything
   rmSync(join(demo, 'release'))
   mode('old')

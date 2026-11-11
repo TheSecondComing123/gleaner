@@ -20,7 +20,7 @@ no tasks.json. no problem matchers. nothing to set up.
 
 - **zero setup.** install it and keep typing the commands you already type.
 - **40+ tools.** compilers, type checkers, linters, test runners and crash traces, out of the box.
-- **always current.** fix an error and rerun: it's gone. every other command keeps its own list.
+- **always current.** fix an error and rerun: it's gone. `tsc --watch` and vitest update on every save. every other command keeps its own list.
 - **no noise.** a problem only shows up if its file really exists, so random output never turns into fake errors.
 - **the whole story.** "declared here", compiler notes and call stacks come along with each problem.
 - **yours alone.** runs on your machine. no network, no telemetry, no account.
@@ -70,7 +70,7 @@ open a terminal in vs code and run your build, linter or tests. that's it.
 anything with vs code's shell integration: zsh, bash, fish and powershell on macos, linux and windows, plus git bash, remote ssh and wsl. `cmd`, `tmux` and a plain `ssh` you typed yourself don't report their commands, so gleaner can't see them.
 
 **does it work with watch mode?**
-not yet. `tsc --watch` never finishes, and gleaner reads a command when it ends.
+yes, for `tsc --watch` and vitest (which watches by default). each pass updates the list as you save, and stopping the watcher keeps the last one. other watchers report when you stop them.
 
 **it missed an error.**
 open an issue with the command and its raw output. every parser is tested against real output from the real tool, so your sample becomes a test.

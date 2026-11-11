@@ -5,6 +5,7 @@ import { DEFAULT_IGNORED, parseAll, pickParsers } from './parsers'
 import type { Problem } from './problem'
 import { Problems } from './problems'
 import { resolveFile } from './resolve'
+import { lastPass } from './watch'
 
 const MAX_BYTES = 4_000_000
 const MAX_PROBLEMS = 500
@@ -23,6 +24,10 @@ interface Run {
   ignored: string[]
   cwds: string[]
   raw: string
+  // how far raw was searched for a watch pass ending
+  scanned: number
+  // bumped per publish, so an older watch pass never lands after a newer one
+  cycle: number
   reading: Promise<void>
 }
 
@@ -82,10 +87,20 @@ export function activate(context: vscode.ExtensionContext): void {
     runs.delete(execution)
     const cleared = clears
     await Promise.race([run.reading, new Promise((resolve) => setTimeout(resolve, DRAIN_MS))])
+    // a watcher's results come from finished passes; ctrl+c exits tsc --watch with 0
+    if (run.cycle) {
+      log.appendLine(`${run.command}: watch stopped, kept the last pass`)
+      return
+    }
+    await publish(run, run.raw, exitCode, cleared)
+  }
 
+  // a watch pass that ended counts as a clean exit
+  const publish = async (run: Run, output: string, exitCode: number | undefined, cleared: number): Promise<void> => {
+    const cycle = ++run.cycle
     // cwd may have changed
     const parsers = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
-    const found = parseAll(parsers, clean(run.raw)).slice(0, MAX_CANDIDATES)
+    const found = parseAll(parsers, clean(output)).slice(0, MAX_CANDIDATES)
     // failed, nothing found: keep last
     if (exitCode !== 0 && !found.length) {
       log.appendLine(`${run.command}: exit ${exitCode ?? '?'} with no problems found, kept the last result`)
@@ -105,7 +120,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const real = located.filter((x): x is { problem: Problem; file: string } => x.file !== undefined)
     const kept = real.slice(0, MAX_PROBLEMS)
     const diagnostics = await Promise.all(kept.map(({ problem }) => toDiagnostic(problem, find)))
-    if (latest.get(run.key) !== run.generation || clears !== cleared) return
+    if (latest.get(run.key) !== run.generation || run.cycle !== cycle || clears !== cleared) return
 
     const files = new Map<string, vscode.Diagnostic[]>()
     for (const [i, { file }] of kept.entries()) files.set(file, [...(files.get(file) ?? []), diagnostics[i]])
@@ -153,11 +168,21 @@ export function activate(context: vscode.ExtensionContext): void {
         ignored,
         cwds: execution.cwd ? [execution.cwd.fsPath] : [],
         raw: '',
+        scanned: 0,
+        cycle: 0,
         reading: Promise.resolve(),
       }
       run.reading = (async () => {
         for await (const chunk of execution.read()) {
           if (run.raw.length < MAX_BYTES) run.raw += chunk
+          // a marker can arrive split across chunks
+          const pass = lastPass(run.raw, run.scanned - 100)
+          run.scanned = run.raw.length
+          if (!pass || runs.get(execution) !== run) continue
+          const output = run.raw.slice(pass.start, pass.end)
+          run.raw = run.raw.slice(pass.end)
+          run.scanned = run.raw.length
+          void publish(run, output, 0, clears)
         }
       })()
       runs.set(execution, run)

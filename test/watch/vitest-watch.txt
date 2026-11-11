@@ -1,0 +1,80 @@
+[?25l
+[1m[30m[44m DEV [49m[39m[22m [34mv5.1.0 [39m[90m/private/tmp/claude-501/gl-watch/vt[39m
+
+ [31m❯[39m add.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 8[2mms[22m[39m
+[31m   [31m×[31m adds[39m[32m 7[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m add.test.ts[2m > [22madds
+[31m[1mAssertionError[22m: expected 3 to be 4 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 4[39m
+[31m+ 3[39m
+
+[36m [2m❯[22m add.test.ts:[2m5:21[22m[39m
+    [90m  3|[39m
+    [90m  4|[39m [34mtest[39m([32m"adds"[39m[33m,[39m () [33m=>[39m {
+    [90m  5|[39m   [34mexpect[39m([34madd[39m([34m1[39m[33m,[39m [34m2[39m))[33m.[39m[34mtoBe[39m([34m4[39m)
+    [90m   |[39m                     [31m^[39m
+    [90m  6|[39m })
+    [90m  7|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:11:58
+[2m   Duration [22m 216ms[2m (import 38%, tests 25%, transform 23%, worker 14%)[22m
+
+[1m[30m[41m FAIL [49m[39m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[30m[44m RERUN [49m[39m[22m [34m[2madd.ts [22m[34mx1 [34m[39m
+
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:12:04
+[2m   Duration [22m 40ms
+
+[1m[30m[42m PASS [49m[39m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[30m[44m RERUN [49m[39m[22m [34m[2madd.ts [22m[34mx2 [34m[39m
+
+ [31m❯[39m add.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 9[2mms[22m[39m
+[31m   [31m×[31m adds[39m[32m 8[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m add.test.ts[2m > [22madds
+[31m[1mAssertionError[22m: expected 2 to be 4 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 4[39m
+[31m+ 2[39m
+
+[36m [2m❯[22m add.test.ts:[2m5:21[22m[39m
+    [90m  3|[39m
+    [90m  4|[39m [34mtest[39m([32m"adds"[39m[33m,[39m () [33m=>[39m {
+    [90m  5|[39m   [34mexpect[39m([34madd[39m([34m1[39m[33m,[39m [34m2[39m))[33m.[39m[34mtoBe[39m([34m4[39m)
+    [90m   |[39m                     [31m^[39m
+    [90m  6|[39m })
+    [90m  7|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 17:12:09
+[2m   Duration [22m 24ms
+
+[1m[30m[41m FAIL [49m[39m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[?25h[?25h

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
 import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
+import { lastPass } from '../src/watch'
 
 describe('clean', () => {
   it('strips colors and shell integration markers', () => {
@@ -214,5 +215,45 @@ describe('parseAll', () => {
   )
   it.each(all)('every parser on %s matches the specific parser alone', (name) => {
     expect(parseAll(Object.values(parsers), fixture(`${name}.txt`))).toEqual(expected(`${name}.json`))
+  })
+})
+
+describe('watch passes', () => {
+  const capture = (name: string) => readFileSync(join(__dirname, 'watch', name), 'utf8')
+  const problemsPerPass = (command: string, passes: string[]) =>
+    passes.map((pass) => parseAll(pickParsers(command), clean(pass)).length)
+
+  // the same loop the extension runs: search a little before where the last chunk ended
+  const split = (raw: string, chunkSize: number) => {
+    const passes: string[] = []
+    let buffer = ''
+    let scanned = 0
+    for (let i = 0; i < raw.length; i += chunkSize) {
+      buffer += raw.slice(i, i + chunkSize)
+      const pass = lastPass(buffer, scanned - 100)
+      scanned = buffer.length
+      if (!pass) continue
+      passes.push(buffer.slice(pass.start, pass.end))
+      buffer = buffer.slice(pass.end)
+      scanned = buffer.length
+    }
+    return passes
+  }
+
+  it.each([1, 7, 512])('splits tsc --watch into its passes, %i bytes at a time', (size) => {
+    expect(problemsPerPass('tsc --watch -p .', split(capture('tsc-watch.txt'), size))).toEqual([1, 0, 2])
+  })
+
+  it.each([1, 7, 512])('splits vitest watch into its passes, %i bytes at a time', (size) => {
+    expect(problemsPerPass('vitest watch', split(capture('vitest-watch.txt'), size))).toEqual([1, 0, 1])
+  })
+
+  it('keeps only the newest pass when several arrive at once', () => {
+    expect(problemsPerPass('tsc --watch -p .', split(capture('tsc-watch.txt'), 1 << 20))).toEqual([2])
+    expect(problemsPerPass('vitest watch', split(capture('vitest-watch.txt'), 1 << 20))).toEqual([1])
+  })
+
+  it('finds nothing in output that never waits', () => {
+    expect(lastPass('src/a.ts(1,1): error TS2322: x\nFound 1 error.\n')).toBeUndefined()
   })
 })
