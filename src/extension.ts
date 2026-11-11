@@ -2,7 +2,7 @@ import * as path from 'node:path'
 import * as vscode from 'vscode'
 import { clean } from './clean'
 import { DEFAULT_IGNORED, parseAll, pickParsers } from './parsers'
-import type { Parser, Problem } from './problem'
+import type { Problem } from './problem'
 import { Problems } from './problems'
 import { resolveFile } from './resolve'
 
@@ -23,7 +23,7 @@ interface Run {
   // Problems are grouped by command and folder, so a rerun replaces them even from another terminal.
   key: string
   generation: number
-  parsers: Parser[]
+  ignored: string[]
   cwds: string[]
   raw: string
   reading: Promise<void>
@@ -85,7 +85,9 @@ export function activate(context: vscode.ExtensionContext): void {
     clearTimeout(run.timer)
     await Promise.race([run.reading, new Promise((resolve) => setTimeout(resolve, DRAIN_MS))])
 
-    const found = parseAll(run.parsers, clean(run.raw)).slice(0, MAX_CANDIDATES)
+    // Picked now, not at start: `cd web && npm run build` reads web/package.json.
+    const parsers = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
+    const found = parseAll(parsers, clean(run.raw)).slice(0, MAX_CANDIDATES)
     // Ctrl+C before anything printed: keep the last full result instead of wiping it.
     if (exitCode === 130 && !found.length) return
 
@@ -127,8 +129,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidStartTerminalShellExecution(({ terminal, execution }) => {
       const config = vscode.workspace.getConfiguration('gleaner')
       if (!config.get<boolean>('enable', true)) return
-      const parsers = pickParsers(execution.commandLine.value, config.get<string[]>('ignoredCommands', DEFAULT_IGNORED))
-      if (!parsers.length) return
+      const ignored = config.get<string[]>('ignoredCommands', DEFAULT_IGNORED)
+      if (!pickParsers(execution.commandLine.value, ignored).length) return
       const command = execution.commandLine.value
       const key = `${execution.cwd?.fsPath ?? ''}\0${command.trim()}`
       const generation = nextGeneration++
@@ -138,7 +140,7 @@ export function activate(context: vscode.ExtensionContext): void {
         command,
         key,
         generation,
-        parsers,
+        ignored,
         cwds: execution.cwd ? [execution.cwd.fsPath] : [],
         raw: '',
         reading: Promise.resolve(),
@@ -169,6 +171,16 @@ export function activate(context: vscode.ExtensionContext): void {
 
 function workspaceDirs(): string[] {
   return (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath)
+}
+
+async function scriptsIn(dir: string | undefined): Promise<Record<string, string>> {
+  if (!dir) return {}
+  try {
+    const json = await vscode.workspace.fs.readFile(vscode.Uri.file(path.join(dir, 'package.json')))
+    return JSON.parse(new TextDecoder().decode(json)).scripts ?? {}
+  } catch {
+    return {}
+  }
 }
 
 async function exists(file: string): Promise<boolean> {

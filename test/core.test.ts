@@ -87,6 +87,24 @@ describe('pickParsers', () => {
     expect(pickParsers('tsc && make native')).toEqual(Object.values(parsers))
   })
 
+  it('reads package scripts through to their commands', () => {
+    const scripts = {
+      build: 'tsc -p . && vite build',
+      test: 'vitest run',
+      lint: 'NODE_ENV=ci eslint .',
+      prelint: 'tsc --noEmit',
+      check: 'pnpm lint',
+      loop: 'npm run loop',
+    }
+    expect(pickParsers('npm run build', undefined, scripts)).toEqual(Object.values(parsers))
+    expect(pickParsers('pnpm test', undefined, scripts)).toEqual([parsers.jest])
+    expect(pickParsers('yarn test --watch=false', undefined, scripts)).toEqual([parsers.jest])
+    expect(pickParsers('cd web && bun run check', undefined, scripts)).toEqual([parsers.tsc, parsers.eslint])
+    expect(pickParsers('npm run loop', undefined, scripts)).toEqual(Object.values(parsers))
+    expect(pickParsers('npm run missing', undefined, scripts)).toEqual(Object.values(parsers))
+    expect(pickParsers('npm run build', undefined, { build: 'tsc' })).toEqual([parsers.tsc])
+  })
+
   it('reads only the first command of a pipeline', () => {
     expect(pickParsers('grep -n x src | wc -l')).toEqual([])
     expect(pickParsers('cargo build 2>&1 | tee log')).toEqual([parsers.rustc])

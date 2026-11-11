@@ -138,22 +138,53 @@ export const DEFAULT_IGNORED = [
   'brew',
 ]
 
-// The parsers for every known command in a chain like `cd app && tsc`. A command we
-// don't know (`make`, `npm run build`) gets every parser; a match only becomes a
-// problem if its file exists, which keeps that from guessing wildly.
-export function pickParsers(commandLine: string, ignored: string[] = DEFAULT_IGNORED): Parser[] {
+const PACKAGE_MANAGERS = new Set(['npm', 'pnpm', 'yarn', 'bun'])
+
+// `npm run build`, `pnpm build`, `yarn test` → `build`/`test`, when package.json has that script.
+function scriptName(segment: string, scripts: Record<string, string>): string | undefined {
+  const tokens = segment
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token && !/^\w+=/.test(token))
+  if (!PACKAGE_MANAGERS.has(tokens[0] ?? '')) return undefined
+  // ponytail: a flag that takes a value (`npm --prefix web run build`) hides the script; it runs every parser
+  const words = tokens.slice(1).filter((token) => !token.startsWith('-'))
+  const name = words[0] === 'run' || words[0] === 'run-script' ? words[1] : words[0]
+  return name && Object.hasOwn(scripts, name) ? name : undefined
+}
+
+// The parsers for every known command in a chain like `cd app && tsc`. A package script is read
+// through to the commands it runs. A command we don't know (`make`) gets every parser; a match
+// only becomes a problem if its file exists, which keeps that from guessing wildly.
+export function pickParsers(
+  commandLine: string,
+  ignored: string[] = DEFAULT_IGNORED,
+  scripts: Record<string, string> = {},
+): Parser[] {
+  const chosen = choose(commandLine, ignored, scripts, 0)
+  return Object.keys(parsers)
+    .filter((name) => chosen.has(name))
+    .map((name) => parsers[name])
+}
+
+function choose(commandLine: string, ignored: string[], scripts: Record<string, string>, depth: number): Set<string> {
   // Each step of `tsc && make` picks its own parsers; a pipe's later commands can name the tool
   // (`npx tsc | tee`) but only its first one decides whether an unknown step is ignored.
   const chosen = new Set<string>()
   for (const step of commandLine.split(/&&|\|\||;/)) {
+    const script = scriptName(step.split('|')[0], scripts)
+    // A script that runs itself, or a long chain of them, stops here and gets every parser.
+    if (script && depth < 5) {
+      for (const name of [`pre${script}`, script, `post${script}`].filter((n) => Object.hasOwn(scripts, n)))
+        for (const parser of choose(scripts[name], ignored, scripts, depth + 1)) chosen.add(parser)
+      continue
+    }
     const pipes = step.split('|').map(commandName)
     const names = pipes.flatMap((command) => COMMANDS[command ?? ''] ?? [])
     if (names.length) for (const name of names) chosen.add(name)
     else if (pipes[0] && !ignored.includes(pipes[0])) for (const name of Object.keys(parsers)) chosen.add(name)
   }
-  return Object.keys(parsers)
-    .filter((name) => chosen.has(name))
-    .map((name) => parsers[name])
+  return chosen
 }
 
 const firstLine = (p: Problem) => p.message.split('\n')[0]
