@@ -1,0 +1,33 @@
+************* Module pkg.bad
+pkg/bad.py:1:7: E0001: Parsing failed: 'invalid syntax (pkg.bad, line 1)' (syntax-error)
+************* Module pkg.use
+pkg/use.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+pkg/use.py:4:0: C0116: Missing function or method docstring (missing-function-docstring)
+pkg/use.py:5:4: E1123: Unexpected keyword argument 'z' in function call (unexpected-keyword-arg)
+************* Module pkg.other
+pkg/other.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+pkg/other.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+pkg/other.py:4:0: C0413: Import "import json" should be placed at the top of the module (wrong-import-position)
+pkg/other.py:5:0: C0103: Constant name "l" doesn't conform to UPPER_CASE naming style (invalid-name)
+pkg/other.py:4:0: W0611: Unused import json (unused-import)
+************* Module pkg.app
+pkg/app.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+pkg/app.py:6:0: C0115: Missing class docstring (missing-class-docstring)
+pkg/app.py:11:0: C0116: Missing function or method docstring (missing-function-docstring)
+pkg/app.py:15:0: C0116: Missing function or method docstring (missing-function-docstring)
+pkg/app.py:19:0: C0103: Constant name "result" doesn't conform to UPPER_CASE naming style (invalid-name)
+pkg/app.py:22:0: E0602: Undefined variable 'undefined_name' (undefined-variable)
+pkg/app.py:23:0: C0103: Constant name "very_long_variable_name_for_testing" doesn't conform to UPPER_CASE naming style (invalid-name)
+pkg/app.py:24:0: E0602: Undefined variable 'reveal_type' (undefined-variable)
+pkg/app.py:2:0: W0611: Unused import sys (unused-import)
+************* Module pkg.calls
+pkg/calls.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+pkg/calls.py:1:0: C0116: Missing function or method docstring (missing-function-docstring)
+pkg/calls.py:5:0: C0115: Missing class docstring (missing-class-docstring)
+pkg/calls.py:6:4: C0116: Missing function or method docstring (missing-function-docstring)
+pkg/calls.py:7:8: E1123: Unexpected keyword argument 'z' in function call (unexpected-keyword-arg)
+pkg/calls.py:5:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+
+-----------------------------------
+Your code has been rated at 0.00/10
+

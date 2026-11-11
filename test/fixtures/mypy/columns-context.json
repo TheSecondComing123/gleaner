@@ -1,0 +1,37 @@
+[
+  {
+    "file": "pkg/calls.py",
+    "line": 7,
+    "col": 9,
+    "severity": "error",
+    "message": "Unexpected keyword argument \"z\" for \"greet\"",
+    "source": "mypy",
+    "code": "call-arg"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 8,
+    "col": 15,
+    "severity": "error",
+    "message": "Argument 1 to \"greet\" has incompatible type \"int\"; expected \"str\"",
+    "source": "mypy",
+    "code": "arg-type"
+  },
+  {
+    "file": "pkg/use.py",
+    "line": 5,
+    "col": 5,
+    "severity": "error",
+    "message": "Unexpected keyword argument \"z\" for \"greet\"",
+    "source": "mypy",
+    "related": [
+      {
+        "file": "pkg/use.py",
+        "line": 5,
+        "col": 5,
+        "message": "\"greet\" defined in \"pkg.calls\""
+      }
+    ],
+    "code": "call-arg"
+  }
+]

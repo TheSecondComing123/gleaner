@@ -1,0 +1,83 @@
+[
+  {
+    "file": "pkg/app.py",
+    "line": 2,
+    "col": 1,
+    "severity": "warning",
+    "message": "'sys' imported but unused",
+    "code": "F401",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 22,
+    "col": 1,
+    "severity": "warning",
+    "message": "undefined name 'undefined_name'",
+    "code": "F821",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 23,
+    "col": 80,
+    "severity": "warning",
+    "message": "line too long (99 > 79 characters)",
+    "code": "E501",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 24,
+    "col": 1,
+    "severity": "warning",
+    "message": "undefined name 'reveal_type'",
+    "code": "F821",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/bad.py",
+    "line": 1,
+    "col": 8,
+    "severity": "error",
+    "message": "SyntaxError: invalid syntax",
+    "code": "E999",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 1,
+    "severity": "warning",
+    "message": "'json' imported but unused",
+    "code": "F401",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 1,
+    "severity": "warning",
+    "message": "expected 2 blank lines after class or function definition, found 1",
+    "code": "E305",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 1,
+    "severity": "warning",
+    "message": "module level import not at top of file",
+    "code": "E402",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 5,
+    "col": 1,
+    "severity": "warning",
+    "message": "ambiguous variable name 'l'",
+    "code": "E741",
+    "source": "ruff"
+  }
+]

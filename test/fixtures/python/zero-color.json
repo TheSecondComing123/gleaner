@@ -1,0 +1,26 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-py/helper.py",
+    "line": 7,
+    "severity": "error",
+    "message": "ZeroDivisionError: division by zero",
+    "source": "python",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-py/zero.py",
+        "line": 4,
+        "message": "called from here, in compute"
+      },
+      {
+        "file": "/private/tmp/claude-501/gl-py/zero.py",
+        "line": 7,
+        "message": "called from here, in main"
+      },
+      {
+        "file": "/private/tmp/claude-501/gl-py/zero.py",
+        "line": 9,
+        "message": "called from here, in <module>"
+      }
+    ]
+  }
+]

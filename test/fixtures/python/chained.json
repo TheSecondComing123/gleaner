@@ -1,0 +1,30 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-py/helper.py",
+    "line": 4,
+    "severity": "error",
+    "message": "json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+    "source": "python",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-py/chained.py",
+        "line": 5,
+        "message": "called from here, in parse"
+      }
+    ]
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-py/chained.py",
+    "line": 7,
+    "severity": "error",
+    "message": "RuntimeError: bad config",
+    "source": "python",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-py/chained.py",
+        "line": 11,
+        "message": "called from here, in <module>"
+      }
+    ]
+  }
+]

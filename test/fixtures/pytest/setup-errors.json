@@ -1,0 +1,16 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-pt/tests/test_fix.py",
+    "line": 3,
+    "severity": "error",
+    "message": "fixture 'missing_fixture' not found",
+    "source": "pytest"
+  },
+  {
+    "file": "tests/test_fix.py",
+    "line": 8,
+    "severity": "error",
+    "message": "RuntimeError: setup failed",
+    "source": "pytest"
+  }
+]

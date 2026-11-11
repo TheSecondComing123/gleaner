@@ -1,0 +1,37 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-py/syn.py",
+    "line": 1,
+    "severity": "error",
+    "message": "SyntaxError: invalid syntax",
+    "source": "python"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-py/multi.py",
+    "line": 5,
+    "severity": "error",
+    "message": "E: first line\nsecond line",
+    "source": "python",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-py/multi.py",
+        "line": 7,
+        "message": "called from here, in <module>"
+      }
+    ]
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-py/rec.py",
+    "line": 2,
+    "severity": "error",
+    "message": "RecursionError: maximum recursion depth exceeded",
+    "source": "python",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-py/rec.py",
+        "line": 4,
+        "message": "called from here, in <module>"
+      }
+    ]
+  }
+]

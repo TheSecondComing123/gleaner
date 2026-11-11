@@ -1,0 +1,50 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-lint2/bad.py",
+    "line": 1,
+    "col": 6,
+    "severity": "error",
+    "message": "\"(\" was not closed",
+    "source": "pyright"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint2/bad.py",
+    "line": 1,
+    "col": 7,
+    "severity": "error",
+    "message": "Expected parameter name",
+    "source": "pyright"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint2/bad.py",
+    "line": 1,
+    "col": 7,
+    "severity": "error",
+    "message": "Position-only parameter separator not allowed as first parameter",
+    "source": "pyright"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint2/bad.py",
+    "line": 2,
+    "col": 1,
+    "severity": "error",
+    "message": "Expected expression",
+    "source": "pyright"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint2/bad.py",
+    "line": 2,
+    "col": 1,
+    "severity": "error",
+    "message": "Expected \":\"",
+    "source": "pyright"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint2/bad.py",
+    "line": 2,
+    "col": 1,
+    "severity": "error",
+    "message": "Statements must be separated by newlines or semicolons",
+    "source": "pyright"
+  }
+]

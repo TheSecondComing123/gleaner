@@ -1,0 +1,51 @@
+[
+  {
+    "file": "tests/test_calc.py",
+    "line": 5,
+    "severity": "error",
+    "message": "assert -1 == 3\n +  where -1 = add(1, 2)",
+    "source": "pytest"
+  },
+  {
+    "file": "calc.py",
+    "line": 5,
+    "severity": "error",
+    "message": "ZeroDivisionError: division by zero",
+    "source": "pytest",
+    "related": [
+      {
+        "file": "tests/test_calc.py",
+        "line": 8,
+        "message": "called from here"
+      }
+    ]
+  },
+  {
+    "file": "tests/test_calc.py",
+    "line": 15,
+    "severity": "error",
+    "message": "AssertionError: assert {'a': 1, 'b': 2} == {'a': 1, 'b': 3}\n  Omitting 1 identical items, use -vv to show\n  Differing items:\n  {'b': 2} != {'b': 3}\n  Use -v to get more diff",
+    "source": "pytest"
+  },
+  {
+    "file": "tests/test_calc.py",
+    "line": 19,
+    "severity": "error",
+    "message": "assert 2 == 1",
+    "source": "pytest"
+  },
+  {
+    "file": "tests/test_calc.py",
+    "line": 22,
+    "severity": "error",
+    "message": "AssertionError: v too small\nassert 3 > 5",
+    "source": "pytest",
+    "related": [
+      {
+        "file": "tests/test_calc.py",
+        "line": 25,
+        "message": "called from here"
+      }
+    ]
+  }
+]

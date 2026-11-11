@@ -1,0 +1,16 @@
+[
+  {
+    "file": "tests/test_broken.py",
+    "line": 1,
+    "severity": "error",
+    "message": "ModuleNotFoundError: No module named 'nonexistent_mod'",
+    "source": "pytest"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-pt2/tests/test_syn.py",
+    "line": 1,
+    "severity": "error",
+    "message": "SyntaxError: invalid syntax",
+    "source": "pytest"
+  }
+]

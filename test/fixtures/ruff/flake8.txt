@@ -1,0 +1,9 @@
+pkg/app.py:2:1: F401 'sys' imported but unused
+pkg/app.py:22:1: F821 undefined name 'undefined_name'
+pkg/app.py:23:80: E501 line too long (99 > 79 characters)
+pkg/app.py:24:1: F821 undefined name 'reveal_type'
+pkg/bad.py:1:8: E999 SyntaxError: invalid syntax
+pkg/other.py:4:1: F401 'json' imported but unused
+pkg/other.py:4:1: E305 expected 2 blank lines after class or function definition, found 1
+pkg/other.py:4:1: E402 module level import not at top of file
+pkg/other.py:5:1: E741 ambiguous variable name 'l'

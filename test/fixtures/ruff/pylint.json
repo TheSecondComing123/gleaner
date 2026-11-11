@@ -1,0 +1,218 @@
+[
+  {
+    "file": "pkg/bad.py",
+    "line": 1,
+    "col": 7,
+    "severity": "error",
+    "message": "Parsing failed: 'invalid syntax (pkg.bad, line 1)'",
+    "code": "E0001",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/use.py",
+    "line": 1,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing module docstring",
+    "code": "C0114",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/use.py",
+    "line": 4,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing function or method docstring",
+    "code": "C0116",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/use.py",
+    "line": 5,
+    "col": 5,
+    "severity": "error",
+    "message": "Unexpected keyword argument 'z' in function call",
+    "code": "E1123",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 1,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing module docstring",
+    "code": "C0114",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 1,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing function or method docstring",
+    "code": "C0116",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 1,
+    "severity": "info",
+    "message": "Import \"import json\" should be placed at the top of the module",
+    "code": "C0413",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 5,
+    "col": 1,
+    "severity": "info",
+    "message": "Constant name \"l\" doesn't conform to UPPER_CASE naming style",
+    "code": "C0103",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 1,
+    "severity": "warning",
+    "message": "Unused import json",
+    "code": "W0611",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 1,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing module docstring",
+    "code": "C0114",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 6,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing class docstring",
+    "code": "C0115",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 11,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing function or method docstring",
+    "code": "C0116",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 15,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing function or method docstring",
+    "code": "C0116",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 19,
+    "col": 1,
+    "severity": "info",
+    "message": "Constant name \"result\" doesn't conform to UPPER_CASE naming style",
+    "code": "C0103",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 22,
+    "col": 1,
+    "severity": "error",
+    "message": "Undefined variable 'undefined_name'",
+    "code": "E0602",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 23,
+    "col": 1,
+    "severity": "info",
+    "message": "Constant name \"very_long_variable_name_for_testing\" doesn't conform to UPPER_CASE naming style",
+    "code": "C0103",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 24,
+    "col": 1,
+    "severity": "error",
+    "message": "Undefined variable 'reveal_type'",
+    "code": "E0602",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 2,
+    "col": 1,
+    "severity": "warning",
+    "message": "Unused import sys",
+    "code": "W0611",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 1,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing module docstring",
+    "code": "C0114",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 1,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing function or method docstring",
+    "code": "C0116",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 5,
+    "col": 1,
+    "severity": "info",
+    "message": "Missing class docstring",
+    "code": "C0115",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 6,
+    "col": 5,
+    "severity": "info",
+    "message": "Missing function or method docstring",
+    "code": "C0116",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 7,
+    "col": 9,
+    "severity": "error",
+    "message": "Unexpected keyword argument 'z' in function call",
+    "code": "E1123",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 5,
+    "col": 1,
+    "severity": "info",
+    "message": "Too few public methods (1/2)",
+    "code": "R0903",
+    "source": "ruff"
+  }
+]

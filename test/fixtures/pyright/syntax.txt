@@ -1,0 +1,8 @@
+/private/tmp/claude-501/gl-lint2/bad.py
+  /private/tmp/claude-501/gl-lint2/bad.py:1:6 - error: "(" was not closed
+  /private/tmp/claude-501/gl-lint2/bad.py:1:7 - error: Expected parameter name
+  /private/tmp/claude-501/gl-lint2/bad.py:1:7 - error: Position-only parameter separator not allowed as first parameter
+  /private/tmp/claude-501/gl-lint2/bad.py:2:1 - error: Expected expression
+  /private/tmp/claude-501/gl-lint2/bad.py:2:1 - error: Expected ":"
+  /private/tmp/claude-501/gl-lint2/bad.py:2:1 - error: Statements must be separated by newlines or semicolons
+6 errors, 0 warnings, 0 informations

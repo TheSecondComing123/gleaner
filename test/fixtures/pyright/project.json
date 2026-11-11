@@ -1,0 +1,82 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 2,
+    "col": 8,
+    "severity": "warning",
+    "message": "Import \"sys\" is not accessed",
+    "source": "pyright",
+    "code": "reportUnusedImport"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 19,
+    "col": 15,
+    "severity": "error",
+    "message": "Type \"int\" is not assignable to declared type \"str\"\n\"int\" is not assignable to \"str\"",
+    "source": "pyright",
+    "code": "reportAssignmentType"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 20,
+    "col": 26,
+    "severity": "error",
+    "message": "Type \"dict[str, int | str]\" is not assignable to declared type \"Point\"\n\"Literal['two']\" is not assignable to \"int\"",
+    "source": "pyright",
+    "code": "reportAssignmentType"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 21,
+    "col": 7,
+    "severity": "error",
+    "message": "Argument of type \"Literal[5]\" cannot be assigned to parameter \"name\" of type \"str\" in function \"greet\"\n\"Literal[5]\" is not assignable to \"str\"",
+    "source": "pyright",
+    "code": "reportArgumentType"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 22,
+    "col": 1,
+    "severity": "error",
+    "message": "\"undefined_name\" is not defined",
+    "source": "pyright",
+    "code": "reportUndefinedVariable"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 24,
+    "col": 13,
+    "severity": "info",
+    "message": "Type of \"result\" is \"str\"",
+    "source": "pyright"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 25,
+    "col": 5,
+    "severity": "error",
+    "message": "No overloads for \"join\" match the provided arguments",
+    "source": "pyright",
+    "code": "reportCallIssue"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/app.py",
+    "line": 25,
+    "col": 23,
+    "severity": "error",
+    "message": "Argument of type \"None\" cannot be assigned to parameter \"paths\" of type \"StrPath\" in function \"join\"\nType \"None\" is not assignable to type \"StrPath\"\n  \"None\" is not assignable to \"str\"\n  \"None\" is incompatible with protocol \"PathLike[str]\"\n    \"__fspath__\" is not present",
+    "source": "pyright",
+    "code": "reportArgumentType"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-lint/pkg/other.py",
+    "line": 4,
+    "col": 8,
+    "severity": "warning",
+    "message": "Import \"json\" is not accessed",
+    "source": "pyright",
+    "code": "reportUnusedImport"
+  }
+]

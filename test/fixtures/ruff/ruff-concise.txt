@@ -1,0 +1,11 @@
+pkg/app.py:2:8: F401 [*] `sys` imported but unused
+pkg/app.py:22:1: F821 Undefined name `undefined_name`
+pkg/app.py:23:89: E501 Line too long (99 > 88)
+pkg/app.py:24:1: F821 Undefined name `reveal_type`
+pkg/bad.py:1:7: invalid-syntax: Expected a parameter or the end of the parameter list
+pkg/bad.py:2:1: invalid-syntax: unexpected EOF while parsing
+pkg/other.py:4:1: E402 Module level import not at top of file
+pkg/other.py:4:8: F401 [*] `json` imported but unused
+pkg/other.py:5:1: E741 Ambiguous variable name: `l`
+Found 9 errors.
+[*] 2 fixable with `--fix`.

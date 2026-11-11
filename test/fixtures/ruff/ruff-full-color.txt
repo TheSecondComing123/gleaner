@@ -1,0 +1,82 @@
+[1m[91mF401[0m [[1m[96m*[0m][1m `sys` imported but unused[0m
+ [1m[94m--> [0mpkg/app.py:2:8
+  [1m[94m|[0m
+[1m[94m1[0m [1m[94m|[0m import os
+[1m[94m2[0m [1m[94m|[0m import sys
+  [1m[94m|[0m        [1m[91m^^^[0m
+[1m[94m3[0m [1m[94m|[0m from typing import TypedDict
+  [1m[94m|[0m
+[1m[96mhelp[0m[1m: Remove unused import: `sys`[0m
+[1m[94m [0m [1m[94m|[0m
+[1m[94m1[0m [1m[94m|[0m import os
+[1m[94m [0m [1m[31m-[0m [31mimport sys
+[0m[1m[94m2[0m [1m[94m|[0m from typing import TypedDict
+[1m[94m [0m [1m[94m|[0m
+
+[1m[91mF821[0m[1m Undefined name `undefined_name`[0m
+  [1m[94m--> [0mpkg/app.py:22:1
+   [1m[94m|[0m
+[1m[94m20[0m [1m[94m|[0m p: Point = {"x": 1, "y": "two"}
+[1m[94m21[0m [1m[94m|[0m greet(5)
+[1m[94m22[0m [1m[94m|[0m undefined_name.foo()
+   [1m[94m|[0m [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m23[0m [1m[94m|[0m very_long_variable_name_for_testing = "this line is definitely going to be way too long for flake8"
+[1m[94m24[0m [1m[94m|[0m reveal_type(result)
+   [1m[94m|[0m
+
+[1m[91mF821[0m[1m Undefined name `reveal_type`[0m
+  [1m[94m--> [0mpkg/app.py:24:1
+   [1m[94m|[0m
+[1m[94m22[0m [1m[94m|[0m undefined_name.foo()
+[1m[94m23[0m [1m[94m|[0m very_long_variable_name_for_testing = "this line is definitely going to be way too long for flake8"
+[1m[94m24[0m [1m[94m|[0m reveal_type(result)
+   [1m[94m|[0m [1m[91m^^^^^^^^^^^[0m
+[1m[94m25[0m [1m[94m|[0m x = os.path.join("a", None)
+   [1m[94m|[0m
+
+[1m[91minvalid-syntax:[0m[1m Expected a parameter or the end of the parameter list[0m
+ [1m[94m--> [0mpkg/bad.py:1:7
+  [1m[94m|[0m
+[1m[94m1[0m [1m[94m|[0m def f(:
+  [1m[94m|[0m       [1m[91m^[0m
+
+[1m[91minvalid-syntax:[0m[1m unexpected EOF while parsing[0m
+ [1m[94m--> [0mpkg/bad.py:1:9
+  [1m[94m|[0m
+[1m[94m1[0m [1m[94m|[0m def f(:
+  [1m[94m|[0m        [1m[91m^[0m
+
+[1m[91mI001[0m [[1m[96m*[0m][1m Import block is un-sorted or un-formatted[0m
+ [1m[94m--> [0mpkg/other.py:4:1
+  [1m[94m|[0m
+[1m[94m2[0m [1m[94m|[0m     return x.nope
+[1m[94m3[0m [1m[94m|[0m
+[1m[94m4[0m [1m[94m|[0m import json
+  [1m[94m|[0m [1m[91m^^^^^^^^^^^[0m
+[1m[94m5[0m [1m[94m|[0m l = 1
+  [1m[94m|[0m
+[1m[96mhelp[0m[1m: Organize imports[0m
+[1m[94m [0m [1m[94m|[0m
+[1m[94m4[0m [1m[94m|[0m import json
+[1m[94m5[0m [1m[32m+[0m[32m
+[0m[1m[94m6[0m [1m[94m|[0m l = 1
+[1m[94m [0m [1m[94m|[0m
+
+[1m[91mF401[0m [[1m[96m*[0m][1m `json` imported but unused[0m
+ [1m[94m--> [0mpkg/other.py:4:8
+  [1m[94m|[0m
+[1m[94m2[0m [1m[94m|[0m     return x.nope
+[1m[94m3[0m [1m[94m|[0m
+[1m[94m4[0m [1m[94m|[0m import json
+  [1m[94m|[0m        [1m[91m^^^^[0m
+[1m[94m5[0m [1m[94m|[0m l = 1
+  [1m[94m|[0m
+[1m[96mhelp[0m[1m: Remove unused import: `json`[0m
+[1m[94m [0m [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m
+[1m[94m [0m [1m[31m-[0m [31mimport json
+[0m[1m[94m4[0m [1m[94m|[0m l = 1
+[1m[94m [0m [1m[94m|[0m
+
+Found 7 errors.
+[[36m*[0m] 3 fixable with `--fix`.

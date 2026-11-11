@@ -1,0 +1,24 @@
+  File "/private/tmp/claude-501/gl-py/syn.py", line 1
+    def f(:
+          ^
+SyntaxError: invalid syntax
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/gl-py/multi.py", line 7, in <module>
+    go()
+    ~~^^
+  File "/private/tmp/claude-501/gl-py/multi.py", line 5, in go
+    raise E("first line\nsecond line")
+E: first line
+second line
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/gl-py/rec.py", line 4, in <module>
+    r(0)
+    ~^^^
+  File "/private/tmp/claude-501/gl-py/rec.py", line 2, in r
+    return r(n + 1)
+  File "/private/tmp/claude-501/gl-py/rec.py", line 2, in r
+    return r(n + 1)
+  File "/private/tmp/claude-501/gl-py/rec.py", line 2, in r
+    return r(n + 1)
+  [Previous line repeated 996 more times]
+RecursionError: maximum recursion depth exceeded

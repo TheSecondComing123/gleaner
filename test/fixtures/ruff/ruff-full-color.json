@@ -1,0 +1,65 @@
+[
+  {
+    "file": "pkg/app.py",
+    "line": 2,
+    "col": 8,
+    "severity": "warning",
+    "message": "`sys` imported but unused",
+    "code": "F401",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 22,
+    "col": 1,
+    "severity": "warning",
+    "message": "Undefined name `undefined_name`",
+    "code": "F821",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 24,
+    "col": 1,
+    "severity": "warning",
+    "message": "Undefined name `reveal_type`",
+    "code": "F821",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/bad.py",
+    "line": 1,
+    "col": 7,
+    "severity": "error",
+    "message": "Expected a parameter or the end of the parameter list",
+    "code": "invalid-syntax",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/bad.py",
+    "line": 1,
+    "col": 9,
+    "severity": "error",
+    "message": "unexpected EOF while parsing",
+    "code": "invalid-syntax",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 1,
+    "severity": "warning",
+    "message": "Import block is un-sorted or un-formatted",
+    "code": "I001",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 8,
+    "severity": "warning",
+    "message": "`json` imported but unused",
+    "code": "F401",
+    "source": "ruff"
+  }
+]

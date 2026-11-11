@@ -1,0 +1,83 @@
+[
+  {
+    "file": "pkg/app.py",
+    "line": 2,
+    "col": 8,
+    "severity": "warning",
+    "message": "`sys` imported but unused",
+    "code": "F401",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 22,
+    "col": 1,
+    "severity": "warning",
+    "message": "Undefined name `undefined_name`",
+    "code": "F821",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 23,
+    "col": 89,
+    "severity": "warning",
+    "message": "Line too long (99 > 88)",
+    "code": "E501",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 24,
+    "col": 1,
+    "severity": "warning",
+    "message": "Undefined name `reveal_type`",
+    "code": "F821",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/bad.py",
+    "line": 1,
+    "col": 7,
+    "severity": "error",
+    "message": "Expected a parameter or the end of the parameter list",
+    "code": "invalid-syntax",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/bad.py",
+    "line": 2,
+    "col": 1,
+    "severity": "error",
+    "message": "unexpected EOF while parsing",
+    "code": "invalid-syntax",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 1,
+    "severity": "warning",
+    "message": "Module level import not at top of file",
+    "code": "E402",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 4,
+    "col": 8,
+    "severity": "warning",
+    "message": "`json` imported but unused",
+    "code": "F401",
+    "source": "ruff"
+  },
+  {
+    "file": "pkg/other.py",
+    "line": 5,
+    "col": 1,
+    "severity": "warning",
+    "message": "Ambiguous variable name: `l`",
+    "code": "E741",
+    "source": "ruff"
+  }
+]

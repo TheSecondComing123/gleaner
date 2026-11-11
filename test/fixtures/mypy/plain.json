@@ -1,0 +1,102 @@
+[
+  {
+    "file": "pkg/calls.py",
+    "line": 7,
+    "severity": "error",
+    "message": "Unexpected keyword argument \"z\" for \"greet\"",
+    "source": "mypy",
+    "code": "call-arg"
+  },
+  {
+    "file": "pkg/calls.py",
+    "line": 8,
+    "severity": "error",
+    "message": "Argument 1 to \"greet\" has incompatible type \"int\"; expected \"str\"",
+    "source": "mypy",
+    "code": "arg-type"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 19,
+    "severity": "error",
+    "message": "Incompatible types in assignment (expression has type \"int\", variable has type \"str\")",
+    "source": "mypy",
+    "code": "assignment"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 20,
+    "severity": "error",
+    "message": "Incompatible types (expression has type \"str\", TypedDict item \"y\" has type \"int\")",
+    "source": "mypy",
+    "code": "typeddict-item"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 21,
+    "severity": "error",
+    "message": "Argument 1 to \"greet\" has incompatible type \"int\"; expected \"str\"",
+    "source": "mypy",
+    "code": "arg-type"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 22,
+    "severity": "error",
+    "message": "Name \"undefined_name\" is not defined",
+    "source": "mypy",
+    "code": "name-defined"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 24,
+    "severity": "info",
+    "message": "Revealed type is \"str\"",
+    "source": "mypy"
+  },
+  {
+    "file": "pkg/app.py",
+    "line": 25,
+    "severity": "error",
+    "message": "No overload variant of \"join\" matches argument types \"str\", \"None\"",
+    "source": "mypy",
+    "related": [
+      {
+        "file": "pkg/app.py",
+        "line": 25,
+        "message": "Possible overload variants:"
+      },
+      {
+        "file": "pkg/app.py",
+        "line": 25,
+        "message": "    def join(str, /, *paths: str) -> str"
+      },
+      {
+        "file": "pkg/app.py",
+        "line": 25,
+        "message": "    def join(str | PathLike[str], /, *paths: str | PathLike[str]) -> str"
+      },
+      {
+        "file": "pkg/app.py",
+        "line": 25,
+        "message": "    def join(bytes | PathLike[bytes], /, *paths: bytes | PathLike[bytes]) -> bytes"
+      }
+    ],
+    "code": "call-overload"
+  },
+  {
+    "file": "pkg/use.py",
+    "line": 5,
+    "severity": "error",
+    "message": "Unexpected keyword argument \"z\" for \"greet\"",
+    "source": "mypy",
+    "related": [
+      {
+        "file": "pkg/use.py",
+        "line": 5,
+        "message": "\"greet\" defined in \"pkg.calls\""
+      }
+    ],
+    "code": "call-arg"
+  }
+]

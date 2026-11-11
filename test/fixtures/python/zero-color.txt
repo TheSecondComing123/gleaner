@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File [35m"/private/tmp/claude-501/gl-py/zero.py"[0m, line [35m9[0m, in [35m<module>[0m
+    [31mmain[0m[1;31m()[0m
+    [31m~~~~[0m[1;31m^^[0m
+  File [35m"/private/tmp/claude-501/gl-py/zero.py"[0m, line [35m7[0m, in [35mmain[0m
+    print([31mcompute[0m[1;31m(10)[0m)
+          [31m~~~~~~~[0m[1;31m^^^^[0m
+  File [35m"/private/tmp/claude-501/gl-py/zero.py"[0m, line [35m4[0m, in [35mcompute[0m
+    return divide(x, 0)
+  File [35m"/private/tmp/claude-501/gl-py/helper.py"[0m, line [35m7[0m, in [35mdivide[0m
+    return [31ma [0m[1;31m/[0m[31m b[0m
+           [31m~~[0m[1;31m^[0m[31m~~[0m
+[1;35mZeroDivisionError[0m: [35mdivision by zero[0m

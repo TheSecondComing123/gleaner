@@ -1,0 +1,19 @@
+/private/tmp/claude-501/gl-lint/pkg/app.py
+  /private/tmp/claude-501/gl-lint/pkg/app.py:2:8 - warning: Import "sys" is not accessed (reportUnusedImport)
+  /private/tmp/claude-501/gl-lint/pkg/app.py:19:15 - error: Type "int" is not assignable to declared type "str"
+    "int" is not assignable to "str" (reportAssignmentType)
+  /private/tmp/claude-501/gl-lint/pkg/app.py:20:26 - error: Type "dict[str, int | str]" is not assignable to declared type "Point"
+    "Literal['two']" is not assignable to "int" (reportAssignmentType)
+  /private/tmp/claude-501/gl-lint/pkg/app.py:21:7 - error: Argument of type "Literal[5]" cannot be assigned to parameter "name" of type "str" in function "greet"
+    "Literal[5]" is not assignable to "str" (reportArgumentType)
+  /private/tmp/claude-501/gl-lint/pkg/app.py:22:1 - error: "undefined_name" is not defined (reportUndefinedVariable)
+  /private/tmp/claude-501/gl-lint/pkg/app.py:24:13 - information: Type of "result" is "str"
+  /private/tmp/claude-501/gl-lint/pkg/app.py:25:5 - error: No overloads for "join" match the provided arguments (reportCallIssue)
+  /private/tmp/claude-501/gl-lint/pkg/app.py:25:23 - error: Argument of type "None" cannot be assigned to parameter "paths" of type "StrPath" in function "join"
+    Type "None" is not assignable to type "StrPath"
+      "None" is not assignable to "str"
+      "None" is incompatible with protocol "PathLike[str]"
+        "__fspath__" is not present (reportArgumentType)
+/private/tmp/claude-501/gl-lint/pkg/other.py
+  /private/tmp/claude-501/gl-lint/pkg/other.py:4:8 - warning: Import "json" is not accessed (reportUnusedImport)
+6 errors, 2 warnings, 1 information

@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.10.22, pytest-9.0.3, pluggy-1.6.0
+rootdir: /private/tmp/claude-501/gl-pt
+plugins: cov-7.1.0
+collected 2 items
+
+tests/test_fix.py EE                                                     [100%]
+
+==================================== ERRORS ====================================
+_________________________ ERROR at setup of test_needs _________________________
+file /private/tmp/claude-501/gl-pt/tests/test_fix.py, line 3
+  def test_needs(missing_fixture):
+E       fixture 'missing_fixture' not found
+>       available fixtures: boom, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, cov, doctest_namespace, monkeypatch, no_cover, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/private/tmp/claude-501/gl-pt/tests/test_fix.py:3
+_________________________ ERROR at setup of test_boom __________________________
+
+    @pytest.fixture
+    def boom():
+>       raise RuntimeError("setup failed")
+E       RuntimeError: setup failed
+
+tests/test_fix.py:8: RuntimeError
+=========================== short test summary info ============================
+ERROR tests/test_fix.py::test_needs
+ERROR tests/test_fix.py::test_boom - RuntimeError: setup failed
+============================== 2 errors in 0.01s ===============================

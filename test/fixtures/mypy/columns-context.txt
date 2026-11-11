@@ -1,0 +1,7 @@
+pkg/calls.py: note: In member "run" of class "A":
+pkg/calls.py:7:9: error: Unexpected keyword argument "z" for "greet"  [call-arg]
+pkg/calls.py:8:15: error: Argument 1 to "greet" has incompatible type "int"; expected "str"  [arg-type]
+pkg/use.py: note: In function "main":
+pkg/use.py:5:5: error: Unexpected keyword argument "z" for "greet"  [call-arg]
+pkg/use.py:5:5: note: "greet" defined in "pkg.calls"
+Found 3 errors in 2 files (checked 2 source files)

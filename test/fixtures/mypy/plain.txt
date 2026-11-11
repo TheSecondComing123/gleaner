@@ -1,0 +1,15 @@
+pkg/calls.py:7: error: Unexpected keyword argument "z" for "greet"  [call-arg]
+pkg/calls.py:8: error: Argument 1 to "greet" has incompatible type "int"; expected "str"  [arg-type]
+pkg/app.py:19: error: Incompatible types in assignment (expression has type "int", variable has type "str")  [assignment]
+pkg/app.py:20: error: Incompatible types (expression has type "str", TypedDict item "y" has type "int")  [typeddict-item]
+pkg/app.py:21: error: Argument 1 to "greet" has incompatible type "int"; expected "str"  [arg-type]
+pkg/app.py:22: error: Name "undefined_name" is not defined  [name-defined]
+pkg/app.py:24: note: Revealed type is "str"
+pkg/app.py:25: error: No overload variant of "join" matches argument types "str", "None"  [call-overload]
+pkg/app.py:25: note: Possible overload variants:
+pkg/app.py:25: note:     def join(str, /, *paths: str) -> str
+pkg/app.py:25: note:     def join(str | PathLike[str], /, *paths: str | PathLike[str]) -> str
+pkg/app.py:25: note:     def join(bytes | PathLike[bytes], /, *paths: bytes | PathLike[bytes]) -> bytes
+pkg/use.py:5: error: Unexpected keyword argument "z" for "greet"  [call-arg]
+pkg/use.py:5: note: "greet" defined in "pkg.calls"
+Found 8 errors in 3 files (checked 5 source files)
