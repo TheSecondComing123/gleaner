@@ -1,0 +1,8 @@
+/Users/alanbagel/.rbenv/versions/4.0.5/lib/ruby/gems/4.0.0/gems/json-2.19.4/lib/json/common.rb:355:in 'JSON::Ext::Parser.parse': expected object key, got 'nope' at line 1 column 2 (JSON::ParserError)
+	from /Users/alanbagel/.rbenv/versions/4.0.5/lib/ruby/gems/4.0.0/gems/json-2.19.4/lib/json/common.rb:355:in 'JSON.parse'
+	from /private/tmp/claude-501/gl-rb/helper.rb:4:in 'Object#load_config'
+	from /tmp/claude-501/gl-rb/nested.rb:9:in 'App#start'
+	from /tmp/claude-501/gl-rb/nested.rb:5:in 'block in App#run'
+	from /tmp/claude-501/gl-rb/nested.rb:5:in 'Array#each'
+	from /tmp/claude-501/gl-rb/nested.rb:5:in 'App#run'
+	from /tmp/claude-501/gl-rb/nested.rb:13:in '<main>'

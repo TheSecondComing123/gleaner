@@ -1,0 +1,16 @@
+[
+  {
+    "file": "/tmp/claude-501/gl-rb/crash.rb",
+    "line": 3,
+    "severity": "error",
+    "message": "undefined method 'name' for nil (NoMethodError)",
+    "source": "ruby",
+    "related": [
+      {
+        "file": "/tmp/claude-501/gl-rb/crash.rb",
+        "line": 6,
+        "message": "called from here, in <main>"
+      }
+    ]
+  }
+]

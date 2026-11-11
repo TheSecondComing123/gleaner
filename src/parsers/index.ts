@@ -11,6 +11,7 @@ import { node } from './node'
 import { pyright } from './pyright'
 import { pytest } from './pytest'
 import { python } from './python'
+import { ruby } from './ruby'
 import { ruff } from './ruff'
 import { rustc } from './rustc'
 import { tsc } from './tsc'
@@ -31,6 +32,7 @@ export const parsers: Record<string, Parser> = {
   eslint,
   jest,
   msbuild,
+  ruby,
   node,
   make,
   gcc,
@@ -71,6 +73,7 @@ const COMMANDS: Record<string, string[]> = {
   eslint: ['eslint'],
   jest: ['jest'],
   vitest: ['jest'],
+  ruby: ['ruby'],
 }
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.

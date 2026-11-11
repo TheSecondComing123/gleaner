@@ -1,0 +1,6 @@
+/tmp/claude-501/gl-rb/crash.rb:3:in 'Object#greet': undefined method 'name' for nil (NoMethodError)
+
+  user.name.upcase
+      ^^^^^
+	from /tmp/claude-501/gl-rb/crash.rb:6:in '<main>'
+hi

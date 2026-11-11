@@ -1,0 +1,16 @@
+[
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax2.rb",
+    "line": 3,
+    "severity": "error",
+    "message": "syntax error, unexpected 'end', expecting '}'",
+    "source": "ruby"
+  },
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax2.rb",
+    "line": 5,
+    "severity": "error",
+    "message": "syntax error, unexpected ')', expecting ']'",
+    "source": "ruby"
+  }
+]

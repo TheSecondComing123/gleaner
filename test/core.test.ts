@@ -136,6 +136,18 @@ describe('node file URLs', () => {
   })
 })
 
+describe('ruby on Windows', () => {
+  // Hand-written: no Windows machine to capture from. RubyInstaller keeps the stdlib under C:\RubyXY-x64\lib\ruby.
+  it('skips the standard library under lib\\ruby', () => {
+    const lines = [
+      "C:/Ruby26-x64/lib/ruby/2.6.0/json/common.rb:156:in `parse': 767: unexpected token at '{nope' (JSON::ParserError)",
+      "\tfrom C:\\Ruby33-x64\\lib\\ruby\\3.3.0\\json\\common.rb:219:in `parse'",
+      "\tfrom C:\\repo\\app.rb:4:in `<main>'",
+    ]
+    expect(parsers.ruby(lines).map((p) => `${p.file}:${p.line}`)).toEqual(['C:\\repo\\app.rb:4'])
+  })
+})
+
 describe('parseAll', () => {
   const fixture = (path: string) => clean(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
   const expected = (path: string) => JSON.parse(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))

@@ -1,0 +1,13 @@
+/Users/alanbagel/.rbenv/versions/4.0.5/bin/ruby: /tmp/claude-501/gl-rb/syntax.rb:5: syntax errors found (SyntaxError)
+> 1 | def broken(x)
+    | ^~~ expected an `end` to close the `def` statement
+  2 |   if x > 1
+  3 |     puts "big"
+  4 |   [1, 2
+> 5 | end
+    | ^~~ unexpected 'end'; expected a `]` to close the array
+    | ^~~ unexpected 'end', assuming it is closing the parent if statement
+    | ^ expected an expression for the array element
+    | ^ unexpected 'end'; expected a `,` separator for the array elements
+    |    ^ unexpected end-of-input, assuming it is closing the parent top level context
+

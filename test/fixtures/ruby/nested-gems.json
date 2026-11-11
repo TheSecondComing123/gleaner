@@ -1,0 +1,26 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-rb/helper.rb",
+    "line": 4,
+    "severity": "error",
+    "message": "expected object key, got 'nope' at line 1 column 2 (JSON::ParserError)",
+    "source": "ruby",
+    "related": [
+      {
+        "file": "/tmp/claude-501/gl-rb/nested.rb",
+        "line": 9,
+        "message": "called from here, in App#start"
+      },
+      {
+        "file": "/tmp/claude-501/gl-rb/nested.rb",
+        "line": 5,
+        "message": "called from here, in block in App#run"
+      },
+      {
+        "file": "/tmp/claude-501/gl-rb/nested.rb",
+        "line": 13,
+        "message": "called from here, in <main>"
+      }
+    ]
+  }
+]

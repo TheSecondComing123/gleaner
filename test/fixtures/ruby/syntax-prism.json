@@ -1,0 +1,50 @@
+[
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax.rb",
+    "line": 1,
+    "col": 1,
+    "severity": "error",
+    "message": "expected an `end` to close the `def` statement",
+    "source": "ruby"
+  },
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax.rb",
+    "line": 5,
+    "col": 1,
+    "severity": "error",
+    "message": "unexpected 'end'; expected a `]` to close the array",
+    "source": "ruby"
+  },
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax.rb",
+    "line": 5,
+    "col": 1,
+    "severity": "error",
+    "message": "unexpected 'end', assuming it is closing the parent if statement",
+    "source": "ruby"
+  },
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax.rb",
+    "line": 5,
+    "col": 1,
+    "severity": "error",
+    "message": "expected an expression for the array element",
+    "source": "ruby"
+  },
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax.rb",
+    "line": 5,
+    "col": 1,
+    "severity": "error",
+    "message": "unexpected 'end'; expected a `,` separator for the array elements",
+    "source": "ruby"
+  },
+  {
+    "file": "/tmp/claude-501/gl-rb/syntax.rb",
+    "line": 5,
+    "col": 4,
+    "severity": "error",
+    "message": "unexpected end-of-input, assuming it is closing the parent top level context",
+    "source": "ruby"
+  }
+]

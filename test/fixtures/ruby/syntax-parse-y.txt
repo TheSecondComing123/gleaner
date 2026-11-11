@@ -1,0 +1,5 @@
+/Users/alanbagel/.rbenv/versions/4.0.5/bin/ruby: /tmp/claude-501/gl-rb/syntax2.rb:3: syntax error, unexpected 'end', expecting '}' (SyntaxError)
+/tmp/claude-501/gl-rb/syntax2.rb:5: syntax error, unexpected ')', expecting ']'
+puts total([1, 2)
+                ^
+
