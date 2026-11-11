@@ -10,7 +10,6 @@ const MAX_BYTES = 4_000_000
 const MAX_PROBLEMS = 500
 // Matches checked against the filesystem per run; unknown commands can produce many bogus ones.
 const MAX_CANDIDATES = 2000
-const RUN_TIMEOUT_MS = 10 * 60_000
 // read() can still be flushing its last chunk when the end event fires.
 const DRAIN_MS = 500
 // Shell integration usually connects within a second or two of the terminal opening.
@@ -27,7 +26,6 @@ interface Run {
   cwds: string[]
   raw: string
   reading: Promise<void>
-  timer: NodeJS.Timeout
 }
 
 const SEVERITY = {
@@ -82,7 +80,6 @@ export function activate(context: vscode.ExtensionContext): void {
     const run = runs.get(execution)
     if (!run) return
     runs.delete(execution)
-    clearTimeout(run.timer)
     await Promise.race([run.reading, new Promise((resolve) => setTimeout(resolve, DRAIN_MS))])
 
     // Picked now, not at start: `cd web && npm run build` reads web/package.json.
@@ -120,13 +117,23 @@ export function activate(context: vscode.ExtensionContext): void {
     )
   }
 
+  // Forgetting the generations stops a run that's still resolving files from publishing after this.
+  const clear = (): void => {
+    latest.clear()
+    problems.clear()
+    updateStatus()
+  }
+
   context.subscriptions.push(
     problems,
     log,
     status,
-    vscode.commands.registerCommand('gleaner.clear', () => {
-      problems.clear()
-      updateStatus()
+    vscode.commands.registerCommand('gleaner.clear', clear),
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (!event.affectsConfiguration('gleaner.enable')) return
+      if (vscode.workspace.getConfiguration('gleaner').get<boolean>('enable', true)) return
+      runs.clear()
+      clear()
     }),
     vscode.window.onDidOpenTerminal(watchIntegration),
     vscode.window.onDidChangeActiveTerminal(updateStatus),
@@ -148,7 +155,6 @@ export function activate(context: vscode.ExtensionContext): void {
         cwds: execution.cwd ? [execution.cwd.fsPath] : [],
         raw: '',
         reading: Promise.resolve(),
-        timer: setTimeout(() => void finish(execution), RUN_TIMEOUT_MS),
       }
       run.reading = (async () => {
         for await (const chunk of execution.read()) {
@@ -171,6 +177,14 @@ export function activate(context: vscode.ExtensionContext): void {
       for (const [execution, run] of runs) if (run.terminal === terminal) void finish(execution)
     }),
   )
+}
+
+// Passing any exclude to findFiles drops the files.exclude default, so it's added back by hand.
+// ponytail: a files.exclude glob that has its own {a,b} group nests braces, which globs don't support.
+function excludes(): string {
+  const configured = vscode.workspace.getConfiguration('files').get<Record<string, boolean>>('exclude', {})
+  const globs = Object.keys(configured).filter((glob) => configured[glob] === true)
+  return `{${['**/node_modules/**', ...globs].join(',')}}`
 }
 
 function workspaceDirs(): string[] {
@@ -231,8 +245,6 @@ async function locate(file: string, dirs: string[]): Promise<string | undefined>
   // ponytail: up to 50 candidates, then a literal match must be unique; a name shared by more
   // files than that (or copies in dist/) is skipped rather than guessed.
   const suffix = `${path.sep}${relative.split('/').join(path.sep)}`
-  const matches = (await vscode.workspace.findFiles(glob, '**/node_modules/**', 50)).filter((m) =>
-    m.fsPath.endsWith(suffix),
-  )
+  const matches = (await vscode.workspace.findFiles(glob, excludes(), 50)).filter((m) => m.fsPath.endsWith(suffix))
   return matches.length === 1 ? matches[0].fsPath : undefined
 }
