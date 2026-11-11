@@ -1,0 +1,195 @@
+src/a.ts:2:22 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+  
+    1 │ let unused = 1
+  > 2 │ export function f(a: any) {
+      │                      ^^^
+    3 │   if (a == null) debugger
+    4 │   return a
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+  i Replace any with a specific type. If the type is not known, use unknown and narrow it before using the value.
+  
+
+src/a.ts:1:1 lint/style/useConst  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This let declares a variable that is only assigned once.
+  
+  > 1 │ let unused = 1
+      │ ^^^
+    2 │ export function f(a: any) {
+    3 │   if (a == null) debugger
+  
+  i 'unused' is never reassigned.
+  
+  > 1 │ let unused = 1
+      │     ^^^^^^
+    2 │ export function f(a: any) {
+    3 │   if (a == null) debugger
+  
+  i A variable that is never reassigned is clearer as const, because it prevents the binding from being reassigned.
+  
+  i Safe fix: Use const instead.
+  
+    1   │ - let·unused·=·1
+      1 │ + const·unused·=·1
+    2 2 │   export function f(a: any) {
+    3 3 │     if (a == null) debugger
+  
+
+src/a.ts:1:5 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This variable unused is unused.
+  
+  > 1 │ let unused = 1
+      │     ^^^^^^
+    2 │ export function f(a: any) {
+    3 │   if (a == null) debugger
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend unused with an underscore.
+  
+    1   │ - let·unused·=·1
+      1 │ + let·_unused·=·1
+    2 2 │   export function f(a: any) {
+    3 3 │     if (a == null) debugger
+  
+
+src/b.js:2:7 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This variable y is unused.
+  
+    1 │ export const x = {a: 1, a: 2}
+  > 2 │ const y = function() {
+      │       ^
+    3 │   return 1
+    4 │ 
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend y with an underscore.
+  
+    1 1 │   export const x = {a: 1, a: 2}
+    2   │ - const·y·=·function()·{
+      2 │ + const·_y·=·function()·{
+    3 3 │     return 1
+    4 4 │   
+  
+
+src/b.js:2:11 lint/complexity/useArrowFunction  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This function expression can be turned into an arrow function.
+  
+    1 │ export const x = {a: 1, a: 2}
+  > 2 │ const y = function() {
+      │           ^^^^^^^^^^^^
+  > 3 │   return 1
+      │   ^^^^^^^^
+    4 │ 
+  
+  i Function expressions that don't use this can be turned into arrow functions.
+  
+  i Safe fix: Use an arrow function instead.
+  
+    1 1 │   export const x = {a: 1, a: 2}
+    2   │ - const·y·=·function()·{
+    3   │ - ··return·1
+      2 │ + const·y·=·()·=>·1
+    4 3 │   
+    5 4 │   
+  
+
+src/a.ts:3:18 lint/suspicious/noDebugger  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This is an unexpected use of the debugger statement.
+  
+    1 │ let unused = 1
+    2 │ export function f(a: any) {
+  > 3 │   if (a == null) debugger
+      │                  ^^^^^^^^
+    4 │   return a
+    5 │ }
+  
+  i A debugger statement pauses the program when a debugger is open. It is meant for debugging only, and it should not be left in code that is shipped.
+  
+  i Unsafe fix: Remove debugger statement
+  
+    1 1 │   let unused = 1
+    2 2 │   export function f(a: any) {
+    3   │ - ··if·(a·==·null)·debugger
+      3 │ + ··if·(a·==·null)·;
+    4 4 │     return a
+    5 5 │   }
+  
+
+src/a.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    1   │ - let·unused·=·1
+      1 │ + let·unused·=·1;
+    2 2 │   export function f(a: any) {
+    3   │ - ··if·(a·==·null)·debugger
+    4   │ - ··return·a
+      3 │ + → if·(a·==·null)·debugger;
+      4 │ + → return·a;
+    5 5 │   }
+    6 6 │   
+  
+
+src/b.js:5:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × expected `}` but instead the file ends
+  
+    3 │   return 1
+    4 │ 
+  > 5 │ 
+      │ 
+  
+  i the file ends here
+  
+    3 │   return 1
+    4 │ 
+  > 5 │ 
+      │ 
+  
+
+src/b.js:1:19 lint/suspicious/noDuplicateObjectKeys  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This property is later overwritten by an object member with the same name.
+  
+  > 1 │ export const x = {a: 1, a: 2}
+      │                   ^^^^
+    2 │ const y = function() {
+    3 │   return 1
+  
+  i Overwritten with this property.
+  
+  > 1 │ export const x = {a: 1, a: 2}
+      │                         ^^^^
+    2 │ const y = function() {
+    3 │   return 1
+  
+  i If an object property with the same name is defined multiple times (except when combining a getter with a setter), only the last definition makes it into the object and previous definitions are ignored.
+  
+  i Unsafe fix: Remove this property.
+  
+    1 │ export·const·x·=·{a:·1,·a:·2}
+      │                   ------     
+
+src/b.js format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Code formatting aborted due to parsing errors. To format code with errors, enable the 'formatter.formatWithErrors' option.
+  
+
+Checked 2 files in 1333µs. No fixes applied.
+Found 5 errors.
+Found 5 warnings.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

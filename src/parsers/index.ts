@@ -1,6 +1,7 @@
 import type { Parser, Problem } from '../problem'
 import { cmake } from './cmake'
 import { cppcheck } from './cppcheck'
+import { biome } from './biome'
 import { esbuild } from './esbuild'
 import { eslint } from './eslint'
 import { gcc } from './gcc'
@@ -39,6 +40,7 @@ export const parsers: Record<string, Parser> = {
   ruff,
   eslint,
   esbuild,
+  biome,
   jest,
   zig,
   msbuild,
@@ -89,6 +91,7 @@ const COMMANDS: Record<string, string[]> = {
   jest: ['jest'],
   esbuild: ['esbuild'],
   vite: ['esbuild'],
+  biome: ['biome'],
   vitest: ['jest'],
   ruby: ['ruby'],
   lua: ['lua'],

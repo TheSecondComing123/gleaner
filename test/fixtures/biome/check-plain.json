@@ -1,0 +1,90 @@
+[
+  {
+    "file": "src/a.ts",
+    "line": 2,
+    "col": 22,
+    "severity": "warning",
+    "message": "Unexpected any. Specify a different type.",
+    "code": "lint/suspicious/noExplicitAny",
+    "source": "biome"
+  },
+  {
+    "file": "src/a.ts",
+    "line": 1,
+    "col": 1,
+    "severity": "warning",
+    "message": "This let declares a variable that is only assigned once.",
+    "code": "lint/style/useConst",
+    "source": "biome"
+  },
+  {
+    "file": "src/a.ts",
+    "line": 1,
+    "col": 5,
+    "severity": "warning",
+    "message": "This variable unused is unused.",
+    "code": "lint/correctness/noUnusedVariables",
+    "source": "biome"
+  },
+  {
+    "file": "src/b.js",
+    "line": 2,
+    "col": 7,
+    "severity": "warning",
+    "message": "This variable y is unused.",
+    "code": "lint/correctness/noUnusedVariables",
+    "source": "biome"
+  },
+  {
+    "file": "src/b.js",
+    "line": 2,
+    "col": 11,
+    "severity": "warning",
+    "message": "This function expression can be turned into an arrow function.",
+    "code": "lint/complexity/useArrowFunction",
+    "source": "biome"
+  },
+  {
+    "file": "src/a.ts",
+    "line": 3,
+    "col": 18,
+    "severity": "error",
+    "message": "This is an unexpected use of the debugger statement.",
+    "code": "lint/suspicious/noDebugger",
+    "source": "biome"
+  },
+  {
+    "file": "src/a.ts",
+    "line": 1,
+    "severity": "error",
+    "message": "Formatter would have printed the following content:",
+    "code": "format",
+    "source": "biome"
+  },
+  {
+    "file": "src/b.js",
+    "line": 5,
+    "col": 1,
+    "severity": "error",
+    "message": "expected `}` but instead the file ends",
+    "code": "parse",
+    "source": "biome"
+  },
+  {
+    "file": "src/b.js",
+    "line": 1,
+    "col": 19,
+    "severity": "error",
+    "message": "This property is later overwritten by an object member with the same name.",
+    "code": "lint/suspicious/noDuplicateObjectKeys",
+    "source": "biome"
+  },
+  {
+    "file": "src/b.js",
+    "line": 1,
+    "severity": "error",
+    "message": "Code formatting aborted due to parsing errors. To format code with errors, enable the 'formatter.formatWithErrors' option.",
+    "code": "format",
+    "source": "biome"
+  }
+]
