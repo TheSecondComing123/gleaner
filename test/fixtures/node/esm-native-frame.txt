@@ -1,0 +1,14 @@
+<anonymous_script>:1
+{bad
+ ^
+
+SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at parse (file:///private/tmp/claude-501/gl-node/app.mjs:1:27)
+    at load (file:///private/tmp/claude-501/gl-node/app.mjs:4:10)
+    at file:///private/tmp/claude-501/gl-node/app.mjs:7:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+    at async node:internal/modules/esm/loader:639:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v25.9.0

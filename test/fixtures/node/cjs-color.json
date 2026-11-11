@@ -1,0 +1,24 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-node/app.js",
+    "line": 4,
+    "col": 14,
+    "severity": "error",
+    "message": "TypeError: obj.missing is not a function",
+    "source": "node",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-node/app.js",
+        "line": 8,
+        "col": 10,
+        "message": "outer"
+      },
+      {
+        "file": "/private/tmp/claude-501/gl-node/app.js",
+        "line": 11,
+        "col": 5,
+        "message": "Object.<anonymous>"
+      }
+    ]
+  }
+]

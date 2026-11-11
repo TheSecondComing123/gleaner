@@ -1,0 +1,15 @@
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(7,27,7,28): error CS0103: The name 'x' does not exist in the current context [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(9,20,9,21): error CS0029: Cannot implicitly convert type 'int' to 'string' [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(8,13,8,19): warning CS0168: The variable 'unused' is declared but never used [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(13,16,13,22): error CS0161: 'Program.Helper()': not all code paths return a value [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+
+Build FAILED.
+
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(8,13,8,19): warning CS0168: The variable 'unused' is declared but never used [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(7,27,7,28): error CS0103: The name 'x' does not exist in the current context [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(9,20,9,21): error CS0029: Cannot implicitly convert type 'int' to 'string' [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+/private/tmp/claude-501/gl-dotnet/app/Program.cs(13,16,13,22): error CS0161: 'Program.Helper()': not all code paths return a value [/private/tmp/claude-501/gl-dotnet/app/app.csproj]
+    1 Warning(s)
+    3 Error(s)
+
+Time Elapsed 00:00:00.81

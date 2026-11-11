@@ -1,0 +1,17 @@
+/private/tmp/claude-501/gl-node/app.js:4
+  return obj.missing()
+             ^
+
+TypeError: obj.missing is not a function
+    at inner [90m(/private/tmp/claude-501/gl-node/[39mapp.js:4:14[90m)[39m
+    at outer [90m(/private/tmp/claude-501/gl-node/[39mapp.js:8:10[90m)[39m
+    at exports.run [90m(/private/tmp/claude-501/gl-node/[39mnode_modules/[4mlib[24m/index.js:1:23[90m)[39m
+    at Object.<anonymous> [90m(/private/tmp/claude-501/gl-node/[39mapp.js:11:5[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1829:14)[39m
+[90m    at Object..js (node:internal/modules/cjs/loader:1969:10)[39m
+[90m    at Module.load (node:internal/modules/cjs/loader:1552:32)[39m
+[90m    at Module._load (node:internal/modules/cjs/loader:1354:12)[39m
+[90m    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)[39m
+[90m    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)[39m
+
+Node.js v25.9.0

@@ -1,0 +1,10 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-node/assert.mjs",
+    "line": 16,
+    "col": 42,
+    "severity": "error",
+    "message": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n2 !== 3",
+    "source": "node"
+  }
+]

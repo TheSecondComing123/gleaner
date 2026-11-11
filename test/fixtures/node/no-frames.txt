@@ -1,0 +1,8 @@
+
+/private/tmp/claude-501/gl-node/throwstr.js:1
+throw 'just a string'
+^
+just a string
+(Use `node --trace-uncaught ...` to show where the exception was thrown)
+
+Node.js v25.9.0

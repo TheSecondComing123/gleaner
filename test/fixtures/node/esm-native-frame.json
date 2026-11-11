@@ -1,0 +1,24 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-node/app.mjs",
+    "line": 1,
+    "col": 27,
+    "severity": "error",
+    "message": "SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)",
+    "source": "node",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-node/app.mjs",
+        "line": 4,
+        "col": 10,
+        "message": "load"
+      },
+      {
+        "file": "/private/tmp/claude-501/gl-node/app.mjs",
+        "line": 7,
+        "col": 1,
+        "message": ""
+      }
+    ]
+  }
+]

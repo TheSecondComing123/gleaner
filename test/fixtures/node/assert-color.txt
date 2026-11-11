@@ -1,0 +1,21 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+2 !== 3
+
+    at [90mfile:///private/tmp/claude-501/gl-node/[39massert.mjs:16:42
+[90m    at ModuleJob.run (node:internal/modules/esm/module_job:437:25)[39m
+    at async node:internal/modules/esm/loader:639:26
+[90m    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)[39m {
+  generatedMessage: [33mtrue[39m,
+  code: [32m'ERR_ASSERTION'[39m,
+  actual: [33m2[39m,
+  expected: [33m3[39m,
+  operator: [32m'strictEqual'[39m,
+  diff: [32m'simple'[39m
+}
+
+Node.js v25.9.0

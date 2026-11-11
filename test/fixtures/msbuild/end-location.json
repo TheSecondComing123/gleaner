@@ -1,0 +1,46 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-dotnet/app/Program.cs",
+    "line": 7,
+    "col": 27,
+    "endLine": 7,
+    "endCol": 28,
+    "severity": "error",
+    "message": "The name 'x' does not exist in the current context",
+    "code": "CS0103",
+    "source": "msbuild"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-dotnet/app/Program.cs",
+    "line": 9,
+    "col": 20,
+    "endLine": 9,
+    "endCol": 21,
+    "severity": "error",
+    "message": "Cannot implicitly convert type 'int' to 'string'",
+    "code": "CS0029",
+    "source": "msbuild"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-dotnet/app/Program.cs",
+    "line": 8,
+    "col": 13,
+    "endLine": 8,
+    "endCol": 19,
+    "severity": "warning",
+    "message": "The variable 'unused' is declared but never used",
+    "code": "CS0168",
+    "source": "msbuild"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-dotnet/app/Program.cs",
+    "line": 13,
+    "col": 16,
+    "endLine": 13,
+    "endCol": 22,
+    "severity": "error",
+    "message": "'Program.Helper()': not all code paths return a value",
+    "code": "CS0161",
+    "source": "msbuild"
+  }
+]

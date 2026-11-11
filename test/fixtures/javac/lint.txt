@@ -1,0 +1,36 @@
+Picked up JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
+Main.java:5: error: cannot find symbol
+        System.out.println(x);
+                           ^
+  symbol:   variable x
+  location: class Main
+Main.java:6: error: incompatible types: int cannot be converted to String
+        String s = 5;
+                   ^
+Main.java:7: error: incompatible types: String cannot be converted to int
+	int y = "tab";
+	        ^
+Main.java:10: error: cannot find symbol
+        undefinedCall();
+        ^
+  symbol:   method undefinedCall()
+  location: class Main
+Main.java:8: warning: [rawtypes] found raw type: List
+        List raw = new ArrayList();
+        ^
+  missing type arguments for generic class List<E>
+  where E is a type-variable:
+    E extends Object declared in interface List
+Main.java:8: warning: [rawtypes] found raw type: ArrayList
+        List raw = new ArrayList();
+                       ^
+  missing type arguments for generic class ArrayList<E>
+  where E is a type-variable:
+    E extends Object declared in class ArrayList
+Main.java:9: warning: [unchecked] unchecked call to add(E) as a member of the raw type List
+        raw.add("a");
+               ^
+  where E is a type-variable:
+    E extends Object declared in interface List
+4 errors
+3 warnings

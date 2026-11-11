@@ -1,0 +1,24 @@
+file:///private/tmp/claude-501/gl-node/assert.mjs:12
+    throw new ConfigError('could not read config', { cause: e })
+          ^
+
+ConfigError: could not read config
+    at read (file:///private/tmp/claude-501/gl-node/assert.mjs:12:11)
+    at file:///private/tmp/claude-501/gl-node/assert.mjs:17:1
+    ... 2 lines matching cause stack trace ...
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  [cause]: Error: ENOENT: no such file or directory, open '/nope/config.json'
+      at readFileSync (node:fs:436:20)
+      at read (file:///private/tmp/claude-501/gl-node/assert.mjs:10:12)
+      at file:///private/tmp/claude-501/gl-node/assert.mjs:17:1
+      at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+      at async node:internal/modules/esm/loader:639:26
+      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/nope/config.json'
+  }
+}
+
+Node.js v25.9.0

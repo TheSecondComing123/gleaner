@@ -1,0 +1,7 @@
+  app [36;1mnet10.0[m [31;1mfailed with 3 error(s) and 1 warning(s)[m (0.5s)
+    /private/tmp/claude-501/gl-dotnet/app/[1mProgram.cs[m(7,27): [31;1merror[m [31;1mCS0103[m: The name 'x' does not exist in the current context
+    /private/tmp/claude-501/gl-dotnet/app/[1mProgram.cs[m(9,20): [31;1merror[m [31;1mCS0029[m: Cannot implicitly convert type 'int' to 'string'
+    /private/tmp/claude-501/gl-dotnet/app/[1mProgram.cs[m(8,13): [33;1mwarning[m [33;1mCS0168[m: The variable 'unused' is declared but never used
+    /private/tmp/claude-501/gl-dotnet/app/[1mProgram.cs[m(13,16): [31;1merror[m [31;1mCS0161[m: 'Program.Helper()': not all code paths return a value
+
+Build [31;1mfailed with 3 error(s) and 1 warning(s)[m in 0.6s

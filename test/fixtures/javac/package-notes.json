@@ -1,0 +1,18 @@
+[
+  {
+    "file": "App.java",
+    "line": 6,
+    "severity": "error",
+    "message": "cannot find symbol\nsymbol:   method nope(int,int)\nlocation: variable u of type Util",
+    "source": "javac",
+    "col": 10
+  },
+  {
+    "file": "App.java",
+    "line": 7,
+    "severity": "error",
+    "message": "incompatible types: String cannot be converted to int",
+    "source": "javac",
+    "col": 29
+  }
+]

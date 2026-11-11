@@ -1,0 +1,24 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-node/assert.mjs",
+    "line": 12,
+    "col": 11,
+    "severity": "error",
+    "message": "ConfigError: could not read config",
+    "source": "node",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-node/assert.mjs",
+        "line": 17,
+        "col": 1,
+        "message": ""
+      },
+      {
+        "file": "/private/tmp/claude-501/gl-node/assert.mjs",
+        "line": 10,
+        "col": 12,
+        "message": "read"
+      }
+    ]
+  }
+]

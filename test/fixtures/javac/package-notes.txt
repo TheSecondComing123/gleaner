@@ -1,0 +1,12 @@
+Picked up JAVA_TOOL_OPTIONS: -Djava.net.preferIPv4Stack=true
+App.java:6: error: cannot find symbol
+        u.nope(1, 2);
+         ^
+  symbol:   method nope(int,int)
+  location: variable u of type Util
+App.java:7: error: incompatible types: String cannot be converted to int
+        int n = u.missing() + "x";
+                            ^
+Note: pkg/Util.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+2 errors
