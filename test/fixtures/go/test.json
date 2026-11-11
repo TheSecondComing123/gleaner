@@ -1,0 +1,30 @@
+[
+  {
+    "file": "/tmp/claude-501/gp/main_test.go",
+    "line": 7,
+    "severity": "error",
+    "message": "assignment to entry in nil map [recovered, repanicked]",
+    "source": "go"
+  },
+  {
+    "file": "util_test.go",
+    "line": 7,
+    "severity": "error",
+    "message": "expected 3, got 2",
+    "source": "go"
+  },
+  {
+    "file": "util_test.go",
+    "line": 14,
+    "severity": "error",
+    "message": "trying 2",
+    "source": "go"
+  },
+  {
+    "file": "util_test.go",
+    "line": 16,
+    "severity": "error",
+    "message": "bad value 2\nsecond line",
+    "source": "go"
+  }
+]

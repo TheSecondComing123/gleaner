@@ -1,0 +1,9 @@
+# example.com/gp/other
+other/other.go:10:23: cannot use T{} (value of struct type T) as fmt.Stringer value in variable declaration: T does not implement fmt.Stringer (wrong type for method String)
+		have String() int
+		want String() string
+other/other.go:12:2: undefined: undefinedCall
+# example.com/gp
+./main.go:5:2: "os" imported and not used
+./main.go:9:14: undefined: x
+./main.go:10:14: cannot use "hi" (untyped string constant) as int value in variable declaration

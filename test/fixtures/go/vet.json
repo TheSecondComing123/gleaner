@@ -1,0 +1,26 @@
+[
+  {
+    "file": "util/vet.go",
+    "line": 6,
+    "col": 22,
+    "severity": "error",
+    "message": "fmt.Sprintf format %s has arg n of wrong type int",
+    "source": "go"
+  },
+  {
+    "file": "main.go",
+    "line": 15,
+    "col": 2,
+    "severity": "error",
+    "message": "self-assignment of x",
+    "source": "go"
+  },
+  {
+    "file": "main.go",
+    "line": 12,
+    "col": 14,
+    "severity": "error",
+    "message": "fmt.Printf format %d has arg \"str\" of wrong type string",
+    "source": "go"
+  }
+]

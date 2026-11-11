@@ -1,0 +1,23 @@
+[
+  {
+    "file": "util_test.go",
+    "line": 7,
+    "severity": "error",
+    "message": "expected 3, got 2",
+    "source": "go"
+  },
+  {
+    "file": "util_test.go",
+    "line": 14,
+    "severity": "error",
+    "message": "trying 2",
+    "source": "go"
+  },
+  {
+    "file": "util_test.go",
+    "line": 16,
+    "severity": "error",
+    "message": "bad value 2\nsecond line",
+    "source": "go"
+  }
+]

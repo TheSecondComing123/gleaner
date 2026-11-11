@@ -1,0 +1,28 @@
+[1m[92m   Compiling[0m rs v0.1.0 (/private/tmp/claude-501/rs)
+[1m[91merror[E0308][0m[1m: mismatched types[0m
+ [1m[94m--> [0msrc/main.rs:4:18
+  [1m[94m|[0m
+[1m[94m4[0m [1m[94m|[0m     let x: i32 = "hello";
+  [1m[94m|[0m            [1m[94m---[0m   [1m[91m^^^^^^^[0m [1m[91mexpected `i32`, found `&str`[0m
+  [1m[94m|[0m            [1m[94m|[0m
+  [1m[94m|[0m            [1m[94mexpected due to this[0m
+
+[1m[91merror[E0061][0m[1m: this function takes 2 arguments but 1 argument was supplied[0m
+ [1m[94m--> [0msrc/main.rs:9:5
+  [1m[94m|[0m
+[1m[94m9[0m [1m[94m|[0m     util::helper(1);
+  [1m[94m|[0m     [1m[91m^^^^^^^^^^^^[0m[1m[94m---[0m [1m[94margument #2 of type `i32` is missing[0m
+  [1m[94m|[0m
+[1m[92mnote[0m: function defined here
+ [1m[94m--> [0msrc/util.rs:1:8
+  [1m[94m|[0m
+[1m[94m1[0m [1m[94m|[0m pub fn helper(a: i32, b: i32) -> i32 {
+  [1m[94m|[0m        [1m[92m^^^^^^[0m         [1m[94m------[0m
+[1m[96mhelp[0m: provide the argument
+  [1m[94m|[0m
+[1m[94m9[0m [1m[94m| [0m    util::helper(1[92m, /* i32 */[0m);
+  [1m[94m|[0m                   [92m+++++++++++[0m
+
+[1mSome errors have detailed explanations: E0061, E0308.[0m
+[1mFor more information about an error, try `rustc --explain E0061`.[0m
+[1m[91merror[0m: could not compile `rs` (bin "rs") due to 2 previous errors

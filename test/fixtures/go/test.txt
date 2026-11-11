@@ -1,0 +1,27 @@
+--- FAIL: TestPanic (0.00s)
+panic: assignment to entry in nil map [recovered, repanicked]
+
+goroutine 35 [running]:
+testing.tRunner.func1.2({0x1002ee7c0, 0x100328f30})
+	/opt/homebrew/Cellar/go/1.27.2/libexec/src/testing/testing.go:2125 +0x1a0
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.27.2/libexec/src/testing/testing.go:2128 +0x2c8
+panic({0x1002ee7c0?, 0x100328f30?})
+	/opt/homebrew/Cellar/go/1.27.2/libexec/src/runtime/panic.go:859 +0x120
+example.com/gp.TestPanic(0x32e1889d8248?)
+	/tmp/claude-501/gp/main_test.go:7 +0x34
+testing.tRunner(0x32e1889d8248, 0x10030b710)
+	/opt/homebrew/Cellar/go/1.27.2/libexec/src/testing/testing.go:2195 +0xc4
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.2/libexec/src/testing/testing.go:2260 +0x3b8
+FAIL	example.com/gp	0.082s
+--- FAIL: TestAdd (0.00s)
+    util_test.go:7: expected 3, got 2
+--- FAIL: TestTable (0.00s)
+    --- FAIL: TestTable/case#01 (0.00s)
+        util_test.go:14: trying 2
+        util_test.go:16: bad value 2
+            second line
+FAIL
+FAIL	example.com/gp/util	0.083s
+FAIL

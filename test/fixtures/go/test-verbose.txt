@@ -1,0 +1,19 @@
+=== RUN   TestAdd
+    util_test.go:7: expected 3, got 2
+--- FAIL: TestAdd (0.00s)
+=== RUN   TestTable
+=== RUN   TestTable/case
+    util_test.go:14: trying 1
+=== RUN   TestTable/case#01
+    util_test.go:14: trying 2
+    util_test.go:16: bad value 2
+        second line
+--- FAIL: TestTable (0.00s)
+    --- PASS: TestTable/case (0.00s)
+    --- FAIL: TestTable/case#01 (0.00s)
+=== RUN   TestOK
+    util_test.go:23: all good at util_test.go
+--- PASS: TestOK (0.00s)
+FAIL
+FAIL	example.com/gp/util	0.081s
+FAIL

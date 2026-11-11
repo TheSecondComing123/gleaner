@@ -1,0 +1,28 @@
+[
+  {
+    "file": "src/main.rs",
+    "line": 4,
+    "col": 18,
+    "severity": "error",
+    "code": "E0308",
+    "message": "mismatched types",
+    "source": "rustc"
+  },
+  {
+    "file": "src/main.rs",
+    "line": 9,
+    "col": 5,
+    "severity": "error",
+    "code": "E0061",
+    "message": "this function takes 2 arguments but 1 argument was supplied",
+    "source": "rustc",
+    "related": [
+      {
+        "file": "src/util.rs",
+        "line": 1,
+        "col": 8,
+        "message": "function defined here"
+      }
+    ]
+  }
+]

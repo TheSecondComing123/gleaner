@@ -1,0 +1,27 @@
+[
+  {
+    "file": "src/util.rs",
+    "line": 5,
+    "col": 8,
+    "severity": "warning",
+    "code": "dead_code",
+    "message": "function `dead` is never used",
+    "source": "rustc"
+  },
+  {
+    "file": "src/util.rs",
+    "line": 13,
+    "col": 9,
+    "severity": "error",
+    "message": "assertion `left == right` failed\n  left: 3\n right: 4",
+    "source": "rustc"
+  },
+  {
+    "file": "src/util.rs",
+    "line": 24,
+    "col": 18,
+    "severity": "error",
+    "message": "index out of bounds: the len is 0 but the index is 3",
+    "source": "rustc"
+  }
+]

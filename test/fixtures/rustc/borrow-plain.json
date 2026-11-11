@@ -1,0 +1,28 @@
+[
+  {
+    "file": "src/main.rs",
+    "line": 7,
+    "col": 22,
+    "severity": "error",
+    "code": "E0382",
+    "message": "borrow of moved value: `v`",
+    "source": "rustc"
+  },
+  {
+    "file": "src/main.rs",
+    "line": 4,
+    "col": 9,
+    "severity": "warning",
+    "code": "unused_variables",
+    "message": "unused variable: `unused`",
+    "source": "rustc"
+  },
+  {
+    "file": "src/main.rs",
+    "line": 6,
+    "col": 9,
+    "severity": "warning",
+    "message": "unused variable: `w`",
+    "source": "rustc"
+  }
+]

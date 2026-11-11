@@ -1,0 +1,38 @@
+[
+  {
+    "file": "src/util.rs",
+    "line": 5,
+    "col": 8,
+    "severity": "warning",
+    "code": "dead_code",
+    "message": "function `dead` is never used",
+    "source": "rustc"
+  },
+  {
+    "file": "src/main.rs",
+    "line": 5,
+    "col": 8,
+    "severity": "warning",
+    "code": "clippy::len_zero",
+    "message": "length comparison to zero",
+    "source": "rustc"
+  },
+  {
+    "file": "src/main.rs",
+    "line": 10,
+    "col": 14,
+    "severity": "warning",
+    "code": "clippy::needless_range_loop",
+    "message": "the loop variable `i` is only used to index `v`",
+    "source": "rustc"
+  },
+  {
+    "file": "src/main.rs",
+    "line": 4,
+    "col": 13,
+    "severity": "warning",
+    "code": "clippy::useless_vec",
+    "message": "useless use of `vec!`",
+    "source": "rustc"
+  }
+]

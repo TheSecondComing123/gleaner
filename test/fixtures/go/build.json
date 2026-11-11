@@ -1,0 +1,42 @@
+[
+  {
+    "file": "other/other.go",
+    "line": 10,
+    "col": 23,
+    "severity": "error",
+    "message": "cannot use T{} (value of struct type T) as fmt.Stringer value in variable declaration: T does not implement fmt.Stringer (wrong type for method String)\nhave String() int\nwant String() string",
+    "source": "go"
+  },
+  {
+    "file": "other/other.go",
+    "line": 12,
+    "col": 2,
+    "severity": "error",
+    "message": "undefined: undefinedCall",
+    "source": "go"
+  },
+  {
+    "file": "./main.go",
+    "line": 5,
+    "col": 2,
+    "severity": "error",
+    "message": "\"os\" imported and not used",
+    "source": "go"
+  },
+  {
+    "file": "./main.go",
+    "line": 9,
+    "col": 14,
+    "severity": "error",
+    "message": "undefined: x",
+    "source": "go"
+  },
+  {
+    "file": "./main.go",
+    "line": 10,
+    "col": 14,
+    "severity": "error",
+    "message": "cannot use \"hi\" (untyped string constant) as int value in variable declaration",
+    "source": "go"
+  }
+]
