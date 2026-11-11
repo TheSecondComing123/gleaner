@@ -3,9 +3,9 @@
   <h1>Gleaner</h1>
   <p>errors from any command you run in the terminal, right in the problems panel.<br>no tasks.json, no problem matchers, no setup.</p>
 
-  ![VS Code 1.93+](https://img.shields.io/badge/vs%20code-1.93%2B-007ACC?style=flat-square)
-  ![License: MIT](https://img.shields.io/badge/license-MIT-a6e3a1?style=flat-square)
-  ![Runs locally](https://img.shields.io/badge/runs-locally-f9e2af?style=flat-square)
+![VS Code 1.93+](https://img.shields.io/badge/vs%20code-1.93%2B-007ACC?style=flat-square)
+![License: MIT](https://img.shields.io/badge/license-MIT-a6e3a1?style=flat-square)
+![Runs locally](https://img.shields.io/badge/runs-locally-f9e2af?style=flat-square)
 </div>
 
 <br>
@@ -28,15 +28,15 @@ vs code can already do this, but only through tasks.json and regex problem match
 
 ## supported tools
 
-| language | tools |
-|---|---|
+| language               | tools                                                                                         |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
 | typescript, javascript | `tsc`, `vue-tsc`, `tsgo`, `eslint`, `jest`, `vitest`, node crashes (`node`, `tsx`, `ts-node`) |
-| c, c++, swift | `gcc`, `g++`, `clang`, `clang++`, `cc`, `swiftc`, `swift build` |
-| rust | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc` |
-| go | `go build`, `go vet`, `go test`, `go run` panics |
-| python | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint` |
-| java | `javac` |
-| c# | `dotnet build`, `msbuild` |
+| c, c++, swift          | `gcc`, `g++`, `clang`, `clang++`, `cc`, `swiftc`, `swift build`                               |
+| rust                   | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc`                           |
+| go                     | `go build`, `go vet`, `go test`, `go run` panics                                              |
+| python                 | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint`                           |
+| java                   | `javac`                                                                                       |
+| c#                     | `dotnet build`, `msbuild`                                                                     |
 
 a command gleaner doesn't know, like `make` or `npm run build`, goes through every parser. matches still have to point at a file that exists, so random output doesn't turn into problems.
 
@@ -62,9 +62,9 @@ open a terminal in vs code and run your build, linter or tests. that's it.
 
 ### settings
 
-| setting | default | what it does |
-|---|---|---|
-| `gleaner.enable` | `true` | turn gleaner on or off |
+| setting                   | default                               | what it does                                                                                                                                                 |
+| ------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `gleaner.enable`          | `true`                                | turn gleaner on or off                                                                                                                                       |
 | `gleaner.ignoredCommands` | `ls`, `cat`, `grep`, `rg`, `git`, ... | commands gleaner never reads, even when their output looks like errors (`grep -n` prints `file:12:` too). only applies to commands gleaner has no parser for |
 
 ## faq
