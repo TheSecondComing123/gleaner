@@ -1,0 +1,16 @@
+
+/private/tmp/claude-501/gl-eslint/src/a.js
+  1:7   error    'x' is assigned a value but never used        no-unused-vars
+  2:10  error    'f' is defined but never used                 no-unused-vars
+  3:3   error    'console' is not defined                      no-undef
+  3:3   warning  Unexpected console statement                  no-console
+  4:9   error    Expected '===' and instead saw '=='           eqeqeq
+  4:22  error    'undefinedThing' is not defined               no-undef
+  6:5   warning  'z' is never reassigned. Use 'const' instead  prefer-const
+
+/private/tmp/claude-501/gl-eslint/src/b.js
+  3:1  error  Parsing error: Unexpected token
+
+✖ 8 problems (6 errors, 2 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

@@ -1,0 +1,101 @@
+FAIL src/broken.test.js
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    SyntaxError: /private/tmp/claude-501/gl-jest/src/broken.test.js: Unexpected token (2:5)
+
+      1 | const x = {
+    > 2 | test('never runs', () => {})
+        |      ^
+      3 |
+
+      at constructor (node_modules/.pnpm/@babel+parser@7.29.13/node_modules/@babel/parser/src/parse-error.ts:96:45)
+          at parser.next (<anonymous>)
+          at normalizeFile.next (<anonymous>)
+          at run.next (<anonymous>)
+          at transform.next (<anonymous>)
+
+FAIL src/sum.test.js
+  ● sum › adds numbers
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 4
+    Received: 3
+
+      3 | describe('sum', () => {
+      4 |   test('adds numbers', () => {
+    > 5 |     expect(sum(1, 2)).toBe(4)
+        |                       ^
+      6 |   })
+      7 |   test('works with objects', () => {
+      8 |     expect({ a: sum(1, 1), b: [1, 2] }).toEqual({ a: 2, b: [1, 3] })
+
+      at Object.toBe (src/sum.test.js:5:23)
+
+  ● sum › works with objects
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "a": 2,
+        "b": Array [
+          1,
+    -     3,
+    +     2,
+        ],
+      }
+
+       6 |   })
+       7 |   test('works with objects', () => {
+    >  8 |     expect({ a: sum(1, 1), b: [1, 2] }).toEqual({ a: 2, b: [1, 3] })
+         |                                         ^
+       9 |   })
+      10 |   test('passes', () => {
+      11 |     expect(sum(2, 2)).toBe(4)
+
+      at Object.toEqual (src/sum.test.js:8:41)
+
+  ● parse throws inside source
+
+    empty input
+
+      3 | }
+      4 | function parse(s) {
+    > 5 |   if (!s) throw new Error('empty input')
+        |                 ^
+      6 |   return JSON.parse(s)
+      7 | }
+      8 | module.exports = { sum, parse }
+
+      at parse (src/sum.js:5:17)
+      at Object.parse (src/sum.test.js:16:10)
+
+Test Suites: 2 failed, 2 total
+Tests:       3 failed, 1 passed, 4 total
+Snapshots:   0 total
+Time:        0.323 s
+Ran all test suites.

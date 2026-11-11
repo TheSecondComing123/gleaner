@@ -1,0 +1,98 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.1.0 [39m[90m/private/tmp/claude-501/gl-vitest[39m
+
+ [31m❯[39m src/broken.test.ts [2m([22m[2m0 test[22m[2m)[22m
+ [31m❯[39m src/sum.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 4[2mms[22m[39m
+   [31m❯[39m sum [2m(3)[22m
+[31m     [31m×[31m adds numbers[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m works with objects[39m[32m 1[2mms[22m[39m
+[31m   [31m×[31m parse throws inside source[39m[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/broken.test.ts[2m [ src/broken.test.ts ][22m
+[31m[1mError[22m: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mUnexpected token
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/broken.test.ts:2:6 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m2 │[0m [38;5;249mt[0m[38;5;249me[0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249m([0m'never runs'[38;5;249m,[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m[38;5;249m{[0m[38;5;249m}[0m[38;5;249m)[0m
+ [38;5;240m  │[0m      ──────┬─────  
+ [38;5;240m  │[0m            ╰─────── 
+[38;5;246m───╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36m/private/tmp/claude-501/gl-vitest/src/broken.test.ts[39m
+[90m [2m❯[22m transformWithOxc node_modules/.pnpm/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js:[2m7673:19[22m[39m
+[90m [2m❯[22m TransformPluginContext.transform node_modules/.pnpm/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js:[2m7747:26[22m[39m
+[90m [2m❯[22m EnvironmentPluginContainer.transform node_modules/.pnpm/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js:[2m8636:51[22m[39m
+[90m [2m❯[22m loadAndTransform node_modules/.pnpm/vite@8.3.8/node_modules/vite/dist/node/chunks/node.js:[2m20112:26[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/sum.test.ts[2m > [22msum[2m > [22madds numbers
+[31m[1mAssertionError[22m: expected 3 to be 4 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 4[39m
+[31m+ 3[39m
+
+[36m [2m❯[22m src/sum.test.ts:[2m6:23[22m[39m
+    [90m  4|[39m [34mdescribe[39m([32m'sum'[39m[33m,[39m () [33m=>[39m {
+    [90m  5|[39m   [34mtest[39m([32m'adds numbers'[39m[33m,[39m () [33m=>[39m {
+    [90m  6|[39m     [34mexpect[39m([34msum[39m([34m1[39m[33m,[39m [34m2[39m))[33m.[39m[34mtoBe[39m([34m4[39m)
+    [90m   |[39m                       [31m^[39m
+    [90m  7|[39m   })
+    [90m  8|[39m   [34mtest[39m([32m'works with objects'[39m[33m,[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/sum.test.ts[2m > [22msum[2m > [22mworks with objects
+[31m[1mAssertionError[22m: expected { a: 2, b: [ 1, 2 ] } to deeply equal { a: 2, b: [ 1, 3 ] }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "a": 2,[22m
+[2m    "b": [[22m
+[2m      1,[22m
+[32m-     3,[39m
+[31m+     2,[39m
+[2m    ],[22m
+[2m  }[22m
+
+[36m [2m❯[22m src/sum.test.ts:[2m9:41[22m[39m
+    [90m  7|[39m   })
+    [90m  8|[39m   [34mtest[39m([32m'works with objects'[39m[33m,[39m () [33m=>[39m {
+    [90m  9|[39m     [34mexpect[39m({ a[33m:[39m [34msum[39m([34m1[39m[33m,[39m [34m1[39m)[33m,[39m b[33m:[39m [[34m1[39m[33m,[39m [34m2[39m] })[33m.[39m[34mtoEqual[39m({ a[33m:[39m [34m2[39m[33m,[39m b[33m:[39m [[34m1[39m[33m,[39m [34m3[39m] })
+    [90m   |[39m                                         [31m^[39m
+    [90m 10|[39m   })
+    [90m 11|[39m   [34mtest[39m([32m'passes'[39m[33m,[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/sum.test.ts[2m > [22mparse throws inside source
+[31m[1mError[22m: empty input[39m
+[36m [2m❯[22m parse src/sum.ts:[2m5:17[22m[39m
+    [90m  3|[39m }
+    [90m  4|[39m [35mexport[39m [35mfunction[39m [34mparse[39m(s[33m:[39m string) {
+    [90m  5|[39m   [35mif[39m ([33m![39ms) [35mthrow[39m [35mnew[39m [33mError[39m([32m'empty input'[39m)
+    [90m   |[39m                 [31m^[39m
+    [90m  6|[39m   [35mreturn[39m [33mJSON[39m[33m.[39m[34mparse[39m(s)
+    [90m  7|[39m }
+[90m [2m❯[22m src/sum.test.ts:[2m17:10[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 22:02:34
+[2m   Duration [22m 71ms[2m (tests 31%, import 27%, transform 22%, worker 19%, environment 1%)[22m
+

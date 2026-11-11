@@ -1,0 +1,34 @@
+[
+  {
+    "file": "src/sum.test.js",
+    "line": 5,
+    "col": 23,
+    "severity": "error",
+    "message": "sum › adds numbers\nexpect(received).toBe(expected) // Object.is equality\nExpected: 4\nReceived: 3",
+    "source": "jest"
+  },
+  {
+    "file": "src/sum.test.js",
+    "line": 8,
+    "col": 41,
+    "severity": "error",
+    "message": "sum › works with objects\nexpect(received).toEqual(expected) // deep equality\n- Expected  - 1\n+ Received  + 1\n  Object {\n    \"a\": 2,\n    \"b\": Array [\n      1,\n-     3,\n+     2,\n    ],\n  }",
+    "source": "jest"
+  },
+  {
+    "file": "src/sum.js",
+    "line": 5,
+    "col": 17,
+    "severity": "error",
+    "message": "parse throws inside source\nempty input",
+    "source": "jest"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-jest/src/broken.test.js",
+    "line": 2,
+    "col": 5,
+    "severity": "error",
+    "message": "Test suite failed to run\nSyntaxError: Unexpected token",
+    "source": "jest"
+  }
+]

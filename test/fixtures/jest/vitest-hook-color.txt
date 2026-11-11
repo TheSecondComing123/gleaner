@@ -1,0 +1,29 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.1.0 [39m[90m/private/tmp/claude-501/gl-vitest[39m
+
+ [31m❯[39m hook/hook.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 2[2mms[22m[39m
+   [31m❯[39m db [2m(2)[22m
+[31m     [31m×[31m reads[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m writes[39m[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m hook/hook.test.ts[2m > [22mdb[2m > [22mreads
+[41m[1m FAIL [22m[49m hook/hook.test.ts[2m > [22mdb[2m > [22mwrites
+[31m[1mError[22m: connection refused[39m
+[36m [2m❯[22m hook/hook.test.ts:[2m5:11[22m[39m
+    [90m  3|[39m [34mdescribe[39m([32m'db'[39m[33m,[39m () [33m=>[39m {
+    [90m  4|[39m   [34mbeforeEach[39m(() [33m=>[39m {
+    [90m  5|[39m     [35mthrow[39m [35mnew[39m [33mError[39m([32m'connection refused'[39m)
+    [90m   |[39m           [31m^[39m
+    [90m  6|[39m   })
+    [90m  7|[39m   [34mtest[39m([32m'reads'[39m[33m,[39m () [33m=>[39m [34mexpect[39m([34m1[39m)[33m.[39m[34mtoBe[39m([34m1[39m))
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m   Start at [22m 22:05:11
+[2m   Duration [22m 59ms[2m (import 43%, tests 22%, transform 19%, worker 15%, environment 1%)[22m
+

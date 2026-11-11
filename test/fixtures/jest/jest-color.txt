@@ -1,0 +1,101 @@
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [2msrc/[22m[1msum.test.js[22m
+[1m[31m  [1m● [22m[1msum › adds numbers[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m4[39m
+    Received: [31m3[39m
+
+[2m    [0m [90m 3 |[39m describe([32m'sum'[39m[33m,[39m () [33m=>[39m {[22m
+[2m     [90m 4 |[39m   test([32m'adds numbers'[39m[33m,[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 5 |[39m     expect(sum([35m1[39m[33m,[39m [35m2[39m))[33m.[39mtoBe([35m4[39m)[22m
+[2m     [90m   |[39m                       [31m[1m^[22m[2m[39m[22m
+[2m     [90m 6 |[39m   })[22m
+[2m     [90m 7 |[39m   test([32m'works with objects'[39m[33m,[39m () [33m=>[39m {[22m
+[2m     [90m 8 |[39m     expect({ a[33m:[39m sum([35m1[39m[33m,[39m [35m1[39m)[33m,[39m b[33m:[39m [[35m1[39m[33m,[39m [35m2[39m] })[33m.[39mtoEqual({ a[33m:[39m [35m2[39m[33m,[39m b[33m:[39m [[35m1[39m[33m,[39m [35m3[39m] })[0m[22m
+
+[2m      [2mat Object.toBe ([22m[2m[0m[36msrc/sum.test.js[39m[0m[2m:5:23)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1msum › works with objects[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 1[39m
+
+    [2m  Object {[22m
+    [2m    "a": 2,[22m
+    [2m    "b": Array [[22m
+    [2m      1,[22m
+    [32m-     3,[39m
+    [31m+     2,[39m
+    [2m    ],[22m
+    [2m  }[22m
+
+[2m    [0m [90m  6 |[39m   })[22m
+[2m     [90m  7 |[39m   test([32m'works with objects'[39m[33m,[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m  8 |[39m     expect({ a[33m:[39m sum([35m1[39m[33m,[39m [35m1[39m)[33m,[39m b[33m:[39m [[35m1[39m[33m,[39m [35m2[39m] })[33m.[39mtoEqual({ a[33m:[39m [35m2[39m[33m,[39m b[33m:[39m [[35m1[39m[33m,[39m [35m3[39m] })[22m
+[2m     [90m    |[39m                                         [31m[1m^[22m[2m[39m[22m
+[2m     [90m  9 |[39m   })[22m
+[2m     [90m 10 |[39m   test([32m'passes'[39m[33m,[39m () [33m=>[39m {[22m
+[2m     [90m 11 |[39m     expect(sum([35m2[39m[33m,[39m [35m2[39m))[33m.[39mtoBe([35m4[39m)[0m[22m
+
+[2m      [2mat Object.toEqual ([22m[2m[0m[36msrc/sum.test.js[39m[0m[2m:8:41)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mparse throws inside source[39m[22m
+
+    empty input
+
+[2m    [0m [90m 3 |[39m }[22m
+[2m     [90m 4 |[39m [36mfunction[39m parse(s) {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 5 |[39m   [36mif[39m ([33m![39ms) [36mthrow[39m [36mnew[39m [33mError[39m([32m'empty input'[39m)[22m
+[2m     [90m   |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 6 |[39m   [36mreturn[39m [33mJSON[39m[33m.[39mparse(s)[22m
+[2m     [90m 7 |[39m }[22m
+[2m     [90m 8 |[39m module[33m.[39mexports [33m=[39m { sum[33m,[39m parse }[0m[22m
+
+[2m      [2mat parse ([22m[2msrc/sum.js[2m:5:17)[22m[2m[22m
+[2m      [2mat Object.parse ([22m[2m[0m[36msrc/sum.test.js[39m[0m[2m:16:10)[22m[2m[22m
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [2msrc/[22m[1mbroken.test.js[22m
+  [1m● [22mTest suite failed to run
+
+    [1m[31mJest encountered an unexpected token[39m[22m
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use TypeScript, see [4mhttps://jestjs.io/docs/getting-started#using-typescript[24m
+     • To have some of your "node_modules" files transformed, you can specify a custom [1m"transformIgnorePatterns"[22m in your config.
+     • If you need a custom transformation, specify a [1m"transform"[22m option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the [1m"moduleNameMapper"[22m config option.
+
+    You'll find more details and examples of these config options in the docs:
+    [36mhttps://jestjs.io/docs/configuration[39m
+    For information about custom transformations, see:
+    [36mhttps://jestjs.io/docs/code-transformation[39m
+
+    [1m[31mDetails:[39m[22m
+
+    SyntaxError: /private/tmp/claude-501/gl-jest/src/broken.test.js: Unexpected token (2:5)
+
+    [0m [90m 1 |[39m [36mconst[39m x [33m=[39m {
+    [31m[1m>[22m[39m[90m 2 |[39m test([32m'never runs'[39m[33m,[39m () [33m=>[39m {})
+     [90m   |[39m      [31m[1m^[22m[39m
+     [90m 3 |[39m[0m
+
+      [2mat constructor ([22mnode_modules/.pnpm/@babel+parser@7.29.13/node_modules/@babel/parser/src/parse-error.ts[2m:96:45)[22m
+          at parser.next (<anonymous>)
+          at normalizeFile.next (<anonymous>)
+          at run.next (<anonymous>)
+          at transform.next (<anonymous>)
+
+[1mTest Suites: [22m[1m[31m2 failed[39m[22m, 2 total
+[1mTests:       [22m[1m[31m3 failed[39m[22m, [1m[32m1 passed[39m[22m, 4 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0.155 s, estimated 1 s
+[2mRan all test suites[22m[2m.[22m

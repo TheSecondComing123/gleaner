@@ -1,0 +1,16 @@
+[0m
+[4m/private/tmp/claude-501/gl-eslint/src/a.js[24m
+  [2m1:7[22m   [31merror[39m    'x' is assigned a value but never used        [2mno-unused-vars[22m
+  [2m2:10[22m  [31merror[39m    'f' is defined but never used                 [2mno-unused-vars[22m
+  [2m3:3[22m   [31merror[39m    'console' is not defined                      [2mno-undef[22m
+  [2m3:3[22m   [33mwarning[39m  Unexpected console statement                  [2mno-console[22m
+  [2m4:9[22m   [31merror[39m    Expected '===' and instead saw '=='           [2meqeqeq[22m
+  [2m4:22[22m  [31merror[39m    'undefinedThing' is not defined               [2mno-undef[22m
+  [2m6:5[22m   [33mwarning[39m  'z' is never reassigned. Use 'const' instead  [2mprefer-const[22m
+
+[4m/private/tmp/claude-501/gl-eslint/src/b.js[24m
+  [2m3:1[22m  [31merror[39m  Parsing error: Unexpected token
+
+[31m[1m✖ 8 problems (6 errors, 2 warnings)[22m[39m
+[31m[1m  0 errors and 1 warning potentially fixable with the `--fix` option.[22m[39m
+[0m

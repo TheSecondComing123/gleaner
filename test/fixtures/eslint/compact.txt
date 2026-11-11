@@ -1,0 +1,10 @@
+/private/tmp/claude-501/gl-eslint/src/a.js: line 1, col 7, Error - 'x' is assigned a value but never used. (no-unused-vars)
+/private/tmp/claude-501/gl-eslint/src/a.js: line 2, col 10, Error - 'f' is defined but never used. (no-unused-vars)
+/private/tmp/claude-501/gl-eslint/src/a.js: line 3, col 3, Error - 'console' is not defined. (no-undef)
+/private/tmp/claude-501/gl-eslint/src/a.js: line 3, col 3, Warning - Unexpected console statement. (no-console)
+/private/tmp/claude-501/gl-eslint/src/a.js: line 4, col 9, Error - Expected '===' and instead saw '=='. (eqeqeq)
+/private/tmp/claude-501/gl-eslint/src/a.js: line 4, col 22, Error - 'undefinedThing' is not defined. (no-undef)
+/private/tmp/claude-501/gl-eslint/src/a.js: line 6, col 5, Warning - 'z' is never reassigned. Use 'const' instead. (prefer-const)
+/private/tmp/claude-501/gl-eslint/src/b.js: line 3, col 1, Error - Parsing error: Unexpected token
+
+8 problems

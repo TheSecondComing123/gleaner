@@ -1,0 +1,73 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/a.js",
+    "line": 1,
+    "col": 7,
+    "severity": "error",
+    "message": "'x' is assigned a value but never used",
+    "code": "no-unused-vars",
+    "source": "eslint"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/a.js",
+    "line": 2,
+    "col": 10,
+    "severity": "error",
+    "message": "'f' is defined but never used",
+    "code": "no-unused-vars",
+    "source": "eslint"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/a.js",
+    "line": 3,
+    "col": 3,
+    "severity": "error",
+    "message": "'console' is not defined",
+    "code": "no-undef",
+    "source": "eslint"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/a.js",
+    "line": 3,
+    "col": 3,
+    "severity": "warning",
+    "message": "Unexpected console statement",
+    "code": "no-console",
+    "source": "eslint"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/a.js",
+    "line": 4,
+    "col": 9,
+    "severity": "error",
+    "message": "Expected '===' and instead saw '=='",
+    "code": "eqeqeq",
+    "source": "eslint"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/a.js",
+    "line": 4,
+    "col": 22,
+    "severity": "error",
+    "message": "'undefinedThing' is not defined",
+    "code": "no-undef",
+    "source": "eslint"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/a.js",
+    "line": 6,
+    "col": 5,
+    "severity": "warning",
+    "message": "'z' is never reassigned. Use 'const' instead",
+    "code": "prefer-const",
+    "source": "eslint"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-eslint/src/b.js",
+    "line": 3,
+    "col": 1,
+    "severity": "error",
+    "message": "Parsing error: Unexpected token",
+    "source": "eslint"
+  }
+]

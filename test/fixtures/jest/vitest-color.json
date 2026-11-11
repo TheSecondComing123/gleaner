@@ -1,0 +1,34 @@
+[
+  {
+    "file": "src/broken.test.ts",
+    "line": 2,
+    "col": 6,
+    "severity": "error",
+    "message": "Error: Transform failed with 1 error:\n[PARSE_ERROR] Unexpected token",
+    "source": "vitest"
+  },
+  {
+    "file": "src/sum.test.ts",
+    "line": 6,
+    "col": 23,
+    "severity": "error",
+    "message": "sum > adds numbers\nAssertionError: expected 3 to be 4 // Object.is equality\n- Expected\n+ Received\n- 4\n+ 3",
+    "source": "vitest"
+  },
+  {
+    "file": "src/sum.test.ts",
+    "line": 9,
+    "col": 41,
+    "severity": "error",
+    "message": "sum > works with objects\nAssertionError: expected { a: 2, b: [ 1, 2 ] } to deeply equal { a: 2, b: [ 1, 3 ] }\n- Expected\n+ Received\n  {\n    \"a\": 2,\n    \"b\": [\n      1,\n-     3,\n+     2,\n    ],\n  }",
+    "source": "vitest"
+  },
+  {
+    "file": "src/sum.ts",
+    "line": 5,
+    "col": 17,
+    "severity": "error",
+    "message": "parse throws inside source\nError: empty input",
+    "source": "vitest"
+  }
+]

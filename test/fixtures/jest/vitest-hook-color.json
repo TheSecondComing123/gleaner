@@ -1,0 +1,18 @@
+[
+  {
+    "file": "hook/hook.test.ts",
+    "line": 5,
+    "col": 11,
+    "severity": "error",
+    "message": "db > reads\nError: connection refused",
+    "source": "vitest"
+  },
+  {
+    "file": "hook/hook.test.ts",
+    "line": 5,
+    "col": 11,
+    "severity": "error",
+    "message": "db > writes\nError: connection refused",
+    "source": "vitest"
+  }
+]
