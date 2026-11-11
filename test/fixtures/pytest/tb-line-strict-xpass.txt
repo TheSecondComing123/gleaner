@@ -1,0 +1,18 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.10.22, pytest-9.0.3, pluggy-1.6.0
+rootdir: /private/tmp/claude-501/gl-cap/px
+plugins: cov-7.1.0
+collected 2 items
+
+tests/test_expected.py F                                                 [ 50%]
+tests/test_actual.py F                                                   [100%]
+
+=================================== FAILURES ===================================
+[XPASS(strict)] 
+[XPASS(strict)] 
+E   assert 1 == 2
+/private/tmp/claude-501/gl-cap/px/tests/test_actual.py:2: assert 1 == 2
+=========================== short test summary info ============================
+FAILED tests/test_expected.py::test_fixed - [XPASS(strict)] 
+FAILED tests/test_actual.py::test_broken - assert 1 == 2
+============================== 2 failed in 0.00s ===============================

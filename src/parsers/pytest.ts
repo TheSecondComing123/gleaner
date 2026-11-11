@@ -101,8 +101,10 @@ export function pytest(lines: string[]): Problem[] {
       if (seen.has(name) || seen.has(summary[1])) continue
       seen.add(summary[1])
       // Under --tb=line the failure already has its spot (maybe in a helper file); the summary lists
-      // the same failures in the same order and only adds the test's name.
-      const located = (line.startsWith('FAILED') ? failures : errors).shift()
+      // the same failures in the same order and only adds the test's name. A strict XPASS has no spot.
+      const located = summary[2]?.startsWith('[XPASS')
+        ? undefined
+        : (line.startsWith('FAILED') ? failures : errors).shift()
       if (located) {
         located.message = `${name}: ${located.message}`
         continue

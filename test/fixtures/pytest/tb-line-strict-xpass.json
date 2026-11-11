@@ -1,0 +1,16 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-cap/px/tests/test_actual.py",
+    "line": 2,
+    "severity": "error",
+    "message": "test_broken: assert 1 == 2",
+    "source": "pytest"
+  },
+  {
+    "file": "tests/test_expected.py",
+    "line": 1,
+    "severity": "error",
+    "message": "test_fixed: [XPASS(strict)]",
+    "source": "pytest"
+  }
+]
