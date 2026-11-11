@@ -1,0 +1,21 @@
+In file included from main.c:2:
+./util.h:2:5: error: conflicting types for 'add'
+    2 | int add(int a, double b);
+      |     ^
+./util.h:1:5: note: previous declaration is here
+    1 | int add(int a, int b);
+      |     ^
+main.c:5:9: error: incompatible pointer to integer conversion initializing 'int' with an expression of type 'char[6]' [-Wint-conversion]
+    5 |     int x = "hello";
+      |         ^   ~~~~~~~
+main.c:6:20: error: use of undeclared identifier 'y'
+    6 |     printf("%d\n", y);
+      |                    ^
+main.c:7:5: error: call to undeclared function 'undefined_fn'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+    7 |     undefined_fn(1);
+      |     ^
+main.c:8:13: error: expected ';' after return statement
+    8 |     return 0
+      |             ^
+      |             ;
+5 errors generated.

@@ -1,0 +1,36 @@
+[96msrc/app.ts[0m:[93m2[0m:[93m25[0m - [91merror[0m[90m TS2307: [0mCannot find module './nope' or its corresponding type declarations.
+
+[7m2[0m import { missing } from './nope'
+[7m [0m [91m                        ~~~~~~~~[0m
+
+[96msrc/app.ts[0m:[93m4[0m:[93m7[0m - [91merror[0m[90m TS2322: [0mType 'string' is not assignable to type 'number'.
+
+[7m4[0m const count: number = 'three'
+[7m [0m [91m      ~~~~~[0m
+
+[96msrc/app.ts[0m:[93m7[0m:[93m30[0m - [91merror[0m[90m TS2322: [0mType 'string' is not assignable to type 'number'.
+
+[7m7[0m const u: User = { name: 'a', age: '1' }
+[7m [0m [91m                             ~~~[0m
+
+  [96msrc/app.ts[0m:[93m6[0m:[93m32[0m
+    [7m6[0m interface User { name: string; age: number }
+    [7m [0m [96m                               ~~~[0m
+    The expected type comes from property 'age' which is declared here on type 'User'
+
+[96msrc/app.ts[0m:[93m9[0m:[93m7[0m - [91merror[0m[90m TS2345: [0mArgument of type 'number' is not assignable to parameter of type 'string'.
+
+[7m9[0m greet(42)
+[7m [0m [91m      ~~[0m
+
+[96msrc/util.ts[0m:[93m5[0m:[93m1[0m - [91merror[0m[90m TS2322: [0mType 'undefined' is not assignable to type 'number'.
+
+[7m5[0m unused = undefined
+[7m [0m [91m~~~~~~[0m
+
+
+Found 5 errors in 2 files.
+
+Errors  Files
+     4  src/app.ts[90m:2[0m
+     1  src/util.ts[90m:5[0m

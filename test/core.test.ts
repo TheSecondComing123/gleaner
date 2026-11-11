@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
+import { commandName, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
 
 describe('clean', () => {
@@ -38,5 +39,31 @@ describe('resolveFile', () => {
 
   it('gives up when nothing exists', async () => {
     expect(await resolveFile('nope.ts', ['/repo'], exists)).toBeUndefined()
+  })
+})
+
+describe('commandName', () => {
+  it.each([
+    ['tsc -p .', 'tsc'],
+    ['npx tsc --noEmit', 'tsc'],
+    ['pnpm exec tsc', 'tsc'],
+    ['./node_modules/.bin/tsc', 'tsc'],
+    ['NODE_ENV=test tsc', 'tsc'],
+    ['uv run pytest -x', 'pytest'],
+    ['python3 -m pytest', 'pytest'],
+    ['python app.py', 'python'],
+  ])('%s → %s', (line, name) => {
+    expect(commandName(line)).toBe(name)
+  })
+})
+
+describe('pickParsers', () => {
+  it('finds commands inside a chain', () => {
+    expect(pickParsers('cd app && tsc')).toEqual([parsers.tsc])
+    expect(pickParsers('tsc; clang -c main.c')).toEqual([parsers.tsc, parsers.gcc])
+  })
+
+  it('ignores commands it does not know', () => {
+    expect(pickParsers('ls -la')).toEqual([])
   })
 })

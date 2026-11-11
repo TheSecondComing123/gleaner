@@ -1,0 +1,52 @@
+[
+  {
+    "file": "./util.h",
+    "line": 2,
+    "col": 5,
+    "severity": "error",
+    "message": "conflicting types for 'add'",
+    "source": "gcc",
+    "related": [
+      {
+        "file": "./util.h",
+        "line": 1,
+        "col": 5,
+        "message": "previous declaration is here"
+      }
+    ]
+  },
+  {
+    "file": "main.c",
+    "line": 5,
+    "col": 9,
+    "severity": "error",
+    "message": "incompatible pointer to integer conversion initializing 'int' with an expression of type 'char[6]'",
+    "code": "-Wint-conversion",
+    "source": "gcc"
+  },
+  {
+    "file": "main.c",
+    "line": 6,
+    "col": 20,
+    "severity": "error",
+    "message": "use of undeclared identifier 'y'",
+    "source": "gcc"
+  },
+  {
+    "file": "main.c",
+    "line": 7,
+    "col": 5,
+    "severity": "error",
+    "message": "call to undeclared function 'undefined_fn'; ISO C99 and later do not support implicit function declarations",
+    "code": "-Wimplicit-function-declaration",
+    "source": "gcc"
+  },
+  {
+    "file": "main.c",
+    "line": 8,
+    "col": 13,
+    "severity": "error",
+    "message": "expected ';' after return statement",
+    "source": "gcc"
+  }
+]

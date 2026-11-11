@@ -1,0 +1,40 @@
+[
+  {
+    "file": "shapes.cpp",
+    "line": 6,
+    "col": 12,
+    "severity": "error",
+    "message": "variable type 'Square' is an abstract class",
+    "source": "gcc",
+    "related": [
+      {
+        "file": "shapes.cpp",
+        "line": 3,
+        "col": 31,
+        "message": "unimplemented pure virtual method 'area' in 'Square'"
+      }
+    ]
+  },
+  {
+    "file": "shapes.cpp",
+    "line": 8,
+    "col": 7,
+    "severity": "error",
+    "message": "no matching member function for call to 'push_back'",
+    "source": "gcc",
+    "related": [
+      {
+        "file": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__vector/vector.h",
+        "line": 455,
+        "col": 60,
+        "message": "candidate function not viable: no known conversion from 'std::string' (aka 'basic_string<char>') to 'const value_type' (aka 'const int') for 1st argument"
+      },
+      {
+        "file": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__vector/vector.h",
+        "line": 457,
+        "col": 60,
+        "message": "candidate function not viable: no known conversion from 'std::string' (aka 'basic_string<char>') to 'value_type' (aka 'int') for 1st argument"
+      }
+    ]
+  }
+]

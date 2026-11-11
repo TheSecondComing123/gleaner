@@ -31,7 +31,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "biome check .",
-    "format": "biome check --write ."
+    "format": "biome check --write .",
+    "fixture": "esbuild scripts/fixture.ts --bundle --platform=node --log-level=warning --outfile=dist/fixture.js && node dist/fixture.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.6",

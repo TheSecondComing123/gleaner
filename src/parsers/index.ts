@@ -1,6 +1,22 @@
 import type { Parser } from '../problem'
+import { gcc } from './gcc'
+import { tsc } from './tsc'
 
-const byCommand: Record<string, Parser> = {}
+export const parsers: Record<string, Parser> = { tsc, gcc }
+
+// Which parsers read the output of which command.
+const COMMANDS: Record<string, string[]> = {
+  tsc: ['tsc'],
+  tsgo: ['tsc'],
+  'vue-tsc': ['tsc'],
+  gcc: ['gcc'],
+  'g++': ['gcc'],
+  cc: ['gcc'],
+  'c++': ['gcc'],
+  clang: ['gcc'],
+  'clang++': ['gcc'],
+  swiftc: ['gcc'],
+}
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.
 const WRAPPERS = new Set([
@@ -22,20 +38,22 @@ const WRAPPERS = new Set([
   'sudo',
 ])
 
-function commandName(segment: string): string | undefined {
-  for (const token of segment.trim().split(/\s+/)) {
+export function commandName(segment: string): string | undefined {
+  const tokens = segment.trim().split(/\s+/)
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]
     // ponytail: a wrapper flag that takes a value (`uv run --with x pytest`) makes `x` look like the command
     if (!token || token.startsWith('-') || /^\w+=/.test(token) || WRAPPERS.has(token)) continue
-    return token.split('/').pop()
+    const name = token.split('/').pop()
+    // `python -m pytest` runs pytest
+    if (name && /^python[\d.]*$/.test(name) && tokens[i + 1] === '-m' && tokens[i + 2]) return tokens[i + 2]
+    return name
   }
   return undefined
 }
 
-// Every known command in a chain like `cd app && tsc`.
+// Every parser for every known command in a chain like `cd app && tsc`.
 export function pickParsers(commandLine: string): Parser[] {
-  const found = commandLine
-    .split(/&&|\|\||;|\|/)
-    .map((segment) => byCommand[commandName(segment) ?? ''])
-    .filter((parser): parser is Parser => parser !== undefined)
-  return [...new Set(found)]
+  const names = commandLine.split(/&&|\|\||;|\|/).flatMap((segment) => COMMANDS[commandName(segment) ?? ''] ?? [])
+  return [...new Set(names)].map((name) => parsers[name])
 }

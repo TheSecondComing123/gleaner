@@ -1,0 +1,16 @@
+[1mshapes.cpp:6:12: [0m[0;1;31merror: [0m[1mvariable type 'Square' is an abstract class[0m
+    6 |     Square s;[0m
+      | [0;1;32m           ^
+[0m[1mshapes.cpp:3:31: [0m[0;1;36mnote: [0munimplemented pure virtual method 'area' in 'Square'[0m
+    3 | [0;34mstruct[0m Shape { [0;34mvirtual[0m [0;34mdouble[0m area() [0;34mconst[0m = [0;32m0[0m; };[0m
+      | [0;1;32m                              ^
+[0m[1mshapes.cpp:8:7: [0m[0;1;31merror: [0m[1mno matching member function for call to 'push_back'[0m
+    8 |     v.push_back(std::string([0;32m"x"[0m));[0m
+      | [0;1;32m    ~~^~~~~~~~~
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__vector/vector.h:455:60: [0m[0;1;36mnote: [0mcandidate function not viable: no known conversion from 'std::string' (aka 'basic_string<char>') to 'const value_type' (aka 'const int') for 1st argument[0m
+  455 |   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI [0;34mvoid[0m push_back(const_reference __x) { emplace_back(__x); }[0m
+      | [0;1;32m                                                           ^         ~~~~~~~~~~~~~~~~~~~
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__vector/vector.h:457:60: [0m[0;1;36mnote: [0mcandidate function not viable: no known conversion from 'std::string' (aka 'basic_string<char>') to 'value_type' (aka 'int') for 1st argument[0m
+  457 |   _LIBCPP_CONSTEXPR_SINCE_CXX20 _LIBCPP_HIDE_FROM_ABI [0;34mvoid[0m push_back(value_type&& __x) { emplace_back(std::move(__x)); }[0m
+      | [0;1;32m                                                           ^         ~~~~~~~~~~~~~~~~
+[0m2 errors generated.

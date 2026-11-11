@@ -1,0 +1,6 @@
+src/app.ts(2,7): error TS2322: Type '(event: { id: string; tags: number[]; }) => void' is not assignable to type 'Handler'.
+  Types of parameters 'event' and 'event' are incompatible.
+    Type '{ id: number; tags: string[]; }' is not assignable to type '{ id: string; tags: number[]; }'.
+      Types of property 'id' are incompatible.
+        Type 'number' is not assignable to type 'string'.
+src/app.ts(3,55): error TS2322: Type 'string' is not assignable to type 'number'.

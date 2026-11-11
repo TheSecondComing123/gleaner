@@ -1,0 +1,5 @@
+src/app.ts(2,25): error TS2307: Cannot find module './nope' or its corresponding type declarations.
+src/app.ts(4,7): error TS2322: Type 'string' is not assignable to type 'number'.
+src/app.ts(7,30): error TS2322: Type 'string' is not assignable to type 'number'.
+src/app.ts(9,7): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/util.ts(5,1): error TS2322: Type 'undefined' is not assignable to type 'number'.
