@@ -10,6 +10,8 @@ const ARROW = /^\s*--> (.+):(\d+):(\d+)$/
 const LINT = /^\s*= note: `#\[(?:warn|deny|forbid)\(([\w:]+)\)\]`/
 // cargo test / cargo run: `thread 'tests::adds' (7997879) panicked at src/util.rs:13:9:`, message below.
 const PANIC = /^thread '.*'(?: \(\d+\))? panicked at (.+):(\d+):(\d+):$/
+// `--message-format short`: `src/main.rs:2:18: error[E0308]: mismatched types: expected ...`
+const SHORT = /^(.+\.rs):(\d+):(\d+): (error|warning)(?:\[(\w+)\])?: (.*)$/
 
 export function rustc(lines: string[]): Problem[] {
   const problems: Problem[] = []
@@ -25,6 +27,23 @@ export function rustc(lines: string[]): Problem[] {
         continue
       }
       panic = undefined
+    }
+
+    const short = SHORT.exec(line)
+    if (short) {
+      const [, file, row, col, severity, code, message] = short
+      problems.push({
+        file,
+        line: Number(row),
+        col: Number(col),
+        severity: severity as Severity,
+        code,
+        message,
+        source: 'rustc',
+      })
+      current = undefined
+      pending = undefined
+      continue
     }
 
     const head = HEAD.exec(line)

@@ -1,0 +1,11 @@
+[
+  {
+    "file": "src/main.rs",
+    "line": 2,
+    "col": 18,
+    "severity": "error",
+    "code": "E0308",
+    "message": "mismatched types: expected `i32`, found `&str`",
+    "source": "rustc"
+  }
+]
