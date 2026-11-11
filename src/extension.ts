@@ -1,3 +1,4 @@
+import * as path from 'node:path'
 import * as vscode from 'vscode'
 import { clean } from './clean'
 import { DEFAULT_IGNORED, pickParsers } from './parsers'
@@ -101,7 +102,7 @@ export function activate(context: vscode.ExtensionContext): void {
     let skipped = 0
 
     for (const problem of found) {
-      const file = await resolveFile(problem.file, dirs, exists)
+      const file = await locate(problem.file, dirs)
       if (!file) {
         skipped++
         continue
@@ -189,11 +190,21 @@ async function toDiagnostic(problem: Problem, dirs: string[]): Promise<vscode.Di
   if (problem.code) diagnostic.code = problem.code
   const related: vscode.DiagnosticRelatedInformation[] = []
   for (const r of problem.related ?? []) {
-    const file = await resolveFile(r.file, dirs, exists)
+    const file = await locate(r.file, dirs)
     if (!file) continue
     const at = new vscode.Position(Math.max(r.line - 1, 0), Math.max((r.col ?? 1) - 1, 0))
     related.push(new vscode.DiagnosticRelatedInformation(new vscode.Location(vscode.Uri.file(file), at), r.message))
   }
   if (related.length) diagnostic.relatedInformation = related
   return diagnostic
+}
+
+// Some tools print paths relative to a package, not to where the command ran
+// (`go test ./...` prints `util_test.go`). If exactly one file in the workspace
+// ends with that path, it's the one.
+async function locate(file: string, dirs: string[]): Promise<string | undefined> {
+  const direct = await resolveFile(file, dirs, exists)
+  if (direct || path.isAbsolute(file) || file.startsWith('..')) return direct
+  const matches = await vscode.workspace.findFiles(`**/${file.replace(/^\.\//, '')}`, '**/node_modules/**', 2)
+  return matches.length === 1 ? matches[0].fsPath : undefined
 }
