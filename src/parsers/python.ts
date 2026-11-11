@@ -8,6 +8,7 @@ const BREAK =
   /^((?:Exception Group )?Traceback \(most recent call last\):|During handling of the above exception|The above exception was the direct cause)/
 // An ExceptionGroup draws each traceback inside a tree: `  | ` in front of every line,
 // `  + ` on the first, and `  +-+---- 1 ----` rules between the grouped exceptions.
+const GROUP_START = /^ *\+ Exception Group Traceback/
 const GROUP_PREFIX = /^ *[+|](?: |$)/
 const GROUP_RULE = /^ *\+-/
 // Unix `/lib/python3.x/`, Windows `C:\\Python313\\Lib\\`, any `site-packages`.
@@ -23,9 +24,13 @@ export function python(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let frames: Frame[] = []
   let current: Problem | undefined
+  let group = false
 
   for (const raw of lines) {
-    const line = GROUP_RULE.test(raw) ? '' : raw.replace(GROUP_PREFIX, '')
+    // The tree's decorations only mean something inside a group; a message line can start with `+ ` too.
+    if (GROUP_START.test(raw)) group = true
+    else if (group && !GROUP_PREFIX.test(raw) && !GROUP_RULE.test(raw)) group = false
+    const line = !group ? raw : GROUP_RULE.test(raw) ? '' : raw.replace(GROUP_PREFIX, '')
     if (START.test(line)) {
       frames = []
       current = undefined

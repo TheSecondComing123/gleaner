@@ -1,0 +1,9 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-cap/multi.py",
+    "line": 1,
+    "severity": "error",
+    "message": "ValueError: first\n+ expected\n| actual\n+-- tail",
+    "source": "python"
+  }
+]

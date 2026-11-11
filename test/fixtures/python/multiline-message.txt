@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/gl-cap/multi.py", line 1, in <module>
+    raise ValueError("first\n+ expected\n| actual\n+-- tail")
+ValueError: first
++ expected
+| actual
++-- tail
