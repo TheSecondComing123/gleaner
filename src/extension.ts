@@ -157,11 +157,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     // a language server reporting (or dropping) the same error changes what's shown
     vscode.languages.onDidChangeDiagnostics(({ uris }) => {
-      for (const uri of uris) if (problems.has(uri.fsPath)) problems.render(uri.fsPath)
+      for (const uri of uris) if (uri.scheme === 'file' && problems.has(uri.fsPath)) problems.render(uri.fsPath)
       updateStatus()
     }),
     vscode.workspace.onDidChangeTextDocument(({ document, contentChanges }) => {
-      if (!contentChanges.length || !problems.has(document.uri.fsPath)) return
+      // a git diff view has the same path under another scheme
+      if (!contentChanges.length || document.uri.scheme !== 'file' || !problems.touches(document.uri.fsPath)) return
       problems.edit(document.uri.fsPath, contentChanges)
       updateStatus()
     }),

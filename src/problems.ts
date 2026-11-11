@@ -41,28 +41,57 @@ export class Problems implements vscode.Disposable {
     this.collection.set(uri, next)
   }
 
-  // An edit moves gleaner's problems along with the text; a problem whose text was replaced goes.
+  // does this file hold any of gleaner's problems or their related locations
+  touches(file: string): boolean {
+    for (const files of this.byRun.values())
+      for (const [owner, list] of files)
+        if (owner === file || list.some((d) => d.relatedInformation?.some((r) => r.location.uri.fsPath === file)))
+          return true
+    return false
+  }
+
+  // An edit moves gleaner's problems and their related locations along with the text; a problem
+  // whose text was replaced goes.
   edit(file: string, changes: readonly Change[]): void {
-    for (const files of this.byRun.values()) {
-      const list = files.get(file)
-      if (!list) continue
-      const kept: vscode.Diagnostic[] = []
-      for (const d of list) {
-        let start: Position | undefined = d.range.start
-        let end: Position | undefined = d.range.end
-        for (const change of changes) {
-          start = start && mapPosition(start, change)
-          end = end && mapPosition(end, change)
-        }
-        if (!start) continue
-        end ??= start
-        d.range = new vscode.Range(start.line, start.character, end.line, end.character)
-        kept.push(d)
+    const move = (range: vscode.Range): vscode.Range | undefined => {
+      let start: Position | undefined = range.start
+      let end: Position | undefined = range.end
+      for (const change of changes) {
+        start = start && mapPosition(start, change)
+        end = end && mapPosition(end, change)
       }
-      if (kept.length) files.set(file, kept)
-      else files.delete(file)
+      if (!start) return undefined
+      end ??= start
+      return new vscode.Range(start.line, start.character, end.line, end.character)
     }
-    this.render(file, true)
+    const touched = new Set<string>()
+    for (const files of this.byRun.values()) {
+      for (const [owner, list] of files) {
+        const kept: vscode.Diagnostic[] = []
+        for (const d of list) {
+          if (owner === file) {
+            touched.add(owner)
+            const range = move(d.range)
+            if (!range) continue
+            d.range = range
+          }
+          if (d.relatedInformation?.some((r) => r.location.uri.fsPath === file)) {
+            touched.add(owner)
+            d.relatedInformation = d.relatedInformation.flatMap((r) => {
+              if (r.location.uri.fsPath !== file) return [r]
+              const range = move(r.location.range)
+              return range
+                ? [new vscode.DiagnosticRelatedInformation(new vscode.Location(r.location.uri, range), r.message)]
+                : []
+            })
+          }
+          kept.push(d)
+        }
+        if (kept.length) files.set(owner, kept)
+        else files.delete(owner)
+      }
+    }
+    for (const owner of touched) this.render(owner, true)
   }
 
   // Every diagnostic on the file except gleaner's own.
