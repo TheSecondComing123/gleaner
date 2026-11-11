@@ -88,9 +88,10 @@ export function activate(context: vscode.ExtensionContext): void {
     // Picked now, not at start: `cd web && npm run build` reads web/package.json.
     const parsers = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
     const found = parseAll(parsers, clean(run.raw)).slice(0, MAX_CANDIDATES)
-    // Ctrl+C before anything printed: keep the last full result instead of wiping it.
-    if (exitCode === 130 && !found.length) {
-      log.appendLine(`${run.command}: stopped before any problems, kept the last result`)
+    // Only a clean exit means "no problems left". A failed run with nothing readable (Ctrl+C, which
+    // is exit 130 in bash and zsh but 1 in PowerShell, or a crash we can't parse) keeps the last list.
+    if (exitCode !== 0 && !found.length) {
+      log.appendLine(`${run.command}: exit ${exitCode ?? '?'} with no problems found, kept the last result`)
       return
     }
 

@@ -28,19 +28,19 @@ vs code can already do this, but only through tasks.json and regex problem match
 
 ## supported tools
 
-| language               | tools                                                                                                   |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| typescript, javascript | `tsc`, `vue-tsc`, `tsgo`, `eslint`, `biome`, `esbuild`, `vite`, `jest`, `vitest`, `bun test`, `deno`    |
-| js runtimes            | crashes from `node`, `tsx`, `ts-node`, `bun`, `deno`                                                    |
+| language               | tools                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| typescript, javascript | `tsc`, `vue-tsc`, `tsgo`, `eslint`, `biome`, `esbuild`, `vite`, `jest`, `vitest`, `bun test`, `deno`   |
+| js runtimes            | crashes from `node`, `tsx`, `ts-node`, `bun`, `deno`                                                   |
 | c, c++, swift, zig     | `gcc`, `g++`, `clang`, `clang++`, `cc`, `swiftc`, `swift build`, `cppcheck`, `zig` (errors and panics) |
-| build files            | `make` (its own errors), `cmake`                                                                        |
-| rust                   | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc`                                     |
-| go                     | `go build`, `go vet`, `go test`, `go run` panics                                                        |
-| python                 | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint`                                     |
-| java                   | `javac`, uncaught exceptions from `java`                                                                |
-| c#                     | `dotnet build`, `msbuild`                                                                               |
-| ruby, lua              | crashes and syntax errors from `ruby`, `ruby -c`, `lua`, `luajit`                                       |
-| shell                  | `shellcheck`                                                                                            |
+| build files            | `make` (its own errors), `cmake`                                                                       |
+| rust                   | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc`                                    |
+| go                     | `go build`, `go vet`, `go test`, `go run` panics                                                       |
+| python                 | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint`                                    |
+| java                   | `javac`, uncaught exceptions from `java`                                                               |
+| c#                     | `dotnet build`, `msbuild`                                                                              |
+| ruby, lua              | crashes and syntax errors from `ruby`, `ruby -c`, `lua`, `luajit`                                      |
+| shell                  | `shellcheck`                                                                                           |
 
 package scripts like `npm run build` or `pnpm test` are read through `package.json` to the commands they run. a command gleaner doesn't know goes through every parser. matches still have to point at a file that exists, so random output doesn't turn into problems.
 
@@ -61,6 +61,7 @@ code --install-extension gleaner-*.vsix
 open a terminal in vs code and run your build, linter or tests. that's it.
 
 - the status bar shows how many problems came from the terminal. click it to open the problems panel.
+- rerunning a command replaces its problems. a run that fails without printing anything gleaner can read (say you hit ctrl+c) keeps the last list; a clean exit clears it.
 - **gleaner: clear problems** in the command palette clears everything gleaner added.
 - if a terminal has no shell integration, the status bar says so and links to vs code's docs on turning it on.
 
