@@ -14,11 +14,12 @@ export interface Change {
   text: string
 }
 
-// `TS2322`, `2322` and `{ value: 2322 }` are the same code
+// `TS2322`, `2322` and `{ value: 2322 }` are the same code: tsc prints the prefix, the typescript
+// extension reports the number. Other prefixes mean something (`E0611` isn't `W0611`).
 export function normalizeCode(code: Shown['code']): string | undefined {
   if (code === undefined) return undefined
   const value = String(typeof code === 'object' ? code.value : code)
-  return value.replace(/^[A-Za-z]+(?=\d+$)/, '').toLowerCase()
+  return value.replace(/^TS(?=\d+$)/i, '').toLowerCase()
 }
 
 const at = (d: Shown) => `${d.range.start.line}:${d.range.start.character}`

@@ -282,6 +282,8 @@ describe('display', () => {
     expect(display([[mine]], [p(6, 2, 'other words', 2322)])).toEqual([])
     expect(display([[mine]], [p(6, 2, 'other words', { value: '2322' })])).toEqual([])
     expect(display([[mine]], [p(6, 2, 'bad', 'TS2551')])).toEqual([mine])
+    const pylint = p(6, 2, 'unused import', 'W0611')
+    expect(display([[pylint]], [p(6, 2, 'other', 'E0611')])).toEqual([pylint])
   })
 
   it('compares messages when a side has no code', () => {
