@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.vsix
+.remember/
+.claude/
+spike/spike-log.jsonl
