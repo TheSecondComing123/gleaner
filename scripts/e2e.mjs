@@ -258,36 +258,36 @@ try {
     }
   }
 
+  // runs node build.mjs in the focused terminal and waits until it has read its mode, so a slow
+  // start can't pick up the next step's mode
+  const build = async (value) => {
+    mode(value)
+    rmSync(join(demo, 'started'), { force: true })
+    await page.keyboard.type('node build.mjs')
+    await page.keyboard.press('Enter')
+    for (let i = 0; i < 300 && !existsSync(join(demo, 'started')); i++) await page.waitForTimeout(100)
+    if (!existsSync(join(demo, 'started'))) throw new Error(`node build.mjs (${value}) never started`)
+  }
+
   // older run ends later
-  mode('old')
-  await page.keyboard.type('node build.mjs')
-  await page.keyboard.press('Enter')
-  await page.waitForTimeout(1500)
-  mode('new')
+  await build('old')
   await page.keyboard.press('Control+Shift+Backquote')
   await ready()
-  await page.keyboard.type('node build.mjs')
-  await page.keyboard.press('Enter')
+  await build('new')
   await status(5, 'newer run')
   writeFileSync(join(demo, 'release'), '')
   await page.waitForTimeout(3000)
   await status(5, 'older run ending later')
 
   // Ctrl+C keeps the last result
-  mode('hang')
-  await page.keyboard.type('node build.mjs')
-  await page.keyboard.press('Enter')
-  await page.waitForTimeout(2000)
+  await build('hang')
   await page.keyboard.press('Control+C')
   await page.waitForTimeout(3000)
   await status(5, 'ctrl+c')
 
   // Clear; a running run still publishes
   rmSync(join(demo, 'release'))
-  mode('old')
-  await page.keyboard.type('node build.mjs')
-  await page.keyboard.press('Enter')
-  await page.waitForTimeout(1500)
+  await build('old')
   await page.keyboard.press('F1')
   await page.keyboard.type('Gleaner: Clear Problems')
   await page.waitForTimeout(500)
@@ -363,16 +363,8 @@ try {
 
   // turning off clears everything, including a run that's still going
   rmSync(join(demo, 'release'))
-  mode('old')
   await command('Terminal: Focus Terminal')
-  rmSync(join(demo, 'started'), { force: true })
-  await page.keyboard.type('node build.mjs')
-  await page.keyboard.press('Enter')
-  await page.waitForTimeout(1500)
-  if (!existsSync(join(demo, 'started'))) {
-    console.error('turned off: node build.mjs never reached the terminal')
-    failed = true
-  }
+  await build('old')
   const settings = join(user, 'User', 'settings.json')
   writeFileSync(settings, JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.enable': false }))
   await page.waitForTimeout(3000)
