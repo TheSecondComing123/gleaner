@@ -9,6 +9,10 @@ describe('clean', () => {
     expect(clean(raw)).toEqual(['src/app.ts:12:5 - error TS2322: bad'])
   })
 
+  it('strips charset escapes', () => {
+    expect(clean('a.py:7: \x1b[1m\x1b[31merror:\x1b(B\x1b[m bad\n')).toEqual(['a.py:7: error: bad'])
+  })
+
   it('keeps only the last redraw of a line', () => {
     expect(clean('building 10%\rbuilding 50%\rbuilding 100%\r\ndone\r\n')).toEqual(['building 100%', 'done'])
   })

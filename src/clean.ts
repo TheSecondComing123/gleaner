@@ -1,6 +1,8 @@
 const OSC = /\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g
 const CSI = /\x1b\[[0-?]*[ -/]*[@-~]/g
-const ESC = /\x1b[@-_]/g
+// Two-byte escapes, plus ones with intermediate bytes like `ESC ( B` (charset reset,
+// which mypy prints through curses).
+const ESC = /\x1b[ -/]*[0-~]/g
 
 // Terminal bytes → plain lines. A `\r` without `\n` means the line was redrawn,
 // so only the text after the last one is what the user saw. This also drops

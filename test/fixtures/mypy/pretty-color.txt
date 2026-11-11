@@ -1,0 +1,36 @@
+pkg/calls.py:7: [1m[31merror:(B[m Unexpected keyword argument (B[m[1m"z"(B[m for (B[m[1m"greet"(B[m  (B[m[33m[call-arg](B[m
+[2;10m            greet("x", z=1)(B[m
+[31m            ^~~~~~~~~~~~~~~(B[m
+pkg/calls.py:8: [1m[31merror:(B[m Argument 1 to (B[m[1m"greet"(B[m has incompatible type (B[m[1m"int"(B[m;
+expected (B[m[1m"str"(B[m  (B[m[33m[arg-type](B[m
+[2;10m            greet(3)(B[m
+[31m                  ^(B[m
+pkg/app.py:19: [1m[31merror:(B[m Incompatible types in assignment (expression has type
+(B[m[1m"int"(B[m, variable has type (B[m[1m"str"(B[m)  (B[m[33m[assignment](B[m
+[2;10m    result: str = add(1, 2)(B[m
+[31m                  ^~~~~~~~~(B[m
+pkg/app.py:20: [1m[31merror:(B[m Incompatible types (expression has type (B[m[1m"str"(B[m, TypedDict
+item (B[m[1m"y"(B[m has type (B[m[1m"int"(B[m)  (B[m[33m[typeddict-item](B[m
+[2;10m    p: Point = {"x": 1, "y": "two"}(B[m
+[31m                             ^~~~~(B[m
+pkg/app.py:21: [1m[31merror:(B[m Argument 1 to (B[m[1m"greet"(B[m has incompatible type (B[m[1m"int"(B[m;
+expected (B[m[1m"str"(B[m  (B[m[33m[arg-type](B[m
+[2;10m    greet(5)(B[m
+[31m          ^(B[m
+pkg/app.py:22: [1m[31merror:(B[m Name (B[m[1m"undefined_name"(B[m is not defined  (B[m[33m[name-defined](B[m
+[2;10m    undefined_name.foo()(B[m
+[31m    ^~~~~~~~~~~~~~(B[m
+pkg/app.py:24: [34mnote:(B[m Revealed type is (B[m[1m"str"(B[m(B[m
+pkg/app.py:25: [1m[31merror:(B[m No overload variant of (B[m[1m"join"(B[m matches argument types
+(B[m[1m"str"(B[m, (B[m[1m"None"(B[m  (B[m[33m[call-overload](B[m
+[2;10m    x = os.path.join("a", None)(B[m
+[31m        ^~~~~~~~~~~~~~~~~~~~~~~(B[m
+pkg/app.py:25: [34mnote:(B[m Possible overload variants:(B[m
+pkg/app.py:25: [34mnote:(B[m     def join(str, /, *paths: str) -> str(B[m
+pkg/app.py:25: [34mnote:(B[m     def join(str | PathLike[str], /, *paths: str | PathLike[str]) -> str(B[m
+pkg/app.py:25: [34mnote:(B[m     def join(bytes | PathLike[bytes], /, *paths: bytes | PathLike[bytes]) -> bytes(B[m
+pkg/use.py:5: [1m[31merror:(B[m Unexpected keyword argument (B[m[1m"z"(B[m for (B[m[1m"greet"(B[m  (B[m[33m[call-arg](B[m
+[2;10m        greet("x", z=1)(B[m
+[31m        ^~~~~~~~~~~~~~~(B[m
+pkg/use.py:5: [34mnote:(B[m (B[m[1m"greet"(B[m defined in (B[m[1m"pkg.calls"(B[m(B[m
+[1m[31mFound 8 errors in 3 files (checked 5 source files)(B[m
