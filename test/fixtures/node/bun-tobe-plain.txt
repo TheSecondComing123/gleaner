@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+a.test.ts:
+1 | import { expect, test } from 'bun:test'
+2 | 
+3 | test('adds', () => {
+4 |   expect(1 + 1).toBe(3)
+                    ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 2
+
+      at <anonymous> (/private/tmp/claude-501/gl-bun2/a.test.ts:4:17)
+(fail) adds [0.22ms]
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [7.00ms]
