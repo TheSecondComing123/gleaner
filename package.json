@@ -102,5 +102,6 @@
   },
   "extensionKind": [
     "workspace"
-  ]
+  ],
+  "icon": "media/icon.png"
 }
