@@ -95,12 +95,22 @@ try {
   await page.keyboard.press('Meta+Shift+M')
   await page.waitForTimeout(1500)
   const rows = await page.locator('.markers-panel .monaco-list-row').allInnerTexts()
-  console.log(`problems panel:\n  ${rows.join('\n  ')}`)
+  console.log(`problems panel:\n  ${rows.map((r) => r.replace(/\n/g, ' ')).join('\n  ')}`)
 
   const count = Number(text.match(/(\d+) from terminal/)?.[1])
   if (count !== 4) {
     console.error(`expected 4 problems from tsc, got ${count}`)
     failed = true
+  }
+  // The diagnostics themselves, not just the status count: code and position of each tsc error.
+  const expected = ['TS2322 [Ln 7, Col 3]', 'TS2322 [Ln 10, Col 44]', 'TS2322 [Ln 4, Col 9]', 'TS2551 [Ln 5, Col 27]']
+  const shown = rows.map((r) => r.replace(/\s+/g, ' '))
+  for (const want of expected) {
+    const [code, at] = [want.split(' ')[0], want.slice(want.indexOf('['))]
+    if (!shown.some((r) => r.includes('tsc') && r.includes(code) && r.includes(at))) {
+      console.error(`missing from the problems panel: ${want}`)
+      failed = true
+    }
   }
 
   await page.screenshot({ path: join(root, 'docs', 'screenshot.png') })
