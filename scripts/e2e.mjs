@@ -196,6 +196,24 @@ try {
   await page.waitForTimeout(3000)
   await status(5, 'ctrl+c')
 
+  // Clear empties the list; a run that was still going when it was cleared publishes when it ends.
+  rmSync(join(demo, 'release'))
+  mode('old')
+  await page.keyboard.type('node build.mjs')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(1500)
+  await page.keyboard.press('F1')
+  await page.keyboard.type('Gleaner: Clear Problems')
+  await page.waitForTimeout(500)
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(1500)
+  if (await page.getByText(/from terminal/).count()) {
+    console.error(`cleared: status still shows ${await page.getByText(/from terminal/).textContent()}`)
+    failed = true
+  } else console.log('cleared: nothing from terminal')
+  writeFileSync(join(demo, 'release'), '')
+  await status(2, 'run going during clear')
+
   // Turning gleaner off clears its problems, and a run still going when it's turned off adds none.
   rmSync(join(demo, 'release'))
   mode('old')
