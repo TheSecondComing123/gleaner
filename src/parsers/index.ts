@@ -2,6 +2,7 @@ import type { Parser, Problem } from '../problem'
 import { eslint } from './eslint'
 import { gcc } from './gcc'
 import { go } from './go'
+import { java } from './java'
 import { javac } from './javac'
 import { jest } from './jest'
 import { lua } from './lua'
@@ -24,6 +25,7 @@ import { zig } from './zig'
 export const parsers: Record<string, Parser> = {
   tsc,
   javac,
+  java,
   rustc,
   go,
   python,
@@ -69,6 +71,7 @@ const COMMANDS: Record<string, string[]> = {
   flake8: ['ruff'],
   pylint: ['ruff'],
   javac: ['javac'],
+  java: ['java', 'javac'],
   dotnet: ['msbuild'],
   msbuild: ['msbuild'],
   node: ['node'],

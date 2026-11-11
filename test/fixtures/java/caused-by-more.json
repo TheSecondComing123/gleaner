@@ -1,0 +1,30 @@
+[
+  {
+    "file": "Main.java",
+    "line": 10,
+    "severity": "error",
+    "message": "java.lang.IllegalStateException: bad config\nin line 1: 12x",
+    "source": "java",
+    "related": [
+      {
+        "file": "Main.java",
+        "line": 15,
+        "message": "called from here, in Main.main"
+      }
+    ]
+  },
+  {
+    "file": "Main.java",
+    "line": 3,
+    "severity": "error",
+    "message": "java.lang.NumberFormatException: For input string: \"12x\"",
+    "source": "java",
+    "related": [
+      {
+        "file": "Main.java",
+        "line": 8,
+        "message": "called from here, in Main.load"
+      }
+    ]
+  }
+]

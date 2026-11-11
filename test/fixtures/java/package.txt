@@ -1,0 +1,3 @@
+Exception in thread "main" java.lang.NullPointerException: Cannot invoke "String.length()" because "this.name" is null
+	at com.example.App.size(App.java:11)
+	at com.example.App.main(App.java:15)

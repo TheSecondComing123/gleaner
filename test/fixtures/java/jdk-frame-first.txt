@@ -1,0 +1,4 @@
+Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3
+	at java.base/java.util.ImmutableCollections$ListN.get(ImmutableCollections.java:735)
+	at Simple.pick(Simple.java:5)
+	at Simple.main(Simple.java:9)

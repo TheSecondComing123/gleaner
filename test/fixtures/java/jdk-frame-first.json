@@ -1,0 +1,16 @@
+[
+  {
+    "file": "Simple.java",
+    "line": 5,
+    "severity": "error",
+    "message": "java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3",
+    "source": "java",
+    "related": [
+      {
+        "file": "Simple.java",
+        "line": 9,
+        "message": "called from here, in Simple.main"
+      }
+    ]
+  }
+]

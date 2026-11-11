@@ -1,0 +1,16 @@
+Exception in thread "main" java.lang.IllegalStateException: bad config
+in line 1: 12x
+	at Main.load(Main.java:10)
+	at Main.main(Main.java:15)
+Caused by: java.lang.NumberFormatException: For input string: "12x"
+	at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
+	at java.base/java.lang.Integer.parseInt(Integer.java:529)
+	at java.base/java.lang.Integer.parseInt(Integer.java:626)
+	at Main.parse(Main.java:3)
+	at Main.load(Main.java:8)
+	at Main.main(Main.java:15)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:583)
+	at jdk.compiler/com.sun.tools.javac.launcher.SourceLauncher.execute(SourceLauncher.java:268)
+	at jdk.compiler/com.sun.tools.javac.launcher.SourceLauncher.run(SourceLauncher.java:139)
+	at jdk.compiler/com.sun.tools.javac.launcher.SourceLauncher.main(SourceLauncher.java:77)

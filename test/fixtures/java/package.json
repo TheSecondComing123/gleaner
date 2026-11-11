@@ -1,0 +1,16 @@
+[
+  {
+    "file": "App.java",
+    "line": 11,
+    "severity": "error",
+    "message": "java.lang.NullPointerException: Cannot invoke \"String.length()\" because \"this.name\" is null",
+    "source": "java",
+    "related": [
+      {
+        "file": "App.java",
+        "line": 15,
+        "message": "called from here, in com.example.App.main"
+      }
+    ]
+  }
+]
