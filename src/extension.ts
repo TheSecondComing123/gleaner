@@ -212,9 +212,11 @@ async function locate(file: string, dirs: string[]): Promise<string | undefined>
   const relative = file.replace(/^\.\//, '')
   // Glob characters in a real path (`app/[id]/page.tsx`) become `?`, then the match is checked literally.
   const glob = `**/${relative.replace(/[[\]{}*?]/g, '?')}`
-  // No exclude argument, so the user's files.exclude applies.
-  const matches = (await vscode.workspace.findFiles(glob, undefined, 5)).filter(
-    (m) => !m.fsPath.includes('node_modules') && m.fsPath.endsWith(`${path.sep}${relative.split('/').join(path.sep)}`),
+  // ponytail: up to 50 candidates, then a literal match must be unique; a name shared by more
+  // files than that (or copies in dist/) is skipped rather than guessed.
+  const suffix = `${path.sep}${relative.split('/').join(path.sep)}`
+  const matches = (await vscode.workspace.findFiles(glob, '**/node_modules/**', 50)).filter((m) =>
+    m.fsPath.endsWith(suffix),
   )
   return matches.length === 1 ? matches[0].fsPath : undefined
 }
