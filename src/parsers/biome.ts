@@ -3,7 +3,7 @@ import type { Problem, Severity } from '../problem'
 // `src/a.ts:3:5 lint/suspicious/noDebugger  FIXABLE  ━━━━`, then `  × msg` after a blank line
 // (`✖`, `⚠` and `ℹ` in color).
 // Whole-file diagnostics like `src/a.ts format ━━━━` have no position.
-const HEAD = /^(\S+?)(?::(\d+):(\d+))? ([\w/]+)(?: {2}FIXABLE )? ━+$/
+const HEAD = /^(.+?)(?::(\d+):(\d+))? ([\w/]+)(?: {2}FIXABLE )? ━+$/
 const MESSAGE = /^ {2}([×!i✖⚠ℹ]) (.*)$/
 
 const SEVERITY: Record<string, Severity> = {

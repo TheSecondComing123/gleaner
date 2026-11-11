@@ -1,0 +1,20 @@
+[
+  {
+    "file": "src/my file.ts",
+    "line": 2,
+    "col": 7,
+    "severity": "warning",
+    "message": "This variable x is unused.",
+    "code": "lint/correctness/noUnusedVariables",
+    "source": "biome"
+  },
+  {
+    "file": "src/my file.ts",
+    "line": 1,
+    "col": 1,
+    "severity": "error",
+    "message": "This is an unexpected use of the debugger statement.",
+    "code": "lint/suspicious/noDebugger",
+    "source": "biome"
+  }
+]
