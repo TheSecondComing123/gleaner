@@ -92,6 +92,23 @@ describe('pickParsers', () => {
   })
 })
 
+describe('python on Windows', () => {
+  // Hand-written: no Windows machine to capture from. Shape matches CPython's traceback printer.
+  it('skips the standard library under C:\\PythonXY\\Lib', () => {
+    const lines = [
+      'Traceback (most recent call last):',
+      '  File "C:\\repo\\app.py", line 4, in <module>',
+      '    json.loads(text)',
+      '  File "C:\\Python313\\Lib\\json\\__init__.py", line 346, in loads',
+      '    return _default_decoder.decode(s)',
+      '  File "C:\\Python313\\Lib\\json\\decoder.py", line 355, in raw_decode',
+      '    raise JSONDecodeError("Expecting value", s, err.value) from None',
+      'json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)',
+    ]
+    expect(parsers.python(lines).map((p) => `${p.file}:${p.line}`)).toEqual(['C:\\repo\\app.py:4'])
+  })
+})
+
 describe('parseAll', () => {
   const fixture = (path: string) => clean(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
   const expected = (path: string) => JSON.parse(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))

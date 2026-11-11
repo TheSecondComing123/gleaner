@@ -6,7 +6,8 @@ const START = /^Traceback \(most recent call last\):$/
 // Lines that end one traceback's exception message and lead into the next.
 const BREAK =
   /^(Traceback \(most recent call last\):|During handling of the above exception|The above exception was the direct cause)/
-export const LIBRARY = /\/lib\/python|site-packages|^<frozen |^<string>$/
+// Unix `/lib/python3.x/`, Windows `C:\\Python313\\Lib\\`, any `site-packages`.
+export const LIBRARY = /\/lib\/python|[\\/]Lib[\\/]|site-packages|^<frozen |^<string>$/
 
 interface Frame {
   file: string
