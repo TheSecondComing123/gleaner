@@ -24,6 +24,10 @@ describe('clean', () => {
     expect(clean(raw)).toEqual(['sub'])
   })
 
+  it('caps line length', () => {
+    expect(clean(`${'x'.repeat(5000)}\n`)[0]).toHaveLength(4000)
+  })
+
   it('caps the number of lines', () => {
     expect(clean('a\nb\nc\n', 2)).toEqual(['a', 'b'])
   })
