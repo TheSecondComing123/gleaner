@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
+import { display, mapPosition, type Shown } from '../src/display'
 import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
 import { lastPass } from '../src/watch'
@@ -255,5 +256,69 @@ describe('watch passes', () => {
 
   it('finds nothing in output that never waits', () => {
     expect(lastPass('src/a.ts(1,1): error TS2322: x\nFound 1 error.\n')).toBeUndefined()
+  })
+})
+
+describe('display', () => {
+  const p = (line: number, character: number, message: string, code?: Shown['code']) => ({
+    range: { start: { line, character } },
+    message,
+    code,
+  })
+
+  it('shows a problem once when two runs report it', () => {
+    const a = p(6, 2, 'bad', 'TS2322')
+    expect(display([[a], [p(6, 2, 'bad', 'TS2322')]], [])).toEqual([a])
+  })
+
+  it('keeps two different errors on one line', () => {
+    const first = p(6, 2, 'bad', 'TS2322')
+    const second = p(6, 30, 'bad', 'TS2322')
+    expect(display([[first, second]], [p(6, 2, 'bad', 2322)])).toEqual([second])
+  })
+
+  it('hides what another source reports, whatever shape its code has', () => {
+    const mine = p(6, 2, 'bad', 'TS2322')
+    expect(display([[mine]], [p(6, 2, 'other words', 2322)])).toEqual([])
+    expect(display([[mine]], [p(6, 2, 'other words', { value: '2322' })])).toEqual([])
+    expect(display([[mine]], [p(6, 2, 'bad', 'TS2551')])).toEqual([mine])
+  })
+
+  it('compares messages when a side has no code', () => {
+    const mine = p(3, 0, 'TypeError: x is undefined\n    at main', undefined)
+    expect(display([[mine]], [p(3, 0, 'TypeError: x is undefined', 'E1')])).toEqual([])
+    expect(display([[mine]], [p(3, 0, 'something else')])).toEqual([mine])
+  })
+})
+
+describe('mapPosition', () => {
+  const pos = (line: number, character: number) => ({ line, character })
+  const edit = (from: [number, number], to: [number, number], text: string) => ({
+    range: { start: pos(...from), end: pos(...to) },
+    text,
+  })
+
+  it('leaves what comes before the edit alone', () => {
+    expect(mapPosition(pos(2, 4), edit([5, 0], [5, 0], 'x\n'))).toEqual(pos(2, 4))
+  })
+
+  it('moves lines below an inserted line', () => {
+    expect(mapPosition(pos(9, 43), edit([0, 0], [0, 0], '\n\n'))).toEqual(pos(11, 43))
+  })
+
+  it('moves the column when typing before it on its line', () => {
+    expect(mapPosition(pos(6, 2), edit([6, 2], [6, 2], 'x '))).toEqual(pos(6, 4))
+  })
+
+  it('pulls lines up when lines are deleted', () => {
+    expect(mapPosition(pos(9, 5), edit([3, 0], [5, 0], ''))).toEqual(pos(7, 5))
+  })
+
+  it('joins a line onto the one above', () => {
+    expect(mapPosition(pos(4, 6), edit([3, 10], [4, 0], ''))).toEqual(pos(3, 16))
+  })
+
+  it('drops a position whose text was replaced', () => {
+    expect(mapPosition(pos(6, 4), edit([6, 2], [6, 9], 'y'))).toBeUndefined()
   })
 })

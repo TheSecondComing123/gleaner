@@ -39,6 +39,7 @@ const SEVERITY = {
 
 export function activate(context: vscode.ExtensionContext): void {
   const problems = new Problems()
+  problems.hideDuplicates = vscode.workspace.getConfiguration('gleaner').get<boolean>('hideDuplicates', true)
   const log = vscode.window.createOutputChannel('Gleaner')
   const runs = new Map<vscode.TerminalShellExecution, Run>()
   const withoutIntegration = new Set<vscode.Terminal>()
@@ -144,10 +145,25 @@ export function activate(context: vscode.ExtensionContext): void {
     status,
     vscode.commands.registerCommand('gleaner.clear', clear),
     vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('gleaner.hideDuplicates')) {
+        problems.hideDuplicates = vscode.workspace.getConfiguration('gleaner').get<boolean>('hideDuplicates', true)
+        for (const file of problems.files()) problems.render(file, true)
+        updateStatus()
+      }
       if (!event.affectsConfiguration('gleaner.enable')) return
       if (vscode.workspace.getConfiguration('gleaner').get<boolean>('enable', true)) return
       runs.clear()
       clear()
+    }),
+    // a language server reporting (or dropping) the same error changes what's shown
+    vscode.languages.onDidChangeDiagnostics(({ uris }) => {
+      for (const uri of uris) if (problems.has(uri.fsPath)) problems.render(uri.fsPath)
+      updateStatus()
+    }),
+    vscode.workspace.onDidChangeTextDocument(({ document, contentChanges }) => {
+      if (!contentChanges.length || !problems.has(document.uri.fsPath)) return
+      problems.edit(document.uri.fsPath, contentChanges)
+      updateStatus()
     }),
     vscode.window.onDidOpenTerminal(watchIntegration),
     vscode.window.onDidChangeActiveTerminal(updateStatus),
