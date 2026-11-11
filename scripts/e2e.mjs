@@ -1,13 +1,23 @@
 // drives real VS Code; see checks below
 // needs VS Code or VSCODE_BIN
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { _electron as electron } from 'playwright-core'
 
 const root = resolve(import.meta.dirname, '..')
 const code = process.env.VSCODE_BIN ?? '/Applications/Visual Studio Code.app/Contents/MacOS/Code'
-const work = mkdtempSync(join(tmpdir(), 'gleaner-e2e-'))
+// long path: windows runners hand out RUNNER~1, while the shell reports the full name
+const work = realpathSync.native(mkdtempSync(join(tmpdir(), 'gleaner-e2e-')))
 
 const demo = join(work, 'shop')
 mkdirSync(join(demo, 'src'), { recursive: true })
