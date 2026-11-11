@@ -1,0 +1,37 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      # The e2e types `tsc` into VS Code's terminal, which uses the runner's default shell
+      # (bash on ubuntu, PowerShell on windows).
+      - run: npm install -g typescript
+      - name: download vs code
+        shell: bash
+        run: node -e "require('@vscode/test-electron').downloadAndUnzipVSCode('stable').then((p) => require('fs').appendFileSync(process.env.GITHUB_ENV, 'VSCODE_BIN=' + p + '\n'))"
+      - name: e2e
+        shell: bash
+        run: ${{ runner.os == 'Linux' && 'xvfb-run -a ' || '' }}pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshot-${{ matrix.os }}
+          path: docs/screenshot.png

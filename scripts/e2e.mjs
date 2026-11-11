@@ -2,7 +2,7 @@
 // each error reaches the Problems panel under the right file. Then fixes one error and reruns
 // from a second terminal: the old problems must be replaced, not doubled. Last, an older run ending
 // after a newer one, and a Ctrl+C before any output, must both leave the newer result. Saves docs/screenshot.png.
-// usage: pnpm e2e   (needs VS Code in /Applications)
+// usage: pnpm e2e   (needs VS Code in /Applications, or its executable in VSCODE_BIN)
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -110,7 +110,7 @@ try {
   await page.keyboard.press('Enter')
   await page.getByText(/5 from terminal/).waitFor({ timeout: 30_000 })
 
-  await page.keyboard.press('Meta+Shift+M')
+  await page.keyboard.press('ControlOrMeta+Shift+M')
   await page.waitForTimeout(1500)
   // Rows come in order: a file header (no position), then its problems (with `tsc`), then related info.
   let file = ''
