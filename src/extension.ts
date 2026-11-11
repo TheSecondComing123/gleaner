@@ -12,6 +12,7 @@ const MAX_PROBLEMS = 500
 const MAX_CANDIDATES = 2000
 // read() may still be flushing
 const DRAIN_MS = 500
+const REREPORT_MS = 2000
 const INTEGRATION_GRACE_MS = 5000
 const SHELL_INTEGRATION_DOCS = 'https://code.visualstudio.com/docs/terminal/shell-integration'
 
@@ -42,6 +43,7 @@ export function activate(context: vscode.ExtensionContext): void {
   problems.hideDuplicates = vscode.workspace.getConfiguration('gleaner').get<boolean>('hideDuplicates', true)
   const log = vscode.window.createOutputChannel('Gleaner')
   const runs = new Map<vscode.TerminalShellExecution, Run>()
+  const ended = new Map<Run, ReturnType<typeof setTimeout>>()
   const withoutIntegration = new Set<vscode.Terminal>()
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0)
 
@@ -86,6 +88,10 @@ export function activate(context: vscode.ExtensionContext): void {
     const run = runs.get(execution)
     if (!run) return
     runs.delete(execution)
+    if (exitCode === undefined) {
+      const timer = setTimeout(() => ended.delete(run), REREPORT_MS)
+      ended.set(run, timer)
+    }
     const cleared = clears
     await Promise.race([run.reading, new Promise((resolve) => setTimeout(resolve, DRAIN_MS))])
     // a watcher's results come from finished passes; ctrl+c exits tsc --watch with 0
@@ -143,6 +149,10 @@ export function activate(context: vscode.ExtensionContext): void {
     problems,
     log,
     status,
+    new vscode.Disposable(() => {
+      for (const timer of ended.values()) clearTimeout(timer)
+      ended.clear()
+    }),
     vscode.commands.registerCommand('gleaner.clear', clear),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('gleaner.hideDuplicates')) {
@@ -174,9 +184,16 @@ export function activate(context: vscode.ExtensionContext): void {
       const ignored = config.get<string[]>('ignoredCommands', DEFAULT_IGNORED)
       if (!pickParsers(execution.commandLine.value, ignored).length) return
       const command = execution.commandLine.value
-      const key = `${execution.cwd?.fsPath ?? ''}\0${command.trim()}`
       // powershell can report the same running command again
-      const previous = [...runs.values()].find((run) => run.terminal === terminal && run.command === command)
+      const previous = [...runs.values(), ...ended.keys()].find(
+        (run) => run.terminal === terminal && run.command === command,
+      )
+      if (previous) {
+        clearTimeout(ended.get(previous))
+        ended.delete(previous)
+        log.appendLine(`${command}: same run reported again in ${terminal.name}`)
+      }
+      const key = previous?.key ?? `${execution.cwd?.fsPath ?? ''}\0${command.trim()}`
       const generation = previous?.generation ?? nextGeneration++
       if (!previous) latest.set(key, generation)
       const run: Run = {
