@@ -1,0 +1,19 @@
+✘ [ERROR] The symbol "count" has already been declared
+
+    src/d.ts:3:4:
+      3 │ let count = 2
+        ╵     ~~~~~
+
+  The symbol "count" was originally declared here:
+
+    src/d.ts:2:4:
+      2 │ let count = 1
+        ╵     ~~~~~
+
+✘ [ERROR] Could not resolve "./nope"
+
+    src/d.ts:1:24:
+      1 │ import { missing } from './nope'
+        ╵                         ~~~~~~~~
+
+2 errors

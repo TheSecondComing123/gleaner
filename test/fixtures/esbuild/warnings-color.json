@@ -1,0 +1,20 @@
+[
+  {
+    "file": "src/b.ts",
+    "line": 1,
+    "col": 30,
+    "severity": "warning",
+    "message": "The \"typeof\" operator will never evaluate to \"undefnied\"",
+    "code": "impossible-typeof",
+    "source": "esbuild"
+  },
+  {
+    "file": "src/b.ts",
+    "line": 4,
+    "col": 45,
+    "severity": "warning",
+    "message": "Comparison with -0 using the \"===\" operator will also match 0\nFloating-point equality is defined such that 0 and -0 are equal, so \"x === -0\" returns true for both 0 and -0. You need to use \"Object.is(x, -0)\" instead to test for -0.",
+    "code": "equals-negative-zero",
+    "source": "esbuild"
+  }
+]

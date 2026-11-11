@@ -1,6 +1,7 @@
 import type { Parser, Problem } from '../problem'
 import { cmake } from './cmake'
 import { cppcheck } from './cppcheck'
+import { esbuild } from './esbuild'
 import { eslint } from './eslint'
 import { gcc } from './gcc'
 import { go } from './go'
@@ -37,6 +38,7 @@ export const parsers: Record<string, Parser> = {
   mypy,
   ruff,
   eslint,
+  esbuild,
   jest,
   zig,
   msbuild,
@@ -85,6 +87,8 @@ const COMMANDS: Record<string, string[]> = {
   'ts-node': ['node'],
   eslint: ['eslint'],
   jest: ['jest'],
+  esbuild: ['esbuild'],
+  vite: ['esbuild'],
   vitest: ['jest'],
   ruby: ['ruby'],
   lua: ['lua'],

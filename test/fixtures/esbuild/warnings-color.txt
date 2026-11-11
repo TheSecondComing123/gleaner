@@ -1,0 +1,19 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe "typeof" operator will never evaluate to "undefnied"[0m [impossible-typeof]
+
+    src/b.ts:1:29:
+[37m      1 │ export const y = typeof x == [32m'undefnied'[37m
+        ╵                              [32m~~~~~~~~~~~[0m
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mComparison with -0 using the "===" operator will also match 0[0m [equals-negative-zero]
+
+    src/b.ts:4:44:
+[37m      4 │ export function g(a: number) { return a === [32m-0[37m }
+        ╵                                             [32m~~[0m
+
+  Floating-point equality is defined such that 0 and -0 are equal, so "x === -0" returns true for both 0 and -0. You need to use "Object.is(x, -0)" instead to test for -0.
+
+2 warnings
+
+  [37m[0m[1mout.js[0m  [36m141b [0m
+
+⚡ [32mDone in 1ms[0m

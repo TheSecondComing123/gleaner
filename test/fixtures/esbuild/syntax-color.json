@@ -1,0 +1,10 @@
+[
+  {
+    "file": "src/a.ts",
+    "line": 5,
+    "col": 1,
+    "severity": "error",
+    "message": "Unexpected \"}\"",
+    "source": "esbuild"
+  }
+]

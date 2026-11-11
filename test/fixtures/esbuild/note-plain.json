@@ -1,0 +1,26 @@
+[
+  {
+    "file": "src/d.ts",
+    "line": 3,
+    "col": 5,
+    "severity": "error",
+    "message": "The symbol \"count\" has already been declared",
+    "source": "esbuild",
+    "related": [
+      {
+        "file": "src/d.ts",
+        "line": 2,
+        "col": 5,
+        "message": "The symbol \"count\" was originally declared here"
+      }
+    ]
+  },
+  {
+    "file": "src/d.ts",
+    "line": 1,
+    "col": 25,
+    "severity": "error",
+    "message": "Could not resolve \"./nope\"",
+    "source": "esbuild"
+  }
+]
