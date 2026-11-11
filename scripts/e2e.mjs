@@ -3,7 +3,7 @@
 // from a second terminal: the old problems must be replaced, not doubled. Last, an older run ending
 // after a newer one, and a Ctrl+C before any output, must both leave the newer result. Saves docs/screenshot.png.
 // usage: pnpm e2e   (needs VS Code in /Applications, or its executable in VSCODE_BIN)
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { _electron as electron } from 'playwright-core'
@@ -198,7 +198,12 @@ try {
   console.error(error)
   failed = true
 } finally {
-  if (failed) await (await app.firstWindow()).screenshot({ path: join(root, 'e2e-failure.png') })
+  if (failed) {
+    await (await app.firstWindow()).screenshot({ path: join(root, 'e2e-failure.png') })
+    // Gleaner's output channel says whether a run found nothing or found files it couldn't resolve.
+    for (const log of readdirSync(join(user, 'logs'), { recursive: true }).filter((f) => f.endsWith('Gleaner.log')))
+      console.error(`--- ${log}\n${readFileSync(join(user, 'logs', log), 'utf8')}`)
+  }
   await app.close()
 }
 process.exit(failed ? 1 : 0)

@@ -89,7 +89,10 @@ export function activate(context: vscode.ExtensionContext): void {
     const parsers = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
     const found = parseAll(parsers, clean(run.raw)).slice(0, MAX_CANDIDATES)
     // Ctrl+C before anything printed: keep the last full result instead of wiping it.
-    if (exitCode === 130 && !found.length) return
+    if (exitCode === 130 && !found.length) {
+      log.appendLine(`${run.command}: stopped before any problems, kept the last result`)
+      return
+    }
 
     const dirs = [...new Set([...run.cwds].reverse().concat(workspaceDirs()))]
     const lookups = new Map<string, Promise<string | undefined>>()
@@ -112,7 +115,7 @@ export function activate(context: vscode.ExtensionContext): void {
     updateStatus()
     const skipped = found.length - real.length
     log.appendLine(
-      `${run.command}: ${kept.length} problem${kept.length === 1 ? '' : 's'}${skipped ? `, ${skipped} skipped (file not found)` : ''}`,
+      `${run.command}: exit ${exitCode ?? '?'}, ${kept.length} problem${kept.length === 1 ? '' : 's'}${skipped ? `, ${skipped} skipped (file not found)` : ''}`,
     )
   }
 
