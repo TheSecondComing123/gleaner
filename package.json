@@ -2,7 +2,7 @@
   "name": "gleaner",
   "displayName": "Gleaner",
   "description": "turns errors from commands you run in the terminal into problems and squiggles in your code.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "thesecondcoming123",
   "license": "MIT",
   "author": {
@@ -44,6 +44,11 @@
           "type": "boolean",
           "default": true,
           "description": "Read terminal command output and show its errors in the Problems panel."
+        },
+        "gleaner.hideDuplicates": {
+          "type": "boolean",
+          "default": true,
+          "description": "Hide a problem when another extension, like a language server, already reports it at the same spot."
         },
         "gleaner.ignoredCommands": {
           "type": "array",
