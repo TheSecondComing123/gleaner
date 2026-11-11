@@ -1,0 +1,16 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-cap/py/tests/test_a.py",
+    "line": 2,
+    "severity": "error",
+    "message": "test_same: assert 1 == 2",
+    "source": "pytest"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-cap/py/tests/test_b.py",
+    "line": 3,
+    "severity": "error",
+    "message": "test_same: assert 1 == 3",
+    "source": "pytest"
+  }
+]

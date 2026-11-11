@@ -10,6 +10,8 @@ const LOCATION = /^(.+?):(\d+)(?::(.*))?$/
 const ERROR_LINE = /^E( |$)/
 // `FAILED tests/x.py::TestA::test_b - AssertionError: msg`, `ERROR tests/x.py`
 const SUMMARY = /^(?:FAILED|ERROR) (.+?)(?: - (.*))?$/
+// `--tb=line` prints one `/abs/tests/x.py:5: assert 1 == 2` per failure instead of sections.
+const TB_LINE = /^(\S.*\.py):(\d+): (.+)$/
 
 interface Section {
   name: string
@@ -25,6 +27,8 @@ export function pytest(lines: string[]): Problem[] {
   const unlocated = new Map<string, string>()
   let section: Section | undefined
   let inErrors = false
+  let inFailures = false
+  const oneLine: Problem[] = []
 
   const finish = () => {
     if (!section) return
@@ -69,16 +73,38 @@ export function pytest(lines: string[]): Problem[] {
     }
     if (RULE.test(line)) {
       finish()
+      inFailures = / (?:FAILURES|ERRORS) /.test(line)
       continue
     }
     if (!section) {
+      const tb = inFailures && TB_LINE.exec(line)
+      if (tb) {
+        const problem: Problem = {
+          file: tb[1],
+          line: Number(tb[2]),
+          severity: 'error',
+          message: tb[3],
+          source: 'pytest',
+        }
+        problems.push(problem)
+        oneLine.push(problem)
+        continue
+      }
       // The summary only adds tests that had no traceback section, e.g. under --tb=no.
       const summary = SUMMARY.exec(line)
       if (!summary) continue
       const [file, ...test] = summary[1].split('::')
       const name = test.length ? test.join('.') : file
-      if (seen.has(name)) continue
-      seen.add(name)
+      // Sections are named by test alone; summary lines carry the file, so same-named tests stay apart.
+      if (seen.has(name) || seen.has(summary[1])) continue
+      seen.add(summary[1])
+      // Under --tb=line the failure already has its spot; the summary only names the test.
+      const at = oneLine.findIndex((p) => p.file.replace(/\\/g, '/').endsWith(`/${file}`) || p.file === file)
+      if (at >= 0) {
+        const [problem] = oneLine.splice(at, 1)
+        problem.message = `${name}: ${problem.message}`
+        continue
+      }
       problems.push({
         file,
         line: 1,
