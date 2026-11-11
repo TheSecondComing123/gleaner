@@ -1,6 +1,7 @@
 // Opens a real VS Code window with Gleaner loaded, runs `tsc` in its terminal, and checks
 // each error reaches the Problems panel under the right file. Then fixes one error and reruns
-// from a second terminal: the old problems must be replaced, not doubled. Saves docs/screenshot.png.
+// from a second terminal: the old problems must be replaced, not doubled. Last, an older run ending
+// after a newer one, and a Ctrl+C before any output, must both leave the newer result. Saves docs/screenshot.png.
 // usage: pnpm e2e   (needs VS Code in /Applications)
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -45,6 +46,22 @@ export function receipt(items: Item[]): string {
 // A folder with glob characters in its name, like a Next.js route.
 mkdirSync(join(demo, 'src', 'app', '[id]'), { recursive: true })
 writeFileSync(join(demo, 'src', 'app', '[id]', 'page.ts'), `export const id: number = 'not a number'\n`)
+
+// The same command behaving differently per run: `old` waits for `release` and prints two stacks,
+// `new` prints one at once, `hang` prints nothing until Ctrl+C.
+writeFileSync(
+  join(demo, 'build.mjs'),
+  `import { existsSync, readFileSync } from 'node:fs'
+const mode = readFileSync('mode', 'utf8')
+if (mode === 'hang') setInterval(() => {}, 1000)
+else {
+  while (mode === 'old' && !existsSync('release')) await new Promise((r) => setTimeout(r, 100))
+  console.error(new Error('first').stack)
+  if (mode === 'old') console.error(new Error('second').stack)
+}
+`,
+)
+const mode = (value) => writeFileSync(join(demo, 'mode'), value)
 
 const user = join(work, 'user')
 mkdirSync(join(user, 'User'), { recursive: true })
@@ -143,6 +160,40 @@ try {
     )
     failed = true
   }
+
+  const status = async (want, label) => {
+    try {
+      await page.getByText(new RegExp(`\\b${want} from terminal`)).waitFor({ timeout: 15_000 })
+      console.log(`${label}: ${want} from terminal`)
+    } catch {
+      console.error(`${label}: want ${want}, status shows ${await page.getByText(/from terminal/).textContent()}`)
+      failed = true
+    }
+  }
+
+  // An older run that ends after a newer run of the same command must not overwrite it.
+  mode('old')
+  await page.keyboard.type('node build.mjs')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(1500)
+  mode('new')
+  await page.keyboard.press('Control+Shift+Backquote')
+  await page.waitForTimeout(4000)
+  await page.keyboard.type('node build.mjs')
+  await page.keyboard.press('Enter')
+  await status(5, 'newer run')
+  writeFileSync(join(demo, 'release'), '')
+  await page.waitForTimeout(3000)
+  await status(5, 'older run ending later')
+
+  // Ctrl+C before any output keeps the last result.
+  mode('hang')
+  await page.keyboard.type('node build.mjs')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(2000)
+  await page.keyboard.press('Control+C')
+  await page.waitForTimeout(3000)
+  await status(5, 'ctrl+c')
 } catch (error) {
   console.error(error)
   failed = true
