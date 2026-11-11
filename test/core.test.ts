@@ -83,6 +83,7 @@ describe('pickParsers', () => {
     expect(pickParsers('make all')).toEqual(Object.values(parsers))
     expect(pickParsers('cd web && npm run build')).toEqual(Object.values(parsers))
     expect(pickParsers('echo hi && make')).toEqual(Object.values(parsers))
+    expect(pickParsers('tsc && make native')).toEqual(Object.values(parsers))
   })
 
   it('reads only the first command of a pipeline', () => {

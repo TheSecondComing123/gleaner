@@ -142,16 +142,18 @@ export const DEFAULT_IGNORED = [
 // don't know (`make`, `npm run build`) gets every parser; a match only becomes a
 // problem if its file exists, which keeps that from guessing wildly.
 export function pickParsers(commandLine: string, ignored: string[] = DEFAULT_IGNORED): Parser[] {
-  const steps = commandLine.split(/&&|\|\||;/)
-  const pipes = steps.flatMap((step) => step.split('|')).map(commandName)
-  const names = pipes.flatMap((command) => COMMANDS[command ?? ''] ?? [])
-  if (names.length)
-    return Object.keys(parsers)
-      .filter((name) => names.includes(name))
-      .map((name) => parsers[name])
-  // Only the first command of a pipeline writes to it, so `grep -n x | wc` stays ignored.
-  const unknown = steps.map((step) => commandName(step.split('|')[0])).filter((c) => c && !ignored.includes(c))
-  return unknown.length ? Object.values(parsers) : []
+  // Each step of `tsc && make` picks its own parsers; a pipe's later commands can name the tool
+  // (`npx tsc | tee`) but only its first one decides whether an unknown step is ignored.
+  const chosen = new Set<string>()
+  for (const step of commandLine.split(/&&|\|\||;/)) {
+    const pipes = step.split('|').map(commandName)
+    const names = pipes.flatMap((command) => COMMANDS[command ?? ''] ?? [])
+    if (names.length) for (const name of names) chosen.add(name)
+    else if (pipes[0] && !ignored.includes(pipes[0])) for (const name of Object.keys(parsers)) chosen.add(name)
+  }
+  return Object.keys(parsers)
+    .filter((name) => chosen.has(name))
+    .map((name) => parsers[name])
 }
 
 const firstLine = (p: Problem) => p.message.split('\n')[0]
