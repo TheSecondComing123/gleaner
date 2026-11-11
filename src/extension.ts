@@ -75,11 +75,14 @@ export function activate(context: vscode.ExtensionContext): void {
   // The newest run of each command wins, even if an older one finishes resolving later.
   const latest = new Map<string, number>()
   let nextGeneration = 0
+  // Bumped by Clear: a run that had already ended doesn't publish after it; one still running does.
+  let clears = 0
 
   const finish = async (execution: vscode.TerminalShellExecution, exitCode?: number): Promise<void> => {
     const run = runs.get(execution)
     if (!run) return
     runs.delete(execution)
+    const cleared = clears
     await Promise.race([run.reading, new Promise((resolve) => setTimeout(resolve, DRAIN_MS))])
 
     // Picked now, not at start: `cd web && npm run build` reads web/package.json.
@@ -105,7 +108,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const real = located.filter((x): x is { problem: Problem; file: string } => x.file !== undefined)
     const kept = real.slice(0, MAX_PROBLEMS)
     const diagnostics = await Promise.all(kept.map(({ problem }) => toDiagnostic(problem, find)))
-    if (latest.get(run.key) !== run.generation) return
+    if (latest.get(run.key) !== run.generation || clears !== cleared) return
 
     const files = new Map<string, vscode.Diagnostic[]>()
     for (const [i, { file }] of kept.entries()) files.set(file, [...(files.get(file) ?? []), diagnostics[i]])
@@ -117,9 +120,8 @@ export function activate(context: vscode.ExtensionContext): void {
     )
   }
 
-  // Forgetting the generations stops a run that's still resolving files from publishing after this.
   const clear = (): void => {
-    latest.clear()
+    clears++
     problems.clear()
     updateStatus()
   }

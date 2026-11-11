@@ -1,9 +1,10 @@
 // Opens a real VS Code window with Gleaner loaded, runs `tsc` in its terminal, and checks
 // each error reaches the Problems panel under the right file. Then fixes one error and reruns
 // from a second terminal: the old problems must be replaced, not doubled. Last, an older run ending
-// after a newer one, and a Ctrl+C before any output, must both leave the newer result. Saves docs/screenshot.png.
+// after a newer one, and a Ctrl+C before any output, must both leave the newer result. Turning gleaner off
+// clears everything, even a run that was still going. Saves docs/screenshot.png.
 // usage: pnpm e2e   (needs VS Code in /Applications, or its executable in VSCODE_BIN)
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { _electron as electron } from 'playwright-core'
@@ -194,6 +195,22 @@ try {
   await page.keyboard.press('Control+C')
   await page.waitForTimeout(3000)
   await status(5, 'ctrl+c')
+
+  // Turning gleaner off clears its problems, and a run still going when it's turned off adds none.
+  rmSync(join(demo, 'release'))
+  mode('old')
+  await page.keyboard.type('node build.mjs')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(1500)
+  const settings = join(user, 'User', 'settings.json')
+  writeFileSync(settings, JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.enable': false }))
+  await page.waitForTimeout(3000)
+  writeFileSync(join(demo, 'release'), '')
+  await page.waitForTimeout(3000)
+  if (await page.getByText(/from terminal/).count()) {
+    console.error(`turned off: status still shows ${await page.getByText(/from terminal/).textContent()}`)
+    failed = true
+  } else console.log('turned off: nothing from terminal')
 } catch (error) {
   console.error(error)
   failed = true
