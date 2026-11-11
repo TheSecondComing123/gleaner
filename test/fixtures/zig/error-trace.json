@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-zig/t/err.zig",
+    "line": 4,
+    "col": 5,
+    "severity": "error",
+    "message": "error: InvalidCharacter",
+    "source": "zig",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-zig/t/err.zig",
+        "line": 8,
+        "col": 15,
+        "message": "called from here, in main"
+      }
+    ]
+  }
+]

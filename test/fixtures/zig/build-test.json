@@ -1,0 +1,10 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-zig/src/main.zig",
+    "line": 12,
+    "col": 5,
+    "severity": "error",
+    "message": "error: 'main.test.twice' failed:\nexpected 4, found 6",
+    "source": "zig"
+  }
+]

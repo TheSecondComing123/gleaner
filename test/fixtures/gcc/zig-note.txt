@@ -1,0 +1,12 @@
+[1mt/notes.zig:7:31: [31merror: [0m[1mno field named 'z' in struct 'notes.Point'
+[0m    const p = Point{ .x = 1, .z = 2 };
+                              [32m^
+[0m[1mt/notes.zig:1:15: [36mnote: [0m[1mstruct declared here
+[0mconst Point = struct {
+              [32m^~~~~~
+[0m[0m[2mreferenced by:
+    callMain [inlined]: /opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:788:64
+    callMainWithArgs [inlined]: /opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:729:20
+    main: /opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:754:28
+    1 reference(s) hidden; use '-freference-trace=4' to see all references
+[0m

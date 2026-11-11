@@ -1,0 +1,11 @@
+thread 8891583 panic: index out of bounds: index 5, len 3
+[1m/private/tmp/claude-501/gl-zig/panic.zig:4:17[0m: [2m0x102acd72b in get (panic)[0m
+    return items[i];
+                [32m^[0m
+[1m/private/tmp/claude-501/gl-zig/panic.zig:11:35[0m: [2m0x102accbdf in main (panic)[0m
+    std.debug.print("{d}\n", .{get(&a, i)});
+                                  [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:788:64[0m: [2m0x102accb4b in callMain (panic)[0m
+    if (fn_info.param_types.len == 0) return wrapMain(root.main());
+                                                               [32m^[0m
+[1m???:?:?[0m: [2m0x19fb8cd7b in start (/usr/lib/dyld)[0m

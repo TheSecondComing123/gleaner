@@ -16,6 +16,7 @@ import { ruby } from './ruby'
 import { ruff } from './ruff'
 import { rustc } from './rustc'
 import { tsc } from './tsc'
+import { zig } from './zig'
 
 // Order matters when several parsers match the same line: the specific ones come first
 // so their richer result wins (javac over gcc for `Main.java:5: error:`, tsc over msbuild
@@ -32,6 +33,7 @@ export const parsers: Record<string, Parser> = {
   ruff,
   eslint,
   jest,
+  zig,
   msbuild,
   ruby,
   lua,
@@ -78,6 +80,7 @@ const COMMANDS: Record<string, string[]> = {
   ruby: ['ruby'],
   lua: ['lua'],
   luajit: ['lua'],
+  zig: ['zig', 'gcc'],
 }
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.

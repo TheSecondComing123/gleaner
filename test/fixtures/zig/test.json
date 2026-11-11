@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-zig/t/math.zig",
+    "line": 8,
+    "col": 5,
+    "severity": "error",
+    "message": "1/2 math.test.add works...FAIL (TestExpectedEqual)",
+    "source": "zig"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-zig/t/math.zig",
+    "line": 15,
+    "col": 30,
+    "severity": "error",
+    "message": "panic: index out of bounds: index 3, len 3",
+    "source": "zig"
+  }
+]

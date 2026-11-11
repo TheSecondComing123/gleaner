@@ -1,0 +1,22 @@
+[2minstall
+(0mq(B install app
+   (0mq(B compile exe app debug native[31m 2 errors
+[0m[1msrc/main.zig:10:9: [31merror: [0m[1munused local variable
+[0m    var unused: i32 = 0;
+        [32m^~~~~~
+[0m[1msrc/main.zig:4:20: [31merror: [0m[1mexpected type 'u32', found '*const [5:0]u8'
+[0m    const x: u32 = "hello";
+                   [32m^~~~~~~
+[0m[0m[2mreferenced by:
+    callMain [inlined]: /opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:788:64
+    callMainWithArgs [inlined]: /opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:729:20
+    main: /opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:754:28
+    1 reference(s) hidden; use '-freference-trace=4' to see all references
+[0m[31merror:[0m 2 compilation errors
+[31mfailed command: [0m/opt/homebrew/Cellar/zig/0.17.0/bin/zig build-exe -Mroot=src/main.zig --cache-dir .zig-cache --global-cache-dir /Users/alanbagel/.cache/zig --build-root . --name app --zig-lib-dir /opt/homebrew/Cellar/zig/0.17.0/lib/zig/ --listen=-
+
+[36m[1mBuild Summary: [0m0/3 steps succeeded[2m (1 failed)[0m
+install[2m transitive failure
+[0m(0mq(B install app[2m transitive failure
+[0m   (0mq(B compile exe app debug native[31m 2 errors
+[0m

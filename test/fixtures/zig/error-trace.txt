@@ -1,0 +1,19 @@
+[31m[1merror[0m[2m[1m: [0mInvalidCharacter
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/fmt.zig:583:24[0m: [2m0x102da27bb in charToDigit (err)[0m
+    if (value >= base) return error.InvalidCharacter;
+                       [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/fmt.zig:448:23[0m: [2m0x102da1ec3 in parseIntWithSign__func_314 (err)[0m
+        const digit = try charToDigit(math.cast(u8, c) orelse return error.InvalidCharacter, buf_base);
+                      [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/fmt.zig:336:5[0m: [2m0x102da0e07 in parseIntWithGenericCharacter__func_311 (err)[0m
+    return parseIntWithSign(Result, Character, buf, base, .pos);
+    [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/fmt.zig:323:5[0m: [2m0x102da0a4b in parseInt__func_94 (err)[0m
+    return parseIntWithGenericCharacter(T, u8, buf, base);
+    [32m^[0m
+[1m/private/tmp/claude-501/gl-zig/t/err.zig:4:5[0m: [2m0x102e5b2cb in parse (err)[0m
+    return std.fmt.parseInt(u32, s, 10);
+    [32m^[0m
+[1m/private/tmp/claude-501/gl-zig/t/err.zig:8:15[0m: [2m0x102e5b3a7 in main (err)[0m
+    const n = try parse("12x");
+              [32m^[0m

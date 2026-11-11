@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-zig/panic.zig",
+    "line": 4,
+    "col": 17,
+    "severity": "error",
+    "message": "panic: index out of bounds: index 5, len 3",
+    "source": "zig",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-zig/panic.zig",
+        "line": 11,
+        "col": 35,
+        "message": "called from here, in main"
+      }
+    ]
+  }
+]

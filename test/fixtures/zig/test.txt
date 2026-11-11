@@ -1,0 +1,27 @@
+expected 4, found 5
+1/2 math.test.add works...FAIL (TestExpectedEqual)
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/testing.zig:93:17[0m: [2m0x100efaea7 in expectEqualInner__func_999 (test)[0m
+                return error.TestExpectedEqual;
+                [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/testing.zig:57:5[0m: [2m0x100efaf47 in expectEqual (test)[0m
+    return expectEqualInner(T, expected, actual);
+    [32m^[0m
+[1m/private/tmp/claude-501/gl-zig/t/math.zig:8:5[0m: [2m0x100efaf87 in test.add works (test)[0m
+    try std.testing.expectEqual(@as(i32, 4), add(2, 2));
+    [32m^[0m
+thread 8891629 panic: index out of bounds: index 3, len 3
+[1m/private/tmp/claude-501/gl-zig/t/math.zig:15:30[0m: [2m0x100efadcf in test.slice index (test)[0m
+    try std.testing.expect(xs[i] == 1);
+                             [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/compiler/test_runner.zig:295:25[0m: [2m0x100ed6bcf in mainTerminal (test)[0m
+        if (test_fn.func()) |_| {
+                        [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/compiler/test_runner.zig:74:28[0m: [2m0x100ed66af in main (test)[0m
+        return mainTerminal(init);
+                           [32m^[0m
+[1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/start.zig:789:88[0m: [2m0x100ed45df in callMain (test)[0m
+    if (fn_info.param_types[0].? == std.process.Init.Minimal) return wrapMain(root.main(.{
+                                                                                       [32m^[0m
+[1m???:?:?[0m: [2m0x19fb8cd7b in start (/usr/lib/dyld)[0m
+[31m[1merror[0m[2m[1m: [0mthe following test command terminated with signal ABRT:
+.zig-cache/o/d927c2a4f3425990ee49e821a1ed5d64/test --seed=0x3c99593e

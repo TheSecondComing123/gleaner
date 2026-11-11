@@ -163,6 +163,22 @@ describe('lua on Windows', () => {
   })
 })
 
+describe('zig on Windows', () => {
+  // Hand-written: no Windows machine to capture from. Shape matches zig's stack trace printer.
+  it('skips the standard library under C:\\zig\\lib\\std', () => {
+    const lines = [
+      'error: InvalidCharacter',
+      'C:\\zig\\lib\\std\\fmt.zig:583:24: 0x7ff6a1b2c3d4 in charToDigit (app.exe)',
+      '    if (value >= base) return error.InvalidCharacter;',
+      '                       ^',
+      'C:\\repo\\src\\main.zig:4:5: 0x7ff6a1b2c4e5 in parse (app.exe)',
+      '    return std.fmt.parseInt(u32, s, 10);',
+      '    ^',
+    ]
+    expect(parsers.zig(lines).map((p) => `${p.file}:${p.line}:${p.col}`)).toEqual(['C:\\repo\\src\\main.zig:4:5'])
+  })
+})
+
 describe('parseAll', () => {
   const fixture = (path: string) => clean(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
   const expected = (path: string) => JSON.parse(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))

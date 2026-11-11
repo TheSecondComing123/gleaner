@@ -1,0 +1,19 @@
+[2mtest
+(0mq(B run test[32m 0 pass[0m[2m, [31m1 fail[0m[2m (1 total)
+[0m[31merror:[0m 'main.test.twice' failed:
+       expected 4, found 6
+       [1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/testing.zig:93:17[0m: [2m0x102cc2da7 in expectEqualInner__func_999 (test)[0m
+                       return error.TestExpectedEqual;
+                       [32m^[0m
+       [1m/opt/homebrew/Cellar/zig/0.17.0/lib/zig/std/testing.zig:57:5[0m: [2m0x102cc2e43 in expectEqual (test)[0m
+           return expectEqualInner(T, expected, actual);
+           [32m^[0m
+       [1m/private/tmp/claude-501/gl-zig/src/main.zig:12:5[0m: [2m0x102cc2e83 in test.twice (test)[0m
+           try std.testing.expectEqual(@as(i32, 4), twice(2));
+           [32m^[0m
+[31mfailed command: [0m./.zig-cache/o/44e9a7327d77fcb9ca32e89aefdcbd0a/test --cache-dir=./.zig-cache --seed=0xc8dd3983 --listen=-
+
+[36m[1mBuild Summary: [0m1/3 steps succeeded[2m (1 failed)[0m; 0/1 tests passed[2m (1 failed)[0m
+test[2m transitive failure
+[0m(0mq(B run test[32m 0 pass[0m, [31m1 fail[0m (1 total)
+[0m

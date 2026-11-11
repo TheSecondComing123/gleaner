@@ -1,0 +1,18 @@
+[
+  {
+    "file": "src/main.zig",
+    "line": 10,
+    "col": 9,
+    "severity": "error",
+    "message": "unused local variable",
+    "source": "gcc"
+  },
+  {
+    "file": "src/main.zig",
+    "line": 4,
+    "col": 20,
+    "severity": "error",
+    "message": "expected type 'u32', found '*const [5:0]u8'",
+    "source": "gcc"
+  }
+]

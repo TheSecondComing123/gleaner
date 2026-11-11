@@ -1,0 +1,18 @@
+[
+  {
+    "file": "t/notes.zig",
+    "line": 7,
+    "col": 31,
+    "severity": "error",
+    "message": "no field named 'z' in struct 'notes.Point'",
+    "source": "gcc",
+    "related": [
+      {
+        "file": "t/notes.zig",
+        "line": 1,
+        "col": 15,
+        "message": "struct declared here"
+      }
+    ]
+  }
+]
