@@ -225,9 +225,9 @@ function choose(commandLine: string, ignored: string[], scripts: Record<string, 
   return chosen
 }
 
-// Splits at separators outside quotes: `grep "a|b" src` and `cat "x;y.log"` are one command each.
+// Splits at separators outside quotes and escapes: `grep "a|b" src` and `cat x\;y.log` are one command each.
 function split(line: string, separator: RegExp): string[] {
-  const masked = line.replace(/"(?:\\.|[^"\\])*"|'[^']*'/g, (quoted) => '_'.repeat(quoted.length))
+  const masked = line.replace(/\\.|"(?:\\.|[^"\\])*"|'[^']*'/g, (quoted) => '_'.repeat(quoted.length))
   const parts: string[] = []
   let start = 0
   for (const match of masked.matchAll(separator)) {
