@@ -10,6 +10,7 @@ const HEADER = /^((?:\/|file:\/\/|[A-Za-z]:\\).+):(\d+)$/
 const VERSION = /^Node\.js v\d/
 const HINT = /^\(Use `node --trace-/
 // Without a header, the error is the last line that names one (`TypeError: x`), not the logs above it.
+// Frames under anything else (deno's `TS2322 [ERROR]`, a code frame) are not a node error.
 const ERROR_LINE = /^(?:Uncaught )?\[?\w*(?:Error|Exception)\b/
 
 function location(path: string): string | undefined {
@@ -33,7 +34,7 @@ export function node(lines: string[]): Problem[] {
     const body = text.filter((line) => !HINT.test(line))
     if (afterCaret) return body.join('\n')
     const start = body.findLastIndex((line) => ERROR_LINE.test(line))
-    return body.slice(start >= 0 ? start : -1).join('\n')
+    return start >= 0 ? body.slice(start).join('\n') : ''
   }
 
   const finish = () => {

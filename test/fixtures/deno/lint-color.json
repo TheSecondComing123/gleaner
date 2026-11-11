@@ -1,0 +1,38 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-deno/lint.ts",
+    "line": 1,
+    "col": 5,
+    "severity": "error",
+    "message": "`unused` is never used",
+    "code": "no-unused-vars",
+    "source": "deno"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-deno/lint.ts",
+    "line": 1,
+    "col": 5,
+    "severity": "error",
+    "message": "`unused` is never reassigned",
+    "code": "prefer-const",
+    "source": "deno"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-deno/lint.ts",
+    "line": 2,
+    "col": 22,
+    "severity": "error",
+    "message": "`any` type is not allowed",
+    "code": "no-explicit-any",
+    "source": "deno"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-deno/lint.ts",
+    "line": 3,
+    "col": 18,
+    "severity": "error",
+    "message": "`debugger` statement is not allowed",
+    "code": "no-debugger",
+    "source": "deno"
+  }
+]

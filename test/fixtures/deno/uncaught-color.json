@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-deno/run.ts",
+    "line": 2,
+    "col": 9,
+    "severity": "error",
+    "message": "Error: cannot load config.json",
+    "source": "deno",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-deno/run.ts",
+        "line": 6,
+        "col": 3,
+        "message": "main"
+      }
+    ]
+  }
+]

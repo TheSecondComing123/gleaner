@@ -1,0 +1,28 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-deno/b.ts",
+    "line": 4,
+    "col": 25,
+    "severity": "error",
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "code": "TS2322",
+    "source": "deno",
+    "related": [
+      {
+        "file": "/private/tmp/claude-501/gl-deno/b.ts",
+        "line": 2,
+        "col": 3,
+        "message": "The expected type comes from property 'a' which is declared here on type 'Box'"
+      }
+    ]
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-deno/b.ts",
+    "line": 5,
+    "col": 14,
+    "severity": "error",
+    "message": "Type '(a: string) => void' is not assignable to type '(a: number) => void'.\nTypes of parameters 'a' and 'a' are incompatible.\n  Type 'number' is not assignable to type 'string'.",
+    "code": "TS2322",
+    "source": "deno"
+  }
+]

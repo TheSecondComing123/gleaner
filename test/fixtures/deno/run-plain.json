@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-deno/parse.ts",
+    "line": 2,
+    "col": 1,
+    "severity": "error",
+    "message": "SyntaxError: Expression expected",
+    "source": "deno"
+  },
+  {
+    "file": "/private/tmp/claude-501/gl-deno/mod.ts",
+    "line": 1,
+    "col": 19,
+    "severity": "error",
+    "message": "Module not found \"file:///private/tmp/claude-501/gl-deno/missing.ts\".",
+    "source": "deno"
+  }
+]

@@ -1,0 +1,21 @@
+Check b.ts
+TS2322 [ERROR]: Type 'string' is not assignable to type 'number'.
+export const b: Box = { a: 'x' }
+                        ^
+    at file:///private/tmp/claude-501/gl-deno/b.ts:4:25
+
+    The expected type comes from property 'a' which is declared here on type 'Box'
+      a: number
+      ^
+        at file:///private/tmp/claude-501/gl-deno/b.ts:2:3
+
+TS2322 [ERROR]: Type '(a: string) => void' is not assignable to type '(a: number) => void'.
+  Types of parameters 'a' and 'a' are incompatible.
+    Type 'number' is not assignable to type 'string'.
+export const fn: (a: number) => void = (a: string) => {}
+             ~~
+    at file:///private/tmp/claude-501/gl-deno/b.ts:5:14
+
+Found 2 errors.
+
+error: Type checking failed.

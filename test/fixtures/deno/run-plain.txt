@@ -1,0 +1,7 @@
+error: SyntaxError: Expression expected
+  |
+2 | export {}
+  | ~~~~~~
+    at file:///private/tmp/claude-501/gl-deno/parse.ts:2:1
+error: Module not found "file:///private/tmp/claude-501/gl-deno/missing.ts".
+    at file:///private/tmp/claude-501/gl-deno/mod.ts:1:19
