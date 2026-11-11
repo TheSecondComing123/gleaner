@@ -1,0 +1,7 @@
+lua: ./util.lua:3: attempt to perform arithmetic on a nil value
+stack traceback:
+	./util.lua:3: in field 'parse'
+	/tmp/claude-501/gl-lua/nested.lua:6: in upvalue 'run'
+	/tmp/claude-501/gl-lua/nested.lua:11: in local 'main'
+	/tmp/claude-501/gl-lua/nested.lua:14: in main chunk
+	[C]: in ?

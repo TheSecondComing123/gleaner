@@ -1,0 +1,9 @@
+[
+  {
+    "file": "crash.lua",
+    "line": 3,
+    "severity": "error",
+    "message": "attempt to index a nil value (local 't')",
+    "source": "lua"
+  }
+]

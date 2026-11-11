@@ -1,0 +1,1 @@
+lua: syntax.lua:6: 'end' expected (to close 'function' at line 1) near <eof>

@@ -148,6 +148,21 @@ describe('ruby on Windows', () => {
   })
 })
 
+describe('lua on Windows', () => {
+  // Hand-written: no Windows machine to capture from. luarocks installs modules under ...\share\lua\5.4.
+  it('skips luarocks modules', () => {
+    const lines = [
+      'lua: C:\\Users\\me\\AppData\\Roaming\\luarocks\\share\\lua\\5.4\\json.lua:12: bad json',
+      'stack traceback:',
+      "\t[C]: in function 'error'",
+      "\tC:\\Users\\me\\AppData\\Roaming\\luarocks\\share\\lua\\5.4\\json.lua:12: in function 'json.decode'",
+      '\tC:\\repo\\main.lua:4: in main chunk',
+      '\t[C]: in ?',
+    ]
+    expect(parsers.lua(lines).map((p) => `${p.file}:${p.line}`)).toEqual(['C:\\repo\\main.lua:4'])
+  })
+})
+
 describe('parseAll', () => {
   const fixture = (path: string) => clean(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))
   const expected = (path: string) => JSON.parse(readFileSync(join(__dirname, 'fixtures', path), 'utf8'))

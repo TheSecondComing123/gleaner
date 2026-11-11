@@ -1,0 +1,6 @@
+luajit: err.lua:3: negative: -1
+stack traceback:
+	[C]: in function 'error'
+	err.lua:3: in function 'check'
+	err.lua:6: in main chunk
+	[C]: at 0x0102334c0c

@@ -1,0 +1,16 @@
+[
+  {
+    "file": "err.lua",
+    "line": 3,
+    "severity": "error",
+    "message": "negative: -1",
+    "source": "lua",
+    "related": [
+      {
+        "file": "err.lua",
+        "line": 6,
+        "message": "called from here, in main chunk"
+      }
+    ]
+  }
+]

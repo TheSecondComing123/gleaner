@@ -4,6 +4,7 @@ import { gcc } from './gcc'
 import { go } from './go'
 import { javac } from './javac'
 import { jest } from './jest'
+import { lua } from './lua'
 import { make } from './make'
 import { msbuild } from './msbuild'
 import { mypy } from './mypy'
@@ -33,6 +34,7 @@ export const parsers: Record<string, Parser> = {
   jest,
   msbuild,
   ruby,
+  lua,
   node,
   make,
   gcc,
@@ -74,6 +76,8 @@ const COMMANDS: Record<string, string[]> = {
   jest: ['jest'],
   vitest: ['jest'],
   ruby: ['ruby'],
+  lua: ['lua'],
+  luajit: ['lua'],
 }
 
 // Words that sit in front of the real command: `npx tsc`, `pnpm exec tsc`, `uv run pytest`.

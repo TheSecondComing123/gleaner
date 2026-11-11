@@ -1,0 +1,26 @@
+[
+  {
+    "file": "./util.lua",
+    "line": 3,
+    "severity": "error",
+    "message": "attempt to perform arithmetic on a nil value",
+    "source": "lua",
+    "related": [
+      {
+        "file": "/tmp/claude-501/gl-lua/nested.lua",
+        "line": 6,
+        "message": "called from here, in upvalue 'run'"
+      },
+      {
+        "file": "/tmp/claude-501/gl-lua/nested.lua",
+        "line": 11,
+        "message": "called from here, in local 'main'"
+      },
+      {
+        "file": "/tmp/claude-501/gl-lua/nested.lua",
+        "line": 14,
+        "message": "called from here, in main chunk"
+      }
+    ]
+  }
+]

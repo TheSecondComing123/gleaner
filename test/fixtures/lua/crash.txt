@@ -1,0 +1,5 @@
+start
+lua: crash.lua:3: attempt to index a nil value (local 't')
+stack traceback:
+	crash.lua:3: in main chunk
+	[C]: in ?
