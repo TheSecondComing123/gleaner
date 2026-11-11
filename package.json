@@ -1,7 +1,7 @@
 {
   "name": "gleaner",
   "displayName": "Gleaner",
-  "description": "Errors from any command you run in the terminal, in the Problems panel. No tasks.json.",
+  "description": "turns errors from commands you run in the terminal into problems and squiggles in your code. no tasks.json or problem matchers needed.",
   "version": "0.1.0",
   "publisher": "thesecondcoming123",
   "license": "MIT",
