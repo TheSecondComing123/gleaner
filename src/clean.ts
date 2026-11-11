@@ -13,6 +13,5 @@ export function clean(raw: string, maxLines = 10_000): string[] {
     return line.slice(start, start + MAX_LINE).trimEnd()
   })
   while (lines.length && lines[lines.length - 1] === '') lines.pop()
-  // ponytail: later lines dropped
   return lines.slice(0, maxLines)
 }

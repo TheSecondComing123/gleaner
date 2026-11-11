@@ -179,7 +179,6 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 // re-add files.exclude defaults
-// ponytail: nested braces unsupported
 function excludes(): string {
   const configured = vscode.workspace.getConfiguration('files').get<Record<string, boolean>>('exclude', {})
   const globs = Object.keys(configured).filter((glob) => configured[glob] === true)
@@ -239,7 +238,6 @@ async function locate(file: string, dirs: string[]): Promise<string | undefined>
   const relative = file.replace(/^\.\//, '')
   // glob chars → `?`, checked literally
   const glob = `**/${relative.replace(/[[\]{}*?]/g, '?')}`
-  // ponytail: 50 candidates, else skip
   const suffix = `${path.sep}${relative.split('/').join(path.sep)}`
   const matches = (await vscode.workspace.findFiles(glob, excludes(), 50)).filter((m) => m.fsPath.endsWith(suffix))
   return matches.length === 1 ? matches[0].fsPath : undefined

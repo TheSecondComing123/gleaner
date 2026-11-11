@@ -10,7 +10,6 @@ const RESULT = /^\s*--- (PASS|FAIL|SKIP): (\S+)/
 const RUN = /^=== (?:RUN|PAUSE|CONT|NAME)\s+(\S+)/
 const PANIC = /^panic: (.*)$/
 const FRAME = /^\t(.+\.go):(\d+)(?: \+0x[\da-f]+)?$/
-// ponytail: first non-stdlib frame
 const RUNTIME = /^(?:runtime\.|testing\.|panic\(|created by )/
 
 export function go(lines: string[]): Problem[] {

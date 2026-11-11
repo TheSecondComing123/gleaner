@@ -130,7 +130,6 @@ export function commandName(segment: string): string | undefined {
   const tokens = segment.trim().split(/\s+/)
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]
-    // ponytail: `--with x` misreads x
     if (!token || token.startsWith('-') || /^\w+=/.test(token) || WRAPPERS.has(token)) continue
     const name = token.split('/').pop()
     if (name && /^python[\d.]*$/.test(name) && tokens[i + 1] === '-m' && tokens[i + 2]) return tokens[i + 2]
@@ -181,7 +180,6 @@ function scriptName(segment: string, scripts: Record<string, string>): string | 
     .split(/\s+/)
     .filter((token) => token && !/^\w+=/.test(token))
   if (!PACKAGE_MANAGERS.has(tokens[0] ?? '')) return undefined
-  // ponytail: `--prefix web` hides it
   const words = tokens.slice(1).filter((token) => !token.startsWith('-'))
   const name = words[0] === 'run' || words[0] === 'run-script' ? words[1] : words[0]
   return name && Object.hasOwn(scripts, name) ? name : undefined
