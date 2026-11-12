@@ -500,6 +500,68 @@ close($done);
   await page.keyboard.press('Enter')
   await status(8, 'mapped path')
 
+  writeFileSync(
+    settings,
+    JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.runSummaries': true }),
+  )
+  await page.waitForTimeout(1500)
+  await command('Gleaner: Clear Problems')
+  const summaryScript = join(demo, 'summary.pl')
+  writeFileSync(
+    summaryScript,
+    'print "src/cart.ts(7,3): error TS2322: summary old\\nsrc/cart.ts(10,3): error TS2322: summary old\\n"; exit 1;\n',
+  )
+  const summaryRun = async () => {
+    await command('Terminal: Focus Terminal')
+    await page.keyboard.type('perl summary.pl')
+    await page.keyboard.press('Enter')
+  }
+  await summaryRun()
+  await status(2, 'summary baseline')
+  writeFileSync(
+    summaryScript,
+    'print "src/cart.ts(20,3): error TS2322: summary old\\nsrc/cart.ts(21,3): error TS2322: summary new\\n"; exit 1;\n',
+  )
+  await summaryRun()
+  await page.getByText(/2 from terminal.*1 fixed, 1 new/).waitFor({ timeout: 15_000 })
+  console.log('summary rerun: 1 fixed, 1 new; line move ignored')
+  await command('Gleaner: Copy Problems')
+  await page
+    .getByRole('option', { name: /perl summary.pl/ })
+    .first()
+    .click()
+  await page.waitForTimeout(500)
+  const exported = await app.evaluate(({ clipboard }) => clipboard.readText())
+  if (
+    [
+      'perl summary.pl',
+      demo,
+      'state: exit 1',
+      'completeness: complete',
+      'cart.ts:21:3: error TS2322: summary new',
+      'src/cart.ts(21,3): error TS2322: summary new',
+    ].every((part) => exported.includes(part))
+  ) {
+    console.log('copy problems: chosen run, command, folder, state, problem and output on clipboard')
+  } else {
+    console.error(`copy problems missing selected run data: ${exported}`)
+    failed = true
+  }
+  await command('Gleaner: Copy Problems')
+  await page
+    .getByRole('option', { name: /perl summary.pl/ })
+    .first()
+    .waitFor()
+  await page.keyboard.press('Escape')
+  if ((await app.evaluate(({ clipboard }) => clipboard.readText())) !== exported) {
+    console.error('copy problems: cancel changed the clipboard')
+    failed = true
+  }
+  writeFileSync(summaryScript, 'exit 0;\n')
+  await summaryRun()
+  await page.getByText(/0 from terminal.*2 fixed, 0 new/).waitFor({ timeout: 15_000 })
+  console.log('all-fixed summary: stays visible with zero problems')
+
   // turning off clears everything, including a run that's still going
   rmSync(join(demo, 'release'))
   await command('Terminal: Focus Terminal')
