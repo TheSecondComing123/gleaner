@@ -22,6 +22,7 @@ no tasks.json. no problem matchers. nothing to set up.
 - **40+ tools.** compilers, type checkers, linters, test runners and crash traces, out of the box.
 - **more from your extensions.** picks up their problem matchers for commands it doesn't know yet.
 - **live results.** long builds report errors as they go. huge output gets read to the end, with a warning if anything gets cut.
+- **whole-project typescript errors.** run `tsc --watch` in a terminal to see errors for files you haven't opened.
 - **always current.** fix an error and rerun: it's gone. `tsc --watch` and vitest update on every save. every other command keeps its own list.
 - **no noise.** a problem only shows up if its file really exists, so random output never turns into fake errors.
 - **no doubles.** if your language server already shows an error, gleaner doesn't list it again. two commands that report the same error show it once.
@@ -63,6 +64,9 @@ open a terminal in vs code and run your build, linter or tests. that's it.
 - rerun a command to refresh its problems. if you stop a run with ctrl+c, the last list stays.
 - `tsc --watch`, vitest, `jest --watch` and nodemon refresh the list after each pass.
 - reload the window and the last list comes back, marked "last session". files with unsaved changes are skipped. rerun to refresh it.
+- **gleaner: show output** opens a recent run's output, even when its problems are hidden as duplicates. use a problem's code action to jump to its whole output block.
+- output views are read-only, with the command, folder, time and exit code or watch pass. gleaner keeps up to 512 kib per run and 4 mib across 50 recent runs, evicting the oldest first. cut output is marked.
+- logs stay in memory. last-session problems have no saved output; rerun to get it back.
 - **gleaner: clear problems** in the command palette clears everything.
 
 | setting                     | default                               | what it does                                                                             |
