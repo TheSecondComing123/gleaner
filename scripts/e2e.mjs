@@ -422,6 +422,42 @@ try {
   await page.keyboard.press('Enter')
   await status(5, 'extension matchers off')
 
+  const slow = join(demo, 'slow.pl')
+  const slowScript = (errors) => `$| = 1;
+${errors ? 'print "src/cart.ts(7,3): error TS2322: live one\\n";' : ''}
+for (1..16) {
+  print "progress $_\\n";
+  select(undef, undef, undef, 0.5);
+}
+${errors ? 'print "src/checkout.ts(4,9): error TS2322: live two\\n";' : ''}
+open(my $done, '>', 'slow-done') or die $!;
+close($done);
+`
+  writeFileSync(slow, slowScript(true))
+  await page.keyboard.type('perl slow.pl')
+  await page.keyboard.press('Enter')
+  await status(6, 'long run, first live error')
+  if (existsSync(join(demo, 'slow-done'))) {
+    console.error('first live error appeared only after slow.pl ended')
+    failed = true
+  }
+  await status(7, 'long run, both errors')
+  for (let i = 0; i < 150 && runs('perl slow.pl') < 1; i++) await page.waitForTimeout(100)
+  if (runs('perl slow.pl') < 1) throw new Error('slow.pl never committed its final result')
+
+  // no problems in this rerun: ctrl+c must restore the committed two, not its empty live result
+  rmSync(join(demo, 'slow-done'))
+  writeFileSync(slow, slowScript(false))
+  await page.keyboard.type('perl slow.pl')
+  await page.keyboard.press('Enter')
+  await status(5, 'long run, empty provisional result')
+  if (existsSync(join(demo, 'slow-done'))) {
+    console.error('second slow.pl ended before its provisional result')
+    failed = true
+  }
+  await page.keyboard.press('Control+C')
+  await status(7, 'long run, ctrl+c restores both errors')
+
   // turning off clears everything, including a run that's still going
   rmSync(join(demo, 'release'))
   await command('Terminal: Focus Terminal')
