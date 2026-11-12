@@ -489,6 +489,17 @@ close($done);
     failed = true
   }
 
+  writeFileSync(
+    settings,
+    JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.pathMappings': { '/app/shop': '.' } }),
+  )
+  await page.waitForTimeout(3000)
+  writeFileSync(join(demo, 'mapped.pl'), 'print "/app/shop/src/cart.ts(7,3): error TS2322: mapped\\n";\n')
+  await command('Terminal: Focus Terminal')
+  await page.keyboard.type('perl mapped.pl')
+  await page.keyboard.press('Enter')
+  await status(8, 'mapped path')
+
   // turning off clears everything, including a run that's still going
   rmSync(join(demo, 'release'))
   await command('Terminal: Focus Terminal')
