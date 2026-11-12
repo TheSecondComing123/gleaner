@@ -498,7 +498,22 @@ try {
     )
   let png = await capture(2)
   if (png.readUInt32BE(16) !== 2880) png = await capture((2 * 2880) / png.readUInt32BE(16))
-  writeFileSync(join(root, 'media', 'screenshot.png'), png)
+  // framed like a ray.so shot: rounded window, soft shadow, the icon's yellow to peach
+  const framed = await app.evaluate(async ({ BrowserWindow }, shot) => {
+    const window = new BrowserWindow({
+      width: 3200,
+      height: 1960,
+      show: false,
+      webPreferences: { offscreen: true },
+    })
+    const html = `<body style="margin:0;width:3200px;height:1960px;display:grid;place-items:center;background:linear-gradient(#f9e2af,#fab387)"><img src="data:image/png;base64,${shot}" style="width:2880px;height:1640px;border-radius:28px;box-shadow:0 24px 80px rgba(17,17,27,.45)"></body>`
+    await window.loadURL(`data:text/html;base64,${Buffer.from(html).toString('base64')}`)
+    await window.webContents.executeJavaScript('document.images[0].decode()')
+    const image = await window.webContents.capturePage()
+    window.destroy()
+    return image.toPNG().toString('base64')
+  }, png.toString('base64'))
+  writeFileSync(join(root, 'media', 'screenshot.png'), Buffer.from(framed, 'base64'))
   console.log('saved media/screenshot.png')
 } catch (error) {
   console.error(error)
