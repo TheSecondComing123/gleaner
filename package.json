@@ -2,7 +2,7 @@
   "name": "gleaner",
   "displayName": "Gleaner",
   "description": "turns errors from commands you run in the terminal into problems and squiggles in your code.",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "publisher": "thesecondcoming123",
   "license": "MIT",
   "author": {
