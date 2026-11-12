@@ -404,11 +404,28 @@ try {
   await page.keyboard.type('x ')
   await row('[Ln 9, Col 5]', 'typed before it')
 
+  const settings = join(user, 'User', 'settings.json')
+  writeFileSync(
+    join(demo, 'lint.pl'),
+    'print "src/cart.ts:2:3: extension matcher example (e2e-stylelint) [error]\\n";\n',
+  )
+  await command('Terminal: Focus Terminal')
+  await page.keyboard.type('perl lint.pl')
+  await page.keyboard.press('Enter')
+  await status(6, 'extension matcher')
+  writeFileSync(
+    settings,
+    JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.extensionMatchers': false }),
+  )
+  await page.waitForTimeout(3000)
+  await page.keyboard.type('perl lint.pl')
+  await page.keyboard.press('Enter')
+  await status(5, 'extension matchers off')
+
   // turning off clears everything, including a run that's still going
   rmSync(join(demo, 'release'))
   await command('Terminal: Focus Terminal')
   await build('old')
-  const settings = join(user, 'User', 'settings.json')
   writeFileSync(settings, JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.enable': false }))
   await page.waitForTimeout(3000)
   writeFileSync(join(demo, 'release'), '')

@@ -16,6 +16,31 @@
         "command": "e2eLs.drop",
         "title": "E2E LS: Drop"
       }
+    ],
+    "problemMatchers": [
+      {
+        "name": "stylelint-unix",
+        "label": "Stylelint problems (unix formatter)",
+        "owner": "Stylelint",
+        "source": "Stylelint",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ],
+        "pattern": "$stylelint-unix"
+      }
+    ],
+    "problemPatterns": [
+      {
+        "name": "stylelint-unix",
+        "regexp": "^(.+):(\\d+):(\\d+): (.*?)\\s\\(([^)]+)\\) \\[(\\w+)\\]\\s*$",
+        "file": 1,
+        "line": 2,
+        "column": 3,
+        "message": 4,
+        "code": 5,
+        "severity": 6
+      }
     ]
   }
 }
