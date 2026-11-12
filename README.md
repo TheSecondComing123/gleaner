@@ -61,6 +61,8 @@ open a terminal in vs code and run your build, linter or tests. that's it.
 
 - the status bar counts what gleaner found. click it to open the problems panel.
 - rerun a command to refresh its problems. if you stop a run with ctrl+c, the last list stays.
+- `tsc --watch`, vitest, `jest --watch` and nodemon refresh the list after each pass.
+- reload the window and the last list comes back, marked "last session". files with unsaved changes are skipped. rerun to refresh it.
 - **gleaner: clear problems** in the command palette clears everything.
 
 | setting                     | default                               | what it does                                                                             |
@@ -76,7 +78,7 @@ open a terminal in vs code and run your build, linter or tests. that's it.
 anything with vs code's shell integration: zsh, bash, fish and powershell on macos, linux and windows, plus git bash, remote ssh and wsl. `cmd`, `tmux` and a plain `ssh` you typed yourself don't report their commands, so gleaner can't see them.
 
 **does it work with watch mode?**
-yes, for `tsc --watch` and vitest (which watches by default). each pass updates the list as you save, and stopping the watcher keeps the last one. other watchers report when you stop them.
+yes, for `tsc --watch`, vitest (which watches by default), `jest --watch` / `--watchAll` and nodemon. each pass updates the list as you save, and stopping the watcher keeps the last one. other watchers report when you stop them.
 
 **it missed an error.**
 open an issue with the command and its raw output. every parser is tested against real output from the real tool, so your sample becomes a test.
