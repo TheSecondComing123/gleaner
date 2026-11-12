@@ -69,12 +69,13 @@ open a terminal in vs code and run your build, linter or tests. that's it.
 - logs stay in memory. last-session problems have no saved output; rerun to get it back.
 - **gleaner: clear problems** in the command palette clears everything.
 
-| setting                     | default                               | what it does                                                                             |
-| --------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `gleaner.enable`            | `true`                                | turn gleaner on or off                                                                   |
-| `gleaner.hideDuplicates`    | `true`                                | hide a problem another extension, like a language server, already shows at the same spot |
-| `gleaner.extensionMatchers` | `true`                                | use problem matchers from installed extensions for commands gleaner doesn't know         |
-| `gleaner.ignoredCommands`   | `ls`, `cat`, `grep`, `rg`, `git`, ... | commands to never read, for output that only looks like errors                           |
+| setting                     | default                               | what it does                                                                                                                                       |
+| --------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gleaner.enable`            | `true`                                | turn gleaner on or off                                                                                                                             |
+| `gleaner.hideDuplicates`    | `true`                                | hide a problem another extension, like a language server, already shows at the same spot                                                           |
+| `gleaner.extensionMatchers` | `true`                                | use problem matchers from installed extensions for commands gleaner doesn't know                                                                   |
+| `gleaner.pathMappings`      | `{}`                                  | map build or container paths to your workspace, like `{ "/app/src": "src" }`; in multi-root workspaces use `${workspaceFolder:name}` as the target |
+| `gleaner.ignoredCommands`   | `ls`, `cat`, `grep`, `rg`, `git`, ... | commands to never read, for output that only looks like errors                                                                                     |
 
 ## faq
 

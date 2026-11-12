@@ -60,6 +60,14 @@
           "default": true,
           "description": "Use problem matchers from installed extensions for commands Gleaner has no parser for."
         },
+        "gleaner.pathMappings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "markdownDescription": "Map printed path prefixes to workspace paths, for example `{ \"/app/src\": \"src\" }`. The longest whole-component prefix wins, before file lookup. Relative targets use the workspace folder; in multi-root workspaces use `${workspaceFolder:name}`. `${workspaceFolder}` works with one folder. Missing mapped files are logged and use normal lookup."
+        },
         "gleaner.ignoredCommands": {
           "type": "array",
           "items": {
