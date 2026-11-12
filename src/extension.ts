@@ -1,7 +1,8 @@
 import * as path from 'node:path'
 import * as vscode from 'vscode'
 import { clean } from './clean'
-import { DEFAULT_IGNORED, parseAll, pickParsers } from './parsers'
+import { compileMatchers } from './matchers'
+import { DEFAULT_IGNORED, parseAll, parsers, pickParsers } from './parsers'
 import type { Problem } from './problem'
 import { Problems } from './problems'
 import { resolveFile } from './resolve'
@@ -46,6 +47,13 @@ export function activate(context: vscode.ExtensionContext): void {
   const ended = new Map<Run, ReturnType<typeof setTimeout>>()
   const withoutIntegration = new Set<vscode.Terminal>()
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0)
+  const readMatchers = () =>
+    compileMatchers(
+      vscode.extensions.all
+        .filter((extension) => extension.id !== context.extension.id)
+        .map((extension) => extension.packageJSON.contributes),
+    )
+  let extensionMatchers = readMatchers()
 
   const updateStatus = (): void => {
     const active = vscode.window.activeTerminal
@@ -106,8 +114,13 @@ export function activate(context: vscode.ExtensionContext): void {
   const publish = async (run: Run, output: string, exitCode: number | undefined, cleared: number): Promise<void> => {
     const cycle = ++run.cycle
     // cwd may have changed
-    const parsers = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
-    const found = parseAll(parsers, clean(output)).slice(0, MAX_CANDIDATES)
+    const chosen = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
+    if (
+      chosen.length === Object.keys(parsers).length &&
+      vscode.workspace.getConfiguration('gleaner').get<boolean>('extensionMatchers', true)
+    )
+      chosen.push(...extensionMatchers)
+    const found = parseAll(chosen, clean(output)).slice(0, MAX_CANDIDATES)
     // failed, nothing found: keep last
     if (exitCode !== 0 && !found.length) {
       log.appendLine(`${run.command}: exit ${exitCode ?? '?'} with no problems found, kept the last result`)
@@ -149,6 +162,9 @@ export function activate(context: vscode.ExtensionContext): void {
     problems,
     log,
     status,
+    vscode.extensions.onDidChange(() => {
+      extensionMatchers = readMatchers()
+    }),
     new vscode.Disposable(() => {
       for (const timer of ended.values()) clearTimeout(timer)
       ended.clear()

@@ -1,0 +1,4 @@
+doc.md:1 MD022/blanks-around-headings Headings should be surrounded by blank lines [Expected: 1; Actual: 0; Below] [Context: "# Title"]
+doc.md:2 MD022/blanks-around-headings Headings should be surrounded by blank lines [Expected: 1; Actual: 0; Above] [Context: "## skipped level"]
+doc.md:2 MD022/blanks-around-headings Headings should be surrounded by blank lines [Expected: 1; Actual: 0; Below] [Context: "## skipped level"]
+doc.md:5 MD012/no-multiple-blanks Multiple consecutive blank lines [Expected: 1; Actual: 2]

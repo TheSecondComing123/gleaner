@@ -50,6 +50,11 @@
           "default": true,
           "description": "Hide a problem when another extension, like a language server, already reports it at the same spot."
         },
+        "gleaner.extensionMatchers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use problem matchers from installed extensions for commands Gleaner has no parser for."
+        },
         "gleaner.ignoredCommands": {
           "type": "array",
           "items": {

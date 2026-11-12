@@ -1,0 +1,5 @@
+/private/tmp/claude-501/gl-matchers/a.css:1:12: Expected "#fff" to be "#ffffff" (color-hex-length) [error]
+/private/tmp/claude-501/gl-matchers/a.css:1:18: Unexpected unknown property "colr" (property-no-unknown) [error]
+/private/tmp/claude-501/gl-matchers/a.css:4:3: Unexpected empty block (block-no-empty) [error]
+
+3 problems (3 errors, 0 warnings)

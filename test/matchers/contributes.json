@@ -1,0 +1,115 @@
+{
+  "stylelint": {
+    "problemMatchers": [
+      {
+        "name": "stylelint-compact",
+        "label": "Stylelint problems (compact formatter)",
+        "owner": "Stylelint",
+        "source": "Stylelint",
+        "fileLocation": ["autoDetect", "${workspaceFolder}"],
+        "pattern": "$stylelint-compact"
+      },
+      {
+        "name": "stylelint-unix",
+        "label": "Stylelint problems (unix formatter)",
+        "owner": "Stylelint",
+        "source": "Stylelint",
+        "fileLocation": ["autoDetect", "${workspaceFolder}"],
+        "pattern": "$stylelint-unix"
+      }
+    ],
+    "problemPatterns": [
+      {
+        "name": "stylelint-compact",
+        "regexp": "^(.+): line (\\d+), col (\\d+), (\\w+) - (.*?)\\s\\(([^)]+)\\)\\s*$",
+        "file": 1,
+        "line": 2,
+        "column": 3,
+        "severity": 4,
+        "message": 5,
+        "code": 6
+      },
+      {
+        "name": "stylelint-unix",
+        "regexp": "^(.+):(\\d+):(\\d+): (.*?)\\s\\(([^)]+)\\) \\[(\\w+)\\]\\s*$",
+        "file": 1,
+        "line": 2,
+        "column": 3,
+        "message": 4,
+        "code": 5,
+        "severity": 6
+      }
+    ]
+  },
+  "markdownlint": {
+    "problemMatchers": [
+      {
+        "name": "markdownlint",
+        "owner": "markdownlint",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^([^:]+):(\\d+)(?::(\\d+))?\\s(\\S+)\\s(\\S+)\\s(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      }
+    ],
+    "problemPatterns": []
+  },
+  "elixir": {
+    "problemMatchers": [
+      {
+        "name": "mixCompileError",
+        "owner": "elixir",
+        "fileLocation": ["relative", "${workspaceRoot}"],
+        "severity": "error",
+        "pattern": {
+          "regexp": "^\\*\\* \\((\\w+)\\) (.*):(\\d+): (.*)$",
+          "file": 2,
+          "location": 3,
+          "message": 0
+        }
+      },
+      {
+        "name": "mixCompileWarning",
+        "owner": "elixir",
+        "fileLocation": ["relative", "${workspaceRoot}"],
+        "severity": "warning",
+        "pattern": [
+          {
+            "regexp": "^warning: (.*)$",
+            "message": 1
+          },
+          {
+            "regexp": "^  (.*):(\\d+)(.*)$",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
+        ]
+      },
+      {
+        "name": "mixTestFailure",
+        "owner": "elixir",
+        "fileLocation": ["relative", "${workspaceRoot}"],
+        "severity": "warning",
+        "pattern": [
+          {
+            "regexp": "^\\s*\\d+\\) (.*)$",
+            "message": 1
+          },
+          {
+            "regexp": "^\\s*(.*):(\\d+)$",
+            "file": 1,
+            "location": 2
+          }
+        ]
+      }
+    ],
+    "problemPatterns": []
+  }
+}

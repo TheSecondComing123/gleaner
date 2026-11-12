@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
 import { display, mapPosition, type Shown } from '../src/display'
+import { compileMatchers } from '../src/matchers'
 import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
 import { lastPass } from '../src/watch'
@@ -216,6 +217,249 @@ describe('parseAll', () => {
   )
   it.each(all)('every parser on %s matches the specific parser alone', (name) => {
     expect(parseAll(Object.values(parsers), fixture(`${name}.txt`))).toEqual(expected(`${name}.json`))
+  })
+})
+
+describe('extension matchers', () => {
+  const contributions = JSON.parse(readFileSync(join(__dirname, 'matchers', 'contributes.json'), 'utf8'))
+  const compiled = compileMatchers(Object.values(contributions))
+  const fixture = (name: string) => clean(readFileSync(join(__dirname, 'matchers', name), 'utf8'))
+
+  it.each(['stylelint-unix.txt', 'stylelint-compact.txt'])('reads the real %s capture', (name) => {
+    expect(parseAll(compiled, fixture(name))).toEqual(
+      [
+        { line: 1, col: 12, message: 'Expected "#fff" to be "#ffffff"', code: 'color-hex-length' },
+        { line: 1, col: 18, message: 'Unexpected unknown property "colr"', code: 'property-no-unknown' },
+        { line: 4, col: 3, message: 'Unexpected empty block', code: 'block-no-empty' },
+      ].map((p) => ({
+        ...p,
+        file: '/private/tmp/claude-501/gl-matchers/a.css',
+        severity: 'error',
+        source: 'Stylelint',
+      })),
+    )
+  })
+
+  it('reads the real markdownlint capture even though its severity capture is a rule name', () => {
+    expect(parseAll(compiled, fixture('markdownlint.txt'))).toEqual(
+      [
+        {
+          line: 1,
+          message: 'should be surrounded by blank lines [Expected: 1; Actual: 0; Below] [Context: "# Title"]',
+        },
+        {
+          line: 2,
+          message: 'should be surrounded by blank lines [Expected: 1; Actual: 0; Above] [Context: "## skipped level"]',
+        },
+        {
+          line: 2,
+          message: 'should be surrounded by blank lines [Expected: 1; Actual: 0; Below] [Context: "## skipped level"]',
+        },
+        { line: 5, message: 'consecutive blank lines [Expected: 1; Actual: 2]', code: 'Multiple' },
+      ].map((p) => ({
+        file: 'doc.md',
+        col: undefined,
+        severity: 'error',
+        source: 'markdownlint',
+        code: 'Headings',
+        ...p,
+      })),
+    )
+  })
+
+  // hand-written samples, no elixir installed
+  it('reads elixir location, capture 0 and multi-line messages', () => {
+    expect(
+      parseAll(compiled, [
+        '** (CompileError) lib/shop.ex:7: undefined function buy/0',
+        'warning: variable "cart" is unused',
+        '  lib/shop.ex:9: Shop.buy/0',
+        '  1) test buys tea (ShopTest)',
+        '     test/shop_test.exs:12',
+      ]),
+    ).toEqual([
+      {
+        file: 'lib/shop.ex',
+        line: 7,
+        severity: 'error',
+        message: '** (CompileError) lib/shop.ex:7: undefined function buy/0',
+        source: 'elixir',
+      },
+      {
+        file: 'lib/shop.ex',
+        line: 9,
+        severity: 'warning',
+        message: 'variable "cart" is unused\n: Shop.buy/0',
+        source: 'elixir',
+      },
+      {
+        file: 'test/shop_test.exs',
+        line: 12,
+        severity: 'warning',
+        message: 'test buys tea (ShopTest)',
+        source: 'elixir',
+      },
+    ])
+  })
+
+  const row = {
+    regexp: '^(.+):(\\d+):(\\d+): (\\S+) (\\S+) (.*)$',
+    file: 1,
+    line: 2,
+    column: 3,
+    severity: 4,
+    code: 5,
+    message: 6,
+  }
+
+  it('resolves contributed bases and patterns across extensions, with child overrides', () => {
+    const chosen = compileMatchers([
+      { problemMatchers: [{ name: 'child', base: '$parent', source: 'child', severity: 'warning' }] },
+      {
+        problemMatchers: [{ name: 'parent', owner: 'parent', pattern: '$row' }],
+        problemPatterns: [{ name: 'row', ...row }],
+      },
+    ])
+    const lines = ['src/a.css:2:3: strange C1 bad']
+    expect(parseAll(chosen, lines)).toEqual([
+      { file: 'src/a.css', line: 2, col: 3, severity: 'warning', code: 'C1', message: 'bad', source: 'child' },
+    ])
+    expect(parseAll([...chosen, ...compiled], ['src/a.css:2:3: W C2 bad'])[0].severity).toBe('warning')
+  })
+
+  it.each(['relative', 'absolute', 'autoDetect'])('keeps printed paths with %s fileLocation', (kind) => {
+    const chosen = compileMatchers([
+      { problemMatchers: [{ owner: 'lint', fileLocation: [kind, `\${cwd}`], pattern: row }] },
+    ])
+    for (const file of ['src/a.css', '/repo/a.css', 'C:\\repo\\a.css']) {
+      expect(parseAll(chosen, [`${file}:2:3: I C1 bad`])).toEqual([
+        { file, line: 2, col: 3, severity: 'info', code: 'C1', message: 'bad', source: 'lint' },
+      ])
+    }
+  })
+
+  it.each([
+    ['4', { line: 4 }],
+    ['4,2', { line: 4, col: 2 }],
+    ['4,2,6,8', { line: 4, col: 2, endLine: 6, endCol: 8 }],
+  ])('reads location %s', (location, expected) => {
+    const chosen = compileMatchers([
+      {
+        problemMatchers: [
+          { owner: 'lint', pattern: { regexp: '^(.*)@([^:]+): (.*)$', file: 1, location: 2, message: 3 } },
+        ],
+      },
+    ])
+    expect(parseAll(chosen, [`a.css@${location}: bad`])).toEqual([
+      { file: 'a.css', ...expected, severity: 'error', message: 'bad', source: 'lint' },
+    ])
+    expect(parseAll(chosen, ['a.css@nope: bad', 'a.css@1,2,3: bad', 'a.css@99999999999999999999: bad'])).toEqual([])
+  })
+
+  it('reads separate range captures and endColumn on the same line', () => {
+    const chosen = compileMatchers([
+      {
+        problemMatchers: [
+          {
+            owner: 'lint',
+            pattern: {
+              regexp: '^(.*):(\\d+):(\\d+)-(\\d+),(\\d+): (.*)$',
+              file: 1,
+              line: 2,
+              column: 3,
+              endLine: 4,
+              endColumn: 5,
+              message: 6,
+            },
+          },
+        ],
+      },
+    ])
+    expect(parseAll(chosen, ['a.css:2:3-4,5: bad'])).toEqual([
+      { file: 'a.css', line: 2, col: 3, endLine: 4, endCol: 5, severity: 'error', message: 'bad', source: 'lint' },
+    ])
+    const sameLine = compileMatchers([
+      {
+        problemMatchers: [
+          {
+            pattern: {
+              regexp: '^(.*):(\\d+):(\\d+)-(\\d+): (.*)$',
+              file: 1,
+              line: 2,
+              column: 3,
+              endColumn: 4,
+              message: 5,
+            },
+          },
+        ],
+      },
+    ])
+    expect(parseAll(sameLine, ['a.css:2:3-5: bad'])[0]).toMatchObject({ line: 2, col: 3, endLine: 2, endCol: 5 })
+  })
+
+  it('loops the last pattern without leaking captures, then retries the next header', () => {
+    const chosen = compileMatchers([
+      {
+        problemPatterns: [
+          {
+            name: 'rows',
+            patterns: [
+              { regexp: '^file (.+)$', file: 1 },
+              {
+                regexp: '^  (\\d+):(\\d+) (.*?)(?: \\[(.*)\\])?$',
+                line: 1,
+                column: 2,
+                message: 3,
+                code: 4,
+                loop: true,
+              },
+            ],
+          },
+        ],
+        problemMatchers: [{ owner: 'lint', pattern: '$rows' }],
+      },
+    ])
+    const lines = ['file a.css', '  2:3 first [C1]', '  4:5 second', 'file b.css', '  6:7 third']
+    const expected = [
+      { file: 'a.css', line: 2, col: 3, code: 'C1', message: 'first', severity: 'error', source: 'lint' },
+      { file: 'a.css', line: 4, col: 5, message: 'second', severity: 'error', source: 'lint' },
+      { file: 'b.css', line: 6, col: 7, message: 'third', severity: 'error', source: 'lint' },
+    ]
+    expect(parseAll(chosen, lines)).toEqual(expected)
+    expect(parseAll(chosen, lines)).toEqual(expected)
+    expect(parseAll(chosen, ['file incomplete', 'file b.css', '  6:7 third'])).toEqual([expected[2]])
+  })
+
+  it('skips missing references, built-in bases, cycles, invalid regexes, background and unlocated patterns', () => {
+    expect(
+      compileMatchers([
+        {
+          problemMatchers: [
+            { pattern: '$missing' },
+            ...['$tsc', '$gcc', '$msCompile'].map((base) => ({ base, pattern: row })),
+            { name: 'a', base: '$b', pattern: row },
+            { name: 'b', base: '$a', pattern: row },
+            { pattern: { regexp: '[', file: 1, line: 2 } },
+            { pattern: row, background: {} },
+            { pattern: { regexp: '^FAILURE: (.*)$', message: 1 } },
+            { pattern: { regexp: '^(.*)$', file: 1 } },
+            { pattern: [] },
+          ],
+        },
+      ]),
+    ).toEqual([])
+    expect(compileMatchers([null, false, {}, { problemMatchers: [null, {}, { pattern: 3 }] }])).toEqual([])
+  })
+
+  it('ignores garbage and incomplete multi-line input', () => {
+    expect(parseAll(compiled, ['', 'garbage', ':NaN:Infinity: strange', 'warning: unfinished'])).toEqual([])
+  })
+
+  it('keeps gleaner first through the existing dedupe', () => {
+    const lines = fixture('stylelint-compact.txt').map((line) => line.replace('error -', 'Error -'))
+    const ours = parseAll(Object.values(parsers), lines)
+    expect(ours).toHaveLength(3)
+    expect(parseAll([...Object.values(parsers), ...compiled], lines)).toEqual(ours)
   })
 })
 
