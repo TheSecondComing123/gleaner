@@ -29,6 +29,11 @@ export function cmake(lines: string[]): Problem[] {
       continue
     }
     if (!current) continue
+    if (/^\S/.test(line) && line !== 'Call Stack (most recent call first):') {
+      current = undefined
+      mode = undefined
+      continue
+    }
     if (current.output) current.output.end = index + 1
     if (mode === 'message') {
       // wrapped at ~77 columns
@@ -43,7 +48,10 @@ export function cmake(lines: string[]): Problem[] {
     const frame = mode === 'stack' && FRAME.exec(line)
     if (frame)
       current.related = [...(current.related ?? []), { file: frame[1], line: Number(frame[2]), message: frame[3] }]
-    else mode = undefined
+    else if (line.trim()) {
+      mode = undefined
+      current = undefined
+    }
   }
   return problems
 }

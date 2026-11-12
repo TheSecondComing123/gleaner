@@ -27,6 +27,12 @@ export function biome(lines: string[]): Problem[] {
       current = undefined
       continue
     }
+    if (/^\S/.test(line)) {
+      output = undefined
+      head = undefined
+      current = undefined
+      continue
+    }
     if (output) output.end = index + 1
     if (current) {
       if (line.trim()) current.message += `\n${line.trim()}`

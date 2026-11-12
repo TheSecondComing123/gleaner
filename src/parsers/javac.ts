@@ -47,21 +47,24 @@ export function javac(lines: string[]): Problem[] {
     }
     if (!current) continue
     line = raw.slice(indent)
-    if (current.output) current.output.end = index + 1
 
     if (state === 'source') {
+      if (current.output) current.output.end = index + 1
       state = 'caret'
       continue
     }
     // caret index is the column
     if (state === 'caret' && CARET.test(line)) {
+      if (current.output) current.output.end = index + 1
       current.col = line.indexOf('^') + 1
       state = 'detail'
       continue
     }
     state = 'detail'
-    if (line.startsWith('  ')) current.message += `\n${line.slice(2)}`
-    else current = undefined
+    if (line.startsWith('  ')) {
+      if (current.output) current.output.end = index + 1
+      current.message += `\n${line.slice(2)}`
+    } else current = undefined
   }
   // build tools repeat diagnostics in their failure summaries
   const seen = new Set<string>()

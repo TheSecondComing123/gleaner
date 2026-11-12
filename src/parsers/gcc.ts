@@ -18,21 +18,27 @@ const SEVERITY: Record<string, Severity> = {
 export function gcc(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let contextStart: number | undefined
+  let current: Problem | undefined
   for (const [index, line] of lines.entries()) {
     const m = HEAD.exec(line)
     if (!m) {
-      if (/^(In file included from |.+?: (?:In |At global scope)|\s+(?:from |required from ))/.test(line))
+      if (/^(In file included from |.+?: (?:In |At global scope)|\s+(?:from |required from ))/.test(line)) {
         contextStart ??= index
-      const last = problems.at(-1)
-      if (last?.output && (!line || /^\s/.test(line))) last.output.end = index + 1
+        current = undefined
+      } else if (current?.output && (!line || /^\s/.test(line))) current.output.end = index + 1
+      else current = undefined
       continue
     }
     const [, file, row, col, kind, message, flag] = m
     // javac, mypy: their parsers win
-    if (OTHER_LANGUAGES.test(file) || OTHER_TOOLS.test(message)) continue
+    if (OTHER_LANGUAGES.test(file) || OTHER_TOOLS.test(message)) {
+      current = undefined
+      contextStart = undefined
+      continue
+    }
     // notes become related info
     if (kind === 'note') {
-      const last = problems.at(-1)
+      const last = current
       if (last?.output) last.output.end = index + 1
       if (last)
         last.related = [
@@ -41,7 +47,7 @@ export function gcc(lines: string[]): Problem[] {
         ]
       continue
     }
-    problems.push({
+    current = {
       file,
       line: Number(row),
       col: col ? Number(col) : undefined,
@@ -50,7 +56,8 @@ export function gcc(lines: string[]): Problem[] {
       code: flag,
       source: 'gcc',
       output: { start: contextStart ?? index, end: index + 1 },
-    })
+    }
+    problems.push(current)
     contextStart = undefined
   }
   return problems

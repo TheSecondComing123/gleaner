@@ -36,6 +36,11 @@ export function deno(lines: string[]): Problem[] {
       note = undefined
       continue
     }
+    if (/^\S/.test(line) && (!current || current.file)) {
+      current = undefined
+      output = undefined
+      continue
+    }
     if (output) output.end = index + 1
     if (!current) continue
 

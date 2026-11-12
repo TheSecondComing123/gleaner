@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { OutputHistory, outputDocument, RetainedOutput, RUN_OUTPUT_BYTES, type RunOutput } from '../src/history'
+import {
+  OutputHistory,
+  outputDocument,
+  PROBLEM_CONTEXT_BYTES,
+  RetainedOutput,
+  RUN_OUTPUT_BYTES,
+  type RunOutput,
+} from '../src/history'
 
 const run = (id: string, overrides: Partial<RunOutput> = {}): RunOutput => ({
   id,
@@ -21,6 +28,41 @@ const run = (id: string, overrides: Partial<RunOutput> = {}): RunOutput => ({
 })
 
 describe('retained run output', () => {
+  it('bounds each growing problem excerpt and keeps its first diagnostic lines', () => {
+    const output = new RetainedOutput()
+    const line = (number: number) => ({ number, text: `${number}: ${'🔥'.repeat(500)}` })
+    for (let i = 0; i < 500; i++) output.append(line(i).text)
+    output.retain(
+      150,
+      Array.from({ length: 100 }, (_, i) => line(150 + i)),
+    )
+    output.retain(
+      150,
+      Array.from({ length: 100 }, (_, i) => line(250 + i)),
+    )
+    const retained = output.snapshot().lines.filter((line) => line.number >= 150 && line.number < 350)
+    expect(retained[0].number).toBe(150)
+    expect(retained.reduce((bytes, line) => bytes + Buffer.byteLength(line.text) + 32, 0)).toBeLessThanOrEqual(
+      PROBLEM_CONTEXT_BYTES,
+    )
+  })
+
+  it('marks evicted problem excerpts while retaining later context within the run budget', () => {
+    const output = new RetainedOutput(512)
+    for (let i = 0; i < 40; i++) output.append(`progress ${i}`)
+    for (const number of [10, 20, 30]) output.retain(number, [{ number, text: `error ${number}: ${'x'.repeat(100)}` }])
+    const snapshot = output.snapshot()
+    expect(snapshot.lines.some((line) => line.number === 10)).toBe(false)
+    expect(snapshot.lines.some((line) => line.number === 30 && line.text.startsWith('error 30'))).toBe(true)
+    expect(snapshot.lines.reduce((bytes, line) => bytes + Buffer.byteLength(line.text) + 32, 0)).toBeLessThanOrEqual(
+      512,
+    )
+    const view = outputDocument(run('1', snapshot), { start: 10, end: 11 })
+    expect(view.text.split('\n').slice(view.selection.start, view.selection.end).join('\n')).toContain(
+      'cut by retention limit',
+    )
+  })
+
   it('bounds utf8 output, preserves both ends, and marks the missing lines', () => {
     const output = new RetainedOutput(256)
     for (let i = 0; i < 30; i++) output.append(`${i}: 🔥🔥🔥`)

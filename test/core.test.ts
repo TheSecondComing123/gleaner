@@ -98,6 +98,20 @@ describe('pickParsers', () => {
     expect(pickParsers('nodemon app.js')).toEqual(Object.values(parsers))
   })
 
+  it.each(['mvn test', './mvnw test', 'mvnw test', 'gradle build', './gradlew build', 'gradlew build'])(
+    'keeps child-tool diagnostics from %s',
+    (command) => {
+      for (const tool of ['gcc', 'tsc']) {
+        const lines = clean(
+          readFileSync(join(__dirname, 'fixtures', tool, tool === 'gcc' ? 'c-plain.txt' : 'plain.txt'), 'utf8'),
+        )
+        const found = parseAll(pickParsers(command), lines)
+        expect(found).toHaveLength(5)
+        expect(found).toEqual(diagnostics(parsers[tool](lines)))
+      }
+    },
+  )
+
   it('finds commands inside a chain', () => {
     expect(pickParsers('cd app && tsc')).toEqual([parsers.tsc])
     expect(pickParsers('tsc; clang -c main.c')).toEqual([parsers.tsc, parsers.gcc])
@@ -150,7 +164,7 @@ describe('pickParsers', () => {
     (command) => {
       const tool = command.includes('mvn') ? 'maven' : 'gradle'
       const chosen = pickParsers(`${command} ${tool === 'maven' ? 'test' : 'build'}`)
-      expect(chosen).toEqual([parsers.javac, parsers.java])
+      expect(chosen).toEqual(Object.values(parsers))
       for (const [parser, task] of [
         ['javac', 'compile'],
         ['java', 'test'],

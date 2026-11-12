@@ -245,8 +245,9 @@ export function activate(context: vscode.ExtensionContext): void {
       log.appendLine(message)
     }
     const lookups = new Map<string, Promise<string | undefined>>()
-    const find = (file: string): Promise<string | undefined> => {
-      const known = lookups.get(file)
+    const find = (file: string, source?: string): Promise<string | undefined> => {
+      const key = `${source ?? ''}\0${file}`
+      const known = lookups.get(key)
       if (known) return known
       const lookup = (async () => {
         const mapped = mapPath(file, mappings, folders)
@@ -255,18 +256,25 @@ export function activate(context: vscode.ExtensionContext): void {
           if (await exists(mapped.path)) return mapped.path
           logMapping(`mapped ${file} to ${mapped.target}, not found`)
         }
-        return locate(file, dirs)
+        const qualified = await locate(file, dirs)
+        if (qualified || source !== 'java' || !file.includes('/')) return qualified
+        return locate(path.posix.basename(file), dirs)
       })()
-      lookups.set(file, lookup)
+      lookups.set(key, lookup)
       return lookup
     }
-    const located = await Promise.all(found.map(async (problem) => ({ problem, file: await find(problem.file) })))
+    const located = await Promise.all(
+      found.map(async (problem) => ({ problem, file: await find(problem.file, problem.source) })),
+    )
     const real = located.filter((x): x is { problem: Problem; file: string } => x.file !== undefined)
     const kept = real.slice(-MAX_PROBLEMS)
     if (real.length > kept.length) losses.push(`older problems dropped (${MAX_PROBLEMS} display limit)`)
     const diagnostics = await Promise.all(
       kept.map(({ problem }) =>
-        toDiagnostic(problem, find, { id: outputId, span: problem.output && { ...problem.output } }),
+        toDiagnostic(problem, (file) => find(file, problem.source), {
+          id: outputId,
+          span: problem.output && { ...problem.output },
+        }),
       ),
     )
     if (!current(run, cleared) || run.cycle !== cycle) return
@@ -391,7 +399,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const generation = previous?.generation ?? nextGeneration++
       if (!previous) latest.set(key, generation)
       const run: Run = {
-        id: previous?.id ?? `${sessionId}/${nextRun++}`,
+        id: `${sessionId}/${nextRun++}`,
         started: previous?.started ?? Date.now(),
         terminal,
         command,

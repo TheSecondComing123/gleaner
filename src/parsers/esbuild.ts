@@ -32,6 +32,11 @@ export function esbuild(lines: string[]): Problem[] {
       continue
     }
     if (!current) continue
+    if (/^\S/.test(line)) {
+      flushNote()
+      current = undefined
+      continue
+    }
     if (current.output) current.output.end = index + 1
 
     const location = LOCATION.exec(line)
@@ -51,10 +56,6 @@ export function esbuild(lines: string[]): Problem[] {
     if (text) {
       flushNote()
       note = text[1]
-    } else if (/^\S/.test(line)) {
-      // end of log
-      flushNote()
-      current = undefined
     }
   }
   flushNote()

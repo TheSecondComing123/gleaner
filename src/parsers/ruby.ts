@@ -108,7 +108,7 @@ export function ruby(lines: string[]): Problem[] {
           source: 'ruby',
           output: { start, end: index + 1 },
         })
-    }
+    } else if (crash && line && !/^\s/.test(line)) finish()
   }
   finish()
   return problems

@@ -3,6 +3,7 @@ import type { OutputSpan, Problem } from './problem'
 export const RUN_OUTPUT_BYTES = 512 * 1024
 export const TOTAL_OUTPUT_BYTES = 4 * 1024 * 1024
 const MAX_RUNS = 50
+export const PROBLEM_CONTEXT_BYTES = 8 * 1024
 
 export interface OutputLine {
   number: number
@@ -53,12 +54,14 @@ export function incompleteReasons(
 
 const lineBytes = (line: OutputLine): number => Buffer.byteLength(line.text, 'utf8') + 32
 
-// keep the beginning and end, with original line numbers across the gap.
+// reserve space for problem excerpts before trimming the beginning and end.
 export class RetainedOutput {
   private head: OutputLine[] = []
   private tail: OutputLine[] = []
   private headBytes = 0
   private tailBytes = 0
+  private context = new Map<number, { lines: OutputLine[]; bytes: number }>()
+  private contextBytes = 0
   private count = 0
 
   constructor(private readonly budget = RUN_OUTPUT_BYTES) {}
@@ -66,16 +69,40 @@ export class RetainedOutput {
   append(text: string): void {
     const line = { number: this.count++, text }
     const bytes = lineBytes(line)
-    if (!this.tail.length && this.headBytes + bytes <= this.budget / 2) {
+    const endBudget = (this.budget - this.contextBytes) / 2
+    if (!this.tail.length && this.headBytes + bytes <= endBudget) {
       this.head.push(line)
       this.headBytes += bytes
     } else {
       this.tail.push(line)
       this.tailBytes += bytes
-      while (this.tailBytes > this.budget / 2 && this.tail.length) {
+      while (this.tailBytes > endBudget && this.tail.length) {
         this.tailBytes -= lineBytes(this.tail.shift() as OutputLine)
       }
     }
+  }
+
+  retain(start: number, lines: OutputLine[]): void {
+    const previous = this.context.get(start)
+    const combined = new Map([...(previous?.lines ?? []), ...lines].map((line) => [line.number, line]))
+    const excerpt: OutputLine[] = []
+    let bytes = 0
+    for (const line of combined.values()) {
+      const size = lineBytes(line)
+      if (bytes + size > Math.min(PROBLEM_CONTEXT_BYTES, this.budget / 2)) continue
+      bytes += size
+      excerpt.push(line)
+    }
+    this.contextBytes += bytes - (previous?.bytes ?? 0)
+    this.context.set(start, { lines: excerpt, bytes })
+    while (this.contextBytes > this.budget / 2 && this.context.size) {
+      const oldest = this.context.keys().next().value as number
+      this.contextBytes -= this.context.get(oldest)?.bytes ?? 0
+      this.context.delete(oldest)
+    }
+    const endBudget = (this.budget - this.contextBytes) / 2
+    while (this.headBytes > endBudget && this.head.length) this.headBytes -= lineBytes(this.head.pop() as OutputLine)
+    while (this.tailBytes > endBudget && this.tail.length) this.tailBytes -= lineBytes(this.tail.shift() as OutputLine)
   }
 
   snapshot(partial?: string): { lines: OutputLine[]; lineCount: number } {
@@ -85,9 +112,19 @@ export class RetainedOutput {
       const line = { number: this.count, text: partial }
       tail.push(line)
       bytes += lineBytes(line)
-      while (bytes > this.budget / 2 && tail.length) bytes -= lineBytes(tail.shift() as OutputLine)
+      while (bytes > (this.budget - this.contextBytes) / 2 && tail.length)
+        bytes -= lineBytes(tail.shift() as OutputLine)
     }
-    return { lines: [...this.head, ...tail], lineCount: this.count + (partial === undefined ? 0 : 1) }
+    const lines = new Map(
+      [...[...this.context.values()].flatMap((excerpt) => excerpt.lines), ...this.head, ...tail].map((line) => [
+        line.number,
+        line,
+      ]),
+    )
+    return {
+      lines: [...lines.values()].sort((a, b) => a.number - b.number),
+      lineCount: this.count + (partial === undefined ? 0 : 1),
+    }
   }
 }
 

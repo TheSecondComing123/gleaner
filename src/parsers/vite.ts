@@ -16,6 +16,7 @@ export function vite(lines: string[]): Problem[] {
       message = []
       continue
     }
+    if (!message && line && !/^\s|^\d+: /.test(line)) output = undefined
     if (output) output.end = index + 1
     if (!message) continue
     const file = FILE.exec(line)

@@ -157,6 +157,85 @@ describe('streamed output', () => {
 })
 
 describe('output spans', () => {
+  it.each([
+    ['tsc --watch', 'tsc-watch.txt'],
+    ['jest --watchAll', 'jest-watch.txt'],
+    ['vitest watch', 'vitest-watch.txt'],
+    ['nodemon app.js', 'nodemon.txt'],
+  ])('keeps captured %s spans closed after watch output ends', (command, capture) => {
+    const stream = new Output(pickParsers(command))
+    stream.append(readFileSync(join(__dirname, 'watch', capture), 'utf8'))
+    const before = stream.snapshot(true)
+    expect(before.length).toBeGreaterThan(0)
+    stream.append('other tool output\n\nmore progress\n\n    unrelated detail\n')
+    expect(stream.snapshot(true)).toEqual(before)
+  })
+
+  it('retains problem excerpts after their parser window and surrounding output are retired', () => {
+    const stream = new Output([parsers.tsc])
+    const noise = `${'x'.repeat(1000)}\n`
+    stream.append(`${noise.repeat(400)}${error('middle failure')}  original detail\n${noise.repeat(4000)}`)
+    const problem = stream.snapshot(true)[0]
+    expect(problem.output).toEqual({ start: 400, end: 402 })
+    const retained = stream.retainedOutput(true)
+    expect(retained.lines.filter((line) => line.number >= 400 && line.number < 402).map((line) => line.text)).toEqual([
+      error('middle failure').trimEnd(),
+      '  original detail',
+    ])
+    expect(retained.lines.reduce((bytes, line) => bytes + Buffer.byteLength(line.text) + 32, 0)).toBeLessThanOrEqual(
+      512 * 1024,
+    )
+    stream.reset()
+    expect(stream.retainedOutput()).toEqual({ lines: [], lineCount: 0 })
+  })
+
+  it.each(['tsc', 'gcc'])('closes %s spans before unrelated output and later whitespace', (tool) => {
+    const head = tool === 'tsc' ? error('broken').trimEnd() : 'src/main.c:7:3: error: broken'
+    const lines = [head, 'other tool output', '', 'more progress', '', '    unrelated detail']
+    expect(parsers[tool](lines)[0].output).toEqual({ start: 0, end: 1 })
+    const stream = new Output([parsers[tool]])
+    stream.append(`${lines.join('\n')}\n${'progress\n'.repeat(1200)}`)
+    expect(stream.snapshot(true)[0].output).toEqual({ start: 0, end: 1 })
+  })
+
+  it('closes a typescript block that outgrows the parser window before later progress', () => {
+    const stream = new Output([parsers.tsc])
+    stream.append('progress\n'.repeat(950) + error('long block') + '  detail\n'.repeat(1380))
+    stream.append('other tool output\n\nmore progress\n\n')
+    expect(stream.snapshot(true)[0].output).toEqual({ start: 950, end: 2331 })
+  })
+
+  it.each([
+    ['javac', ['Main.java:3: error: broken', '  missing();', '  ^']],
+    ['rustc', ['error[E0308]: broken', ' --> src/main.rs:3:2', '  |', '3 | missing', '  | ^^^^^^^']],
+    ['ruff', ['F821 Undefined name', ' --> main.py:3:2', '  |', '3 | missing', '  | ^^^^^^^']],
+    ['esbuild', ['✘ [ERROR] broken', '', '    main.ts:3:2:', '      3 │ missing', '        ╵ ^^^^^^^']],
+  ] as const)('closes %s before an unrelated line immediately after its block', (tool, block) => {
+    const lines = [...block, 'other tool output', '', 'more progress', '', '    unrelated detail']
+    expect(parsers[tool](lines)[0].output).toEqual({ start: 0, end: block.length })
+  })
+
+  it.each([
+    ['javac', 'gradle-compile.txt'],
+    ['rustc', 'errors-color.txt'],
+    ['ruff', 'ruff-full-color.txt'],
+    ['biome', 'lint-color.txt'],
+    ['esbuild', 'note-plain.txt'],
+    ['cmake', 'call-stack-color.txt'],
+    ['deno', 'lint-color.txt'],
+    ['vite', 'missing-export-plain.txt'],
+    ['go', 'test.txt'],
+    ['mypy', 'pretty.txt'],
+    ['ruby', 'crash.txt'],
+  ])('does not extend captured %s blocks into subsequent tool output', (tool, capture) => {
+    const lines = clean(readFileSync(join(__dirname, 'fixtures', tool, capture), 'utf8'))
+    const before = parsers[tool](lines)
+    expect(before.length).toBeGreaterThan(0)
+    expect(parsers[tool]([...lines, 'other tool output', '', 'more progress', '', '    unrelated detail'])).toEqual(
+      before,
+    )
+  })
+
   it('keeps repeated message occurrences tied to their blocks across a chunk edge', () => {
     const lines = Array.from({ length: 1800 }, () => 'progress')
     lines[690] = 'src/cart.ts(7,3): error TS2322: repeated'

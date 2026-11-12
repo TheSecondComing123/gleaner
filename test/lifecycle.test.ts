@@ -303,6 +303,46 @@ afterEach(() => {
 })
 
 describe('path mapping lookup', () => {
+  it.each(['package.txt', 'source-chained.txt'])('keeps basename fallback for captured java %s', async (capture) => {
+    const name = capture === 'package.txt' ? 'App.java' : 'Main.java'
+    const expected = resolve('/repo', name)
+    state.stat = async (file) => {
+      if (file !== expected) throw new Error('not found')
+    }
+    const run = await start('java Main')
+    await run.write(readFileSync(join(__dirname, 'fixtures/java', capture), 'utf8'))
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([expected])
+    expect(messages()).toHaveLength(capture === 'package.txt' ? 1 : 2)
+  })
+
+  it('resolves captured maven frames by package before ambiguous basenames', async () => {
+    const expected = resolve('/repo/src/test/java/shop/PriceTest.java')
+    state.matches = [expected, resolve('/repo/src/test/java/other/PriceTest.java')].map((fsPath) => ({ fsPath }))
+    state.stat = async () => {
+      throw new Error('not found')
+    }
+    const run = await start('mvn test')
+    await run.write(readFileSync(join(__dirname, 'fixtures/java/maven-test.txt'), 'utf8'))
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([expected])
+    expect(messages()).toHaveLength(2)
+    expect(state.logs.join('\n')).not.toContain('skipped (file not found)')
+  })
+
+  it('resolves packaged primary and related frames before existing bare files', async () => {
+    const expected = resolve('/repo/src/main/java/com/example/App.java')
+    state.matches = [expected, resolve('/repo/src/main/java/other/App.java')].map((fsPath) => ({ fsPath }))
+    state.stat = async (file) => {
+      if (file !== resolve('/repo/App.java')) throw new Error('not found')
+    }
+    const run = await start('java com.example.App')
+    await run.write(readFileSync(join(__dirname, 'fixtures/java/package.txt'), 'utf8'))
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([expected])
+    expect(shownProblems()[0].relatedInformation?.[0].location.uri.fsPath).toBe(expected)
+  })
+
   it('maps primary and related locations before accepting existing build copies', async () => {
     const copy = resolve('/build/copy')
     state.mappings = { [copy]: 'src' }
@@ -686,6 +726,42 @@ const codeActions = async (diagnostic: vscode.Diagnostic) =>
   )) as vscode.CodeAction[]
 
 describe('problem output provenance', () => {
+  it('retains middle problem context for show output and copy after large surrounding logs', async () => {
+    const run = await start('tsc')
+    const noise = `${'x'.repeat(1000)}\n`.repeat(400)
+    await run.write(`${noise}${error('middle failure')}  original detail\n${noise}`)
+    await run.end(1)
+    const origin = shownProblems()[0].output
+    await showOutput(origin)
+    expect(
+      state.opened
+        .split('\n')
+        .slice(state.selection?.start.line, (state.selection?.end.line ?? 0) + 1)
+        .join('\n'),
+    ).toContain('error TS2322: middle failure\n  original detail')
+    await state.commands.get('gleaner.copyProblems')?.()
+    expect(state.clipboard.split('## output excerpts')[1]).toContain('error TS2322: middle failure\n  original detail')
+    expect(
+      state.picker[0].run.lines.reduce((bytes, line) => bytes + Buffer.byteLength(line.text) + 32, 0),
+    ).toBeLessThanOrEqual(512 * 1024)
+  })
+
+  it('preserves committed output when a powershell re-report is interrupted', async () => {
+    const first = await start()
+    await first.write(`${error('committed')}  original detail\n`)
+    await first.end()
+    const origin = shownProblems()[0].output
+    const replacement = await start('perl slow.pl', first.terminal)
+    await replacement.write('unrelated replacement output\n')
+    await vi.advanceTimersByTimeAsync(1500)
+    await replacement.end(130)
+    expect(shownProblems()[0].output).toEqual(origin)
+    await showOutput(origin)
+    expect(state.opened).toContain('error TS2322: committed\n  original detail')
+    expect(state.opened).not.toContain('unrelated replacement output')
+    expect(state.logs.some((line) => line.includes('same run reported again'))).toBe(true)
+  })
+
   it('opens the committed log after an interrupted rerun restores its diagnostics', async () => {
     const first = await start()
     await first.write(`${error('committed')}  original detail\n`)

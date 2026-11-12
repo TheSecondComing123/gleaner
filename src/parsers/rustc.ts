@@ -96,6 +96,11 @@ export function rustc(lines: string[]): Problem[] {
       continue
     }
     if (!current) continue
+    if (line && !/^\s|^\d+ \||^(?:note|help): /.test(line)) {
+      current = undefined
+      sub = undefined
+      continue
+    }
     if (current.output) current.output.end = index + 1
 
     const s = SUB.exec(line)

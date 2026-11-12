@@ -40,7 +40,10 @@ export function tsc(lines: string[]): Problem[] {
     if (state === 'message') state = 'frame'
 
     const related = RELATED.exec(line)
-    if (FRAME.test(line) && current.output) current.output.end = index + 1
+    if (FRAME.test(line)) {
+      if (current.output) current.output.end = index + 1
+      continue
+    }
     if (related) {
       if (current.output) current.output.end = index + 1
       current.related = [
@@ -50,13 +53,15 @@ export function tsc(lines: string[]): Problem[] {
       state = 'related'
       continue
     }
-    if (state === 'related' && !FRAME.test(line)) {
+    if (state === 'related' && /^\s/.test(line)) {
       const last = current.related?.at(-1)
       if (last && !last.message) {
         last.message = line.trim()
         if (current.output) current.output.end = index + 1
+        continue
       }
     }
+    current = undefined
   }
   return problems
 }

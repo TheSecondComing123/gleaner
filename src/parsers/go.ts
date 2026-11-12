@@ -30,6 +30,7 @@ export function go(lines: string[]): Problem[] {
   }
 
   for (const [index, line] of lines.entries()) {
+    if (panic === undefined && line && !/^\s|^goroutine |^created by |^[^\s(]+\(/.test(line)) panicOutput = undefined
     if (panicOutput) panicOutput.end = index + 1
     if (panic !== undefined) {
       const frame = FRAME.exec(line)

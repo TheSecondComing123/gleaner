@@ -17,6 +17,12 @@ interface Frame {
   fn: string
 }
 
+function sourceFile(file: string, owner: string): string {
+  const name = owner.split('/').at(-1) ?? owner
+  const packageEnd = name.lastIndexOf('.')
+  return packageEnd < 0 ? file : `${name.slice(0, packageEnd).replaceAll('.', '/')}/${file}`
+}
+
 export function java(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let index = 0
@@ -74,7 +80,7 @@ export function java(lines: string[]): Problem[] {
       const location = GRADLE_FRAME.exec(line)
       if (location && test) {
         message = location[1]
-        frames.push({ fn: test, file: location[2], line: Number(location[3]) })
+        frames.push({ fn: test, file: sourceFile(location[2], test.split(' > ')[0]), line: Number(location[3]) })
       }
       flush(index + 1)
       continue
@@ -89,7 +95,8 @@ export function java(lines: string[]): Problem[] {
     if (message === undefined) continue
     const frame = FRAME.exec(line)
     if (frame) {
-      frames.push({ fn: frame[1], file: frame[2], line: Number(frame[3]) })
+      const owner = frame[1].slice(0, frame[1].lastIndexOf('.'))
+      frames.push({ fn: frame[1], file: sourceFile(frame[2], owner), line: Number(frame[3]) })
       continue
     }
     if (/^\s+\.\.\. \d+ more$/.test(line)) continue

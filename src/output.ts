@@ -1,5 +1,5 @@
 import { clean } from './clean'
-import { RetainedOutput } from './history'
+import { type OutputLine, PROBLEM_CONTEXT_BYTES, RetainedOutput } from './history'
 import { parseAll } from './parsers'
 import type { Parser, Problem } from './problem'
 import { isJestPrompt } from './watch'
@@ -20,7 +20,7 @@ export class Output {
   private partial = ''
   private lines: string[] = []
   private readonly saved = new Map<string, Problem>()
-  private readonly openBlocks = new Map<string, { start: number; end?: number; source: string }>()
+  private readonly openBlocks = new Map<string, { start: number; end?: number; lines: string[]; parse: Parser }>()
   private readonly losses = new Set<string>()
 
   constructor(private readonly chosen: Parser[]) {}
@@ -57,14 +57,17 @@ export class Output {
     this.partialCut = false
     this.partial = ''
     const index = this.offset + this.lines.length
-    for (const block of this.openBlocks.values()) {
-      if (
-        block.source === 'gcc' &&
-        block.end === undefined &&
-        line &&
-        !/^\s|^.+?:\d+:(?:\d+:)? (?:note|remark):|^In file included from /.test(line)
-      )
+    for (const [id, block] of this.openBlocks) {
+      if (block.end !== undefined) continue
+      block.lines.push(line)
+      const problem = block.parse(block.lines).find((p) => key(p) === id)
+      if (!problem?.output || problem.output.end < block.lines.length) {
         block.end = index
+        block.lines = []
+      }
+      // keep the header and recent continuation without growing parser context.
+      if (block.lines.length > OVERLAP_LINES * 2)
+        block.lines.splice(OVERLAP_LINES, block.lines.length - OVERLAP_LINES * 2)
     }
     this.lines.push(line)
     if (this.lines.length >= CHUNK_LINES) {
@@ -76,6 +79,7 @@ export class Output {
 
   private retire(): void {
     const full = parseAll(this.chosen, this.lines, this.offset)
+    this.retainProblems(full, this.lines)
     this.closeBlocks(full)
     const expected = new Set(full.map((p) => JSON.stringify(p)))
     for (let cut = this.lines.length - OVERLAP_LINES; cut > 0; cut -= OVERLAP_LINES) {
@@ -103,8 +107,11 @@ export class Output {
       full.filter((p) => !replaceable.has(key(p))),
     )
     for (const p of this.saved.values()) {
-      if (p.output?.end === this.offset + this.lines.length)
-        this.openBlocks.set(key(p), { start: p.output.start, source: p.source })
+      const id = key(p)
+      if (p.output?.end !== this.offset + this.lines.length || this.openBlocks.has(id)) continue
+      const lines = this.lines.slice(Math.max(0, p.output.start - this.offset))
+      const parse = this.chosen.find((parse) => parse(lines).some((p) => key(p) === id))
+      if (parse) this.openBlocks.set(id, { start: p.output.start, lines, parse })
     }
     this.offset += this.lines.length - tail.length
     this.lines = tail
@@ -114,15 +121,46 @@ export class Output {
     const tail = final && this.partial ? clean(this.partial, 1, () => this.losses.add('long lines truncated')) : []
     const found = new Map(this.saved)
     const parsed = parseAll(this.chosen, [...this.lines, ...tail], this.offset)
+    this.retainProblems(parsed, [...this.lines, ...tail])
     this.closeBlocks(parsed)
     this.merge(found, parsed)
     return [...found.values()].map((p) => {
       const block = this.openBlocks.get(key(p))
       const output = p.output && { ...p.output }
-      if (output && block?.start === output.start)
-        output.end = block.end ?? this.offset + this.lines.length + tail.length
+      if (output && block?.start === output.start) {
+        output.end = block.end ?? this.offset + this.lines.length
+        if (block.end === undefined && tail.length) {
+          const problem = block.parse([...block.lines, ...tail]).find((candidate) => key(candidate) === key(p))
+          if (problem?.output?.end === block.lines.length + tail.length) output.end += tail.length
+        }
+      }
       return { ...p, output }
     })
+  }
+
+  private retainProblems(problems: Problem[], lines: string[]): void {
+    for (const problem of problems) {
+      if (!problem.output) continue
+      const start = Math.max(0, problem.output.start - this.offset)
+      const end = Math.min(lines.length, problem.output.end - this.offset)
+      const excerpt: OutputLine[] = []
+      let bytes = 0
+      // diagnostic lines take priority over surrounding progress output.
+      for (const [from, to] of [
+        [start, end],
+        [Math.max(0, start - 2), start],
+        [end, Math.min(lines.length, end + 2)],
+      ]) {
+        for (let i = from; i < to; i++) {
+          const text = lines[i]
+          const size = Buffer.byteLength(text, 'utf8') + 32
+          if (bytes + size > PROBLEM_CONTEXT_BYTES) break
+          bytes += size
+          excerpt.push({ number: this.offset + i, text })
+        }
+      }
+      this.retained.retain(problem.output.start, excerpt)
+    }
   }
 
   // a block can outgrow parser context; keep its extent until the next problem.
@@ -130,7 +168,10 @@ export class Output {
     for (const [id, block] of this.openBlocks) {
       if (block.end !== undefined) continue
       const next = found.filter((p) => key(p) !== id && p.output && p.output.start > block.start)
-      if (next.length) block.end = Math.min(...next.map((p) => p.output?.start ?? Infinity))
+      if (next.length) {
+        block.end = Math.min(...next.map((p) => p.output?.start ?? Infinity))
+        block.lines = []
+      }
     }
   }
 

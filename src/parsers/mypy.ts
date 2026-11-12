@@ -9,17 +9,20 @@ const STOP = /^(Found \d+ errors? in|Success: |.+?: (?:note|error): )/
 export function mypy(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let target: Problem | Related | undefined
+  let current: Problem | undefined
 
   for (const [index, line] of lines.entries()) {
     const head = HEAD.exec(line)
     if (!head) {
-      const current = problems.at(-1)
       if (current?.output && line.startsWith(' ')) current.output.end = index + 1
       if (target && line && !line.startsWith(' ') && !STOP.test(line)) {
         target.message += ` ${line}`
         const last = problems.at(-1)
         if (last?.output) last.output.end = index + 1
-      } else target = undefined
+      } else {
+        target = undefined
+        if (!line.startsWith(' ')) current = undefined
+      }
       continue
     }
     const [, file, row, col, kind, message] = head
@@ -27,6 +30,7 @@ export function mypy(lines: string[]): Problem[] {
     const last = problems.at(-1)
     // notes join their error
     if (kind === 'note' && last && last.file === at.file && last.line === at.line) {
+      current = last
       if (last.output) last.output.end = index + 1
       target = { ...at, message }
       last.related = [...(last.related ?? []), target]
@@ -40,6 +44,7 @@ export function mypy(lines: string[]): Problem[] {
       output: { start: index, end: index + 1 },
     }
     problems.push(problem)
+    current = problem
     target = problem
   }
 
