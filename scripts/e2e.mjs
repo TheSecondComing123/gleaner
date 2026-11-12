@@ -218,12 +218,14 @@ const app = await electron.launch({
 
 let failed = false
 try {
-  const page = await app.firstWindow()
+  let page = await app.firstWindow()
   await page.setViewportSize({ width: 1440, height: 820 })
   await page.waitForSelector('.monaco-workbench', { timeout: 30_000 })
   const logs = join(user, 'logs')
-  const activated = () =>
-    existsSync(logs) && readdirSync(logs, { recursive: true }).some((f) => f.endsWith('Gleaner.log'))
+  const logFiles = () =>
+    existsSync(logs) ? readdirSync(logs, { recursive: true }).filter((f) => f.endsWith('Gleaner.log')) : []
+  let previousLogs = new Set()
+  const activated = () => logFiles().some((f) => !previousLogs.has(f))
   // gleaner is up and the prompt's circle shows shell integration is connected
   const ready = async () => {
     for (let i = 0; i < 300 && !activated(); i++) await page.waitForTimeout(100)
@@ -351,8 +353,7 @@ try {
   await status(5, 'watch, stopped')
 
   const gleanerLog = () =>
-    readdirSync(logs, { recursive: true })
-      .filter((f) => f.endsWith('Gleaner.log'))
+    logFiles()
       .map((f) => readFileSync(join(logs, f), 'utf8'))
       .join('')
   const runs = (command) => gleanerLog().split(`${command}: exit`).length - 1
@@ -457,6 +458,36 @@ close($done);
   }
   await page.keyboard.press('Control+C')
   await status(7, 'long run, ctrl+c restores both errors')
+
+  // dirty files are skipped on restore, so save the earlier position edits first.
+  await command('File: Save All')
+  previousLogs = new Set(logFiles())
+  await page.keyboard.press('F1')
+  await page.keyboard.type('Developer: Reload Window')
+  await page.waitForTimeout(500)
+  await Promise.all([page.waitForEvent('domcontentloaded', { timeout: 30_000 }), page.keyboard.press('Enter')])
+  page = await app.firstWindow()
+  await page.waitForSelector('.monaco-workbench', { timeout: 30_000 })
+  await command('Terminal: Kill All Terminals')
+  await command('Terminal: Create New Terminal')
+  await ready()
+  await status(7, 'reload restores committed problems')
+  await row('tsc (last session)', 'reload marks history')
+
+  writeFileSync(slow, slowScript(true))
+  await command('Terminal: Focus Terminal')
+  const beforeReloadRerun = runs('perl slow.pl')
+  await page.keyboard.type('perl slow.pl')
+  await page.keyboard.press('Enter')
+  for (let i = 0; i < 150 && runs('perl slow.pl') === beforeReloadRerun; i++) await page.waitForTimeout(100)
+  if (runs('perl slow.pl') === beforeReloadRerun) throw new Error('slow.pl never committed after reload')
+  await status(7, 'rerun replaces history')
+  await row('live one', 'rerun restores current source')
+  const rerunRows = await page.locator('.markers-panel .monaco-list-row').allInnerTexts()
+  if (rerunRows.some((r) => r.includes('live one') && r.includes('(last session)'))) {
+    console.error('rerun still marked as last session')
+    failed = true
+  }
 
   // turning off clears everything, including a run that's still going
   rmSync(join(demo, 'release'))
