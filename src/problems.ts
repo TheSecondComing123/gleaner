@@ -8,12 +8,29 @@ const key = (d: vscode.Diagnostic) =>
 export class Problems implements vscode.Disposable {
   private readonly collection = vscode.languages.createDiagnosticCollection('gleaner')
   private readonly byRun = new Map<string, Map<string, vscode.Diagnostic[]>>()
+  private readonly committed = new Map<string, Map<string, vscode.Diagnostic[]>>()
   private readonly shown = new Map<string, vscode.Diagnostic[]>()
   hideDuplicates = true
 
-  set(run: string, files: Map<string, vscode.Diagnostic[]>): void {
+  set(
+    run: string,
+    files: Map<string, vscode.Diagnostic[]>,
+    options: { provisional?: boolean; show?: boolean } = {},
+  ): void {
     // one spelling per file: Uri.fsPath is what edits and other sources report
     const normalized = new Map([...files].map(([file, list]) => [vscode.Uri.file(file).fsPath, list]))
+    if (!options.provisional) {
+      if (normalized.size) this.committed.set(run, normalized)
+      else this.committed.delete(run)
+    }
+    if (options.show !== false) this.show(run, normalized)
+  }
+
+  restore(run: string): void {
+    this.show(run, this.committed.get(run) ?? new Map())
+  }
+
+  private show(run: string, normalized: Map<string, vscode.Diagnostic[]>): void {
     const touched = new Set([...(this.byRun.get(run)?.keys() ?? []), ...normalized.keys()])
     if (normalized.size) this.byRun.set(run, normalized)
     else this.byRun.delete(run)
@@ -43,7 +60,7 @@ export class Problems implements vscode.Disposable {
 
   // does this file hold any of gleaner's problems or their related locations
   touches(file: string): boolean {
-    for (const files of this.byRun.values())
+    for (const files of new Set([...this.byRun.values(), ...this.committed.values()]))
       for (const [owner, list] of files)
         if (owner === file || list.some((d) => d.relatedInformation?.some((r) => r.location.uri.fsPath === file)))
           return true
@@ -65,7 +82,7 @@ export class Problems implements vscode.Disposable {
       return new vscode.Range(start.line, start.character, end.line, end.character)
     }
     const touched = new Set<string>()
-    for (const files of this.byRun.values()) {
+    for (const files of new Set([...this.byRun.values(), ...this.committed.values()])) {
       for (const [owner, list] of files) {
         const kept: vscode.Diagnostic[] = []
         for (const d of list) {
@@ -108,6 +125,7 @@ export class Problems implements vscode.Disposable {
 
   clear(): void {
     this.byRun.clear()
+    this.committed.clear()
     this.shown.clear()
     this.collection.clear()
   }

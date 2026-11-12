@@ -1,16 +1,14 @@
 import * as path from 'node:path'
 import * as vscode from 'vscode'
-import { clean } from './clean'
 import { compileMatchers } from './matchers'
-import { DEFAULT_IGNORED, parseAll, parsers, pickParsers } from './parsers'
+import { LiveUpdates, Output } from './output'
+import { DEFAULT_IGNORED, parsers, pickParsers } from './parsers'
 import type { Problem } from './problem'
 import { Problems } from './problems'
 import { resolveFile } from './resolve'
 import { lastPass } from './watch'
 
-const MAX_BYTES = 4_000_000
 const MAX_PROBLEMS = 500
-const MAX_CANDIDATES = 2000
 // read() may still be flushing
 const DRAIN_MS = 500
 const REREPORT_MS = 2000
@@ -23,13 +21,16 @@ interface Run {
   // rerun replaces, any terminal
   key: string
   generation: number
-  ignored: string[]
   cwds: string[]
-  raw: string
-  // how far raw was searched for a watch pass ending
-  scanned: number
-  // bumped per publish, so an older watch pass never lands after a newer one
+  output?: Output
+  live: LiveUpdates
+  // only finished watch passes count here
   cycle: number
+  revision: number
+  watchPublish?: Promise<void>
+  superseded: boolean
+  sealed: boolean
+  drainTimedOut: boolean
   reading: Promise<void>
 }
 
@@ -54,22 +55,26 @@ export function activate(context: vscode.ExtensionContext): void {
         .map((extension) => extension.packageJSON.contributes),
     )
   let extensionMatchers = readMatchers()
+  const warnings = new Map<string, string>()
+  const committedWarnings = new Map<string, string>()
 
   const updateStatus = (): void => {
+    const warning = [...warnings.values()].join('\n')
     const active = vscode.window.activeTerminal
     if (active && withoutIntegration.has(active)) {
       status.text = '$(warning) Gleaner: no shell integration'
-      status.tooltip =
-        "This terminal doesn't report its commands, so Gleaner can't see their errors. Click for VS Code's shell integration docs."
+      status.tooltip = `This terminal doesn't report its commands, so Gleaner can't see their errors. Click for VS Code's shell integration docs.${warning ? `\n${warning}` : ''}`
       status.command = {
         title: 'Open docs',
         command: 'vscode.open',
         arguments: [vscode.Uri.parse(SHELL_INTEGRATION_DOCS)],
       }
       status.show()
-    } else if (problems.count) {
-      status.text = `$(list-unordered) ${problems.count} from terminal`
-      status.tooltip = 'Problems Gleaner found in terminal output. Click to open the Problems panel.'
+    } else if (problems.count || warning) {
+      status.text = problems.count
+        ? `$(list-unordered) ${problems.count} from terminal`
+        : '$(warning) Gleaner: output truncated'
+      status.tooltip = `Problems Gleaner found in terminal output. Click to open the Problems panel.${warning ? `\n${warning}` : ''}`
       status.command = 'workbench.actions.view.problems'
       status.show()
     } else {
@@ -89,40 +94,81 @@ export function activate(context: vscode.ExtensionContext): void {
   // newest run wins
   const latest = new Map<string, number>()
   let nextGeneration = 0
-  // Clear drops ended runs
+  // clear drops ended runs
   let clears = 0
+
+  const current = (run: Run, cleared: number): boolean =>
+    !run.superseded && latest.get(run.key) === run.generation && clears === cleared
+
+  const restore = (run: Run): void => {
+    problems.restore(run.key)
+    const warning = committedWarnings.get(run.key)
+    if (warning) warnings.set(run.key, warning)
+    else warnings.delete(run.key)
+    updateStatus()
+  }
+
+  const reportDrainLoss = (run: Run): void => {
+    const warning = `${run.command}: output drain timed out; trailing output may be missing`
+    warnings.set(run.key, [warnings.get(run.key), warning].filter(Boolean).join('\n'))
+    log.appendLine(warning)
+    updateStatus()
+  }
 
   const finish = async (execution: vscode.TerminalShellExecution, exitCode?: number): Promise<void> => {
     const run = runs.get(execution)
     if (!run) return
     runs.delete(execution)
+    run.live.stop()
+    run.revision++
     if (exitCode === undefined) {
       const timer = setTimeout(() => ended.delete(run), REREPORT_MS)
       ended.set(run, timer)
     }
     const cleared = clears
-    await Promise.race([run.reading, new Promise((resolve) => setTimeout(resolve, DRAIN_MS))])
+    let drained = false
+    await Promise.race([
+      run.reading.then(() => {
+        drained = true
+      }),
+      new Promise((resolve) => setTimeout(resolve, DRAIN_MS)),
+    ])
+    run.sealed = true
+    run.drainTimedOut = !drained
     // a watcher's results come from finished passes; ctrl+c exits tsc --watch with 0
     if (run.cycle) {
+      await run.watchPublish
+      if (current(run, cleared)) {
+        restore(run)
+        if (run.drainTimedOut) reportDrainLoss(run)
+      }
       log.appendLine(`${run.command}: watch stopped, kept the last pass`)
       return
     }
-    await publish(run, run.raw, exitCode, cleared)
+    await publish(run, 'final', exitCode, cleared)
   }
 
-  // a watch pass that ended counts as a clean exit
-  const publish = async (run: Run, output: string, exitCode: number | undefined, cleared: number): Promise<void> => {
-    const cycle = ++run.cycle
-    // cwd may have changed
-    const chosen = pickParsers(run.command, run.ignored, await scriptsIn(run.cwds.at(-1)))
-    if (
-      chosen.length === Object.keys(parsers).length &&
-      vscode.workspace.getConfiguration('gleaner').get<boolean>('extensionMatchers', true)
-    )
-      chosen.push(...extensionMatchers)
-    const found = parseAll(chosen, clean(output)).slice(0, MAX_CANDIDATES)
-    // failed, nothing found: keep last
-    if (exitCode !== 0 && !found.length) {
+  const publish = async (
+    run: Run,
+    kind: 'provisional' | 'pass' | 'final',
+    exitCode: number | undefined,
+    cleared: number,
+  ): Promise<void> => {
+    const revision = ++run.revision
+    const cycle = kind === 'pass' ? ++run.cycle : run.cycle
+    const found = run.output?.snapshot(kind === 'final') ?? []
+    const losses = run.output?.warnings ?? []
+    if (run.drainTimedOut) losses.push('output drain timed out; trailing output may be missing')
+    if (!current(run, cleared)) return
+    if (kind === 'provisional' && run.cycle && !found.length) return
+    if (kind === 'final' && exitCode !== 0 && !found.length) {
+      restore(run)
+      if (losses.length) {
+        const warning = `${run.command}: ${losses.join('; ')}`
+        warnings.set(run.key, warning)
+        log.appendLine(warning)
+        updateStatus()
+      }
       log.appendLine(`${run.command}: exit ${exitCode ?? '?'} with no problems found, kept the last result`)
       return
     }
@@ -138,22 +184,40 @@ export function activate(context: vscode.ExtensionContext): void {
     }
     const located = await Promise.all(found.map(async (problem) => ({ problem, file: await find(problem.file) })))
     const real = located.filter((x): x is { problem: Problem; file: string } => x.file !== undefined)
-    const kept = real.slice(0, MAX_PROBLEMS)
+    const kept = real.slice(-MAX_PROBLEMS)
+    if (real.length > kept.length) losses.push(`older problems dropped (${MAX_PROBLEMS} display limit)`)
     const diagnostics = await Promise.all(kept.map(({ problem }) => toDiagnostic(problem, find)))
-    if (latest.get(run.key) !== run.generation || run.cycle !== cycle || clears !== cleared) return
+    if (!current(run, cleared) || run.cycle !== cycle) return
+    const show = run.revision === revision
+    if (kind === 'provisional' && !show) return
 
     const files = new Map<string, vscode.Diagnostic[]>()
     for (const [i, { file }] of kept.entries()) files.set(file, [...(files.get(file) ?? []), diagnostics[i]])
-    problems.set(run.key, files)
-    updateStatus()
+    problems.set(run.key, files, { provisional: kind === 'provisional', show })
+    const warning = losses.length ? `${run.command}: ${losses.join('; ')}` : ''
+    if (kind !== 'provisional') {
+      if (warning) committedWarnings.set(run.key, warning)
+      else committedWarnings.delete(run.key)
+    }
+    if (warning && warnings.get(run.key) !== warning) log.appendLine(warning)
+    if (show) {
+      if (warning) warnings.set(run.key, warning)
+      else warnings.delete(run.key)
+      updateStatus()
+    }
     const skipped = found.length - real.length
     log.appendLine(
-      `${run.command}: exit ${exitCode ?? '?'}, ${kept.length} problem${kept.length === 1 ? '' : 's'}${skipped ? `, ${skipped} skipped (file not found)` : ''}`,
+      `${run.command}: ${kind === 'provisional' ? 'live' : `exit ${exitCode ?? '?'}`}, ${kept.length} problem${kept.length === 1 ? '' : 's'}${skipped ? `, ${skipped} skipped (file not found)` : ''}`,
     )
   }
 
   const clear = (): void => {
     clears++
+    for (const run of runs.values()) run.live.stop()
+    for (const timer of ended.values()) clearTimeout(timer)
+    ended.clear()
+    warnings.clear()
+    committedWarnings.clear()
     problems.clear()
     updateStatus()
   }
@@ -166,6 +230,7 @@ export function activate(context: vscode.ExtensionContext): void {
       extensionMatchers = readMatchers()
     }),
     new vscode.Disposable(() => {
+      for (const run of runs.values()) run.live.stop()
       for (const timer of ended.values()) clearTimeout(timer)
       ended.clear()
     }),
@@ -178,8 +243,8 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       if (!event.affectsConfiguration('gleaner.enable')) return
       if (vscode.workspace.getConfiguration('gleaner').get<boolean>('enable', true)) return
-      runs.clear()
       clear()
+      runs.clear()
     }),
     // a language server reporting (or dropping) the same error changes what's shown
     vscode.languages.onDidChangeDiagnostics(({ uris }) => {
@@ -205,6 +270,9 @@ export function activate(context: vscode.ExtensionContext): void {
         (run) => run.terminal === terminal && run.command === command,
       )
       if (previous) {
+        previous.superseded = true
+        previous.live.stop()
+        for (const [other, run] of runs) if (run === previous) runs.delete(other)
         clearTimeout(ended.get(previous))
         ended.delete(previous)
         log.appendLine(`${command}: same run reported again in ${terminal.name}`)
@@ -217,27 +285,38 @@ export function activate(context: vscode.ExtensionContext): void {
         command,
         key,
         generation,
-        ignored,
         cwds: previous?.cwds ?? (execution.cwd ? [execution.cwd.fsPath] : []),
-        raw: '',
-        scanned: 0,
         cycle: 0,
+        revision: 0,
+        superseded: false,
+        sealed: false,
+        drainTimedOut: false,
+        live: new LiveUpdates(() => {
+          if (runs.get(execution) === run) void publish(run, 'provisional', undefined, clears)
+        }),
         reading: Promise.resolve(),
       }
+      runs.set(execution, run)
+      const stream = execution.read()
       run.reading = (async () => {
-        for await (const chunk of execution.read()) {
-          if (run.raw.length < MAX_BYTES) run.raw += chunk
-          // a marker can arrive split across chunks
-          const pass = lastPass(run.raw, run.scanned - 100)
-          run.scanned = run.raw.length
-          if (!pass || runs.get(execution) !== run) continue
-          const output = run.raw.slice(pass.start, pass.end)
-          run.raw = run.raw.slice(pass.end)
-          run.scanned = run.raw.length
-          void publish(run, output, 0, clears)
+        const chosen = pickParsers(command, ignored, await scriptsIn(run.cwds.at(-1)))
+        if (
+          chosen.length === Object.keys(parsers).length &&
+          vscode.workspace.getConfiguration('gleaner').get<boolean>('extensionMatchers', true)
+        )
+          chosen.push(...extensionMatchers)
+        run.output = new Output(chosen)
+        for await (const chunk of stream) {
+          if (run.superseded || run.sealed) break
+          run.output.append(chunk, (line) => {
+            if (!lastPass(`${line}\n`) || runs.get(execution) !== run) return
+            run.live.stop()
+            run.watchPublish = publish(run, 'pass', 0, clears)
+            run.output?.reset()
+          })
+          if (runs.get(execution) === run && run.output.hasOutput) run.live.append()
         }
       })()
-      runs.set(execution, run)
       log.appendLine(`${command}: started in ${terminal.name}${execution.cwd ? ` at ${execution.cwd.fsPath}` : ''}`)
     }),
     vscode.window.onDidEndTerminalShellExecution(({ execution, exitCode }) => void finish(execution, exitCode)),
