@@ -1,5 +1,7 @@
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { Diagnostic } from 'vscode'
+import { display } from '../src/display'
 import { MAX_PROBLEMS, restoreSession, serializeSession } from '../src/session'
 
 const range = { start: { line: 6, character: 2 }, end: { line: 7, character: 12 } }
@@ -9,27 +11,36 @@ const diagnostic = {
   severity: 1,
   source: 'tsc',
   code: 'TS2322',
-  relatedInformation: [{ location: { uri: { fsPath: '/repo/types.ts' }, range }, message: 'declared here' }],
+  relatedInformation: [{ location: { uri: { fsPath: resolve('/repo/types.ts') }, range }, message: 'declared here' }],
 }
 const runs = (d: Partial<typeof diagnostic> = {}) =>
-  new Map([['/repo\0tsc', new Map([['/repo/app.ts', [{ ...diagnostic, ...d }]]])]])
+  new Map([[`${resolve('/repo')}\0tsc`, new Map([[resolve('/repo/app.ts'), [{ ...diagnostic, ...d }]]])]])
 const stored = () => JSON.parse(JSON.stringify(serializeSession(runs())))
 
 describe('last session', () => {
+  it('prefers refreshed diagnostics over identical restored runs regardless of insertion order', () => {
+    const saved = stored()
+    const restored = restoreSession([{ ...saved[0], key: 'tsc --watch' }, saved[0]], new Set())
+    const byRun = new Map(restored.map((run) => [run.key, run.problems]))
+    byRun.set(saved[0].key, saved[0].problems)
+    expect(display([...byRun.values()], []).map((p) => p.source)).toEqual(['tsc'])
+    expect(display([...byRun.values()].reverse(), []).map((p) => p.source)).toEqual(['tsc'])
+  })
+
   it('round trips paths, ranges, messages, severity, code, source and related info through json', () => {
     const saved = stored()
     expect(saved).toEqual([
       {
-        key: '/repo\0tsc',
+        key: `${resolve('/repo')}\0tsc`,
         problems: [
           {
-            file: '/repo/app.ts',
+            file: resolve('/repo/app.ts'),
             range,
             message: diagnostic.message,
             severity: 1,
             source: 'tsc',
             code: 'TS2322',
-            related: [{ file: '/repo/types.ts', range, message: 'declared here' }],
+            related: [{ file: resolve('/repo/types.ts'), range, message: 'declared here' }],
           },
         ],
       },
@@ -43,7 +54,7 @@ describe('last session', () => {
   it('keeps numeric codes and serializes code links as strings', () => {
     const files = new Map([
       [
-        '/repo/app.ts',
+        resolve('/repo/app.ts'),
         [
           { ...diagnostic, code: 0 },
           {
@@ -66,17 +77,17 @@ describe('last session', () => {
         [
           'tsc',
           new Map([
-            ['/repo/app.ts', [diagnostic]],
-            ['/repo/other.ts', [diagnostic]],
+            [resolve('/repo/app.ts'), [diagnostic]],
+            [resolve('/repo/other.ts'), [diagnostic]],
           ]),
         ],
       ]),
     )
-    const restored = restoreSession(saved, new Set(['/repo/app.ts', '/repo/types.ts']))
+    const restored = restoreSession(saved, new Set([resolve('/repo/app.ts'), resolve('/repo/types.ts')]))
     expect(restored[0].problems).toHaveLength(1)
-    expect(restored[0].problems[0].file).toBe('/repo/other.ts')
+    expect(restored[0].problems[0].file).toBe(resolve('/repo/other.ts'))
     expect(restored[0].problems[0].related).toEqual([])
-    expect(restoreSession(saved, new Set(['/repo/app.ts', '/repo/other.ts']))).toEqual([])
+    expect(restoreSession(saved, new Set([resolve('/repo/app.ts'), resolve('/repo/other.ts')]))).toEqual([])
   })
 
   it('handles missing optional fields', () => {
@@ -89,13 +100,13 @@ describe('last session', () => {
 
   it('keeps the newest 500 problems per run and 50 run keys', () => {
     const files = new Map([
-      ['/repo/app.ts', Array.from({ length: 501 }, (_, i) => ({ ...diagnostic, message: `${i}` }))],
+      [resolve('/repo/app.ts'), Array.from({ length: 501 }, (_, i) => ({ ...diagnostic, message: `${i}` }))],
     ])
     const capped = serializeSession(new Map([['tsc', files]]))[0].problems
     expect(capped).toHaveLength(MAX_PROBLEMS)
     expect(capped[0].message).toBe('1')
     expect(capped.at(-1)?.message).toBe('500')
-    const one = new Map([['/repo/app.ts', [diagnostic]]])
+    const one = new Map([[resolve('/repo/app.ts'), [diagnostic]]])
     const saved = serializeSession(new Map(Array.from({ length: 51 }, (_, i) => [`run ${i}`, one])))
     expect(saved).toHaveLength(50)
     expect(saved[0].key).toBe('run 1')
@@ -103,7 +114,7 @@ describe('last session', () => {
   })
 
   it('bounds total utf8 bytes, including large messages and command keys', () => {
-    const files = new Map([['/repo/app.ts', [{ ...diagnostic, message: '🔥'.repeat(10_000) }]]])
+    const files = new Map([[resolve('/repo/app.ts'), [{ ...diagnostic, message: '🔥'.repeat(10_000) }]]])
     const input = new Map(Array.from({ length: 51 }, (_, i) => [`run ${i}`, files]))
     input.set('x'.repeat(1_000_000), files)
     const saved = serializeSession(input)

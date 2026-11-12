@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const state = vi.hoisted(() => ({
@@ -5,7 +7,8 @@ const state = vi.hoisted(() => ({
   shown: new Map<string, { message: string }[]>(),
   logs: [] as string[],
   clear: () => {},
-  stat: async () => {},
+  stat: async (_file: string) => {},
+  contributions: [] as unknown[],
   enabled: true,
   saved: new Map<string, unknown>(),
   status: { text: '', tooltip: '', visible: false },
@@ -46,7 +49,12 @@ vi.mock('vscode', () => {
     },
     Uri: { file: (file: string) => ({ fsPath: file, scheme: 'file' }) },
     StatusBarAlignment: { Left: 1 },
-    extensions: { all: [], onDidChange: event('extensions') },
+    extensions: {
+      get all() {
+        return state.contributions.map((contributes) => ({ id: 'matcher', packageJSON: { contributes } }))
+      },
+      onDidChange: event('extensions'),
+    },
     commands: {
       registerCommand: (_name: string, callback: () => void) => {
         state.clear = callback
@@ -70,7 +78,7 @@ vi.mock('vscode', () => {
       }),
       fs: {
         readFile: async () => new TextEncoder().encode('{}'),
-        stat: () => state.stat(),
+        stat: (uri: { fsPath: string }) => state.stat(uri.fsPath),
       },
       findFiles: async () => [],
       onDidChangeConfiguration: event('config'),
@@ -140,7 +148,7 @@ let terminalId = 0
 
 async function start(command = 'perl slow.pl', terminal = { name: `terminal ${terminalId++}` }) {
   const feed = new Feed()
-  const execution = { commandLine: { value: command }, cwd: { fsPath: '/repo' }, read: () => feed.read() }
+  const execution = { commandLine: { value: command }, cwd: { fsPath: resolve('/repo') }, read: () => feed.read() }
   state.events.get('start')?.({ terminal, execution })
   await tick()
   return {
@@ -165,6 +173,7 @@ beforeEach(() => {
   state.logs.length = 0
   state.enabled = true
   state.saved.clear()
+  state.contributions = []
   state.stat = async () => {}
   Object.assign(state.status, { text: '', tooltip: '', visible: false })
   subscriptions = []
@@ -187,6 +196,43 @@ afterEach(() => {
 })
 
 describe('run lifecycle', () => {
+  it('keeps contributed matchers for nodemon and honors their fileLocation before root lookups', async () => {
+    const contribution = JSON.parse(readFileSync(join(__dirname, 'matchers/contributes.json'), 'utf8')).stylelint
+    state.contributions = [
+      {
+        ...contribution,
+        problemMatchers: contribution.problemMatchers.map((matcher: object) => ({
+          ...matcher,
+          fileLocation: ['relative', `\${cwd}/src`],
+        })),
+      },
+    ]
+    state.events.get('extensions')?.(undefined)
+    const run = await start('nodemon --exec stylelint a.css')
+    const capture = readFileSync(join(__dirname, 'matchers/stylelint-unix.txt'), 'utf8').replaceAll(
+      '/private/tmp/claude-501/gl-matchers/',
+      '',
+    )
+    await run.write(capture)
+    await run.end(1)
+    expect(messages()).toHaveLength(3)
+    expect([...state.shown.keys()]).toEqual([resolve('/repo/src/a.css')])
+  })
+
+  it('keeps committed jest failures when help expands or a filter is canceled', async () => {
+    const run = await start('jest --watchAll')
+    await run.write(readFileSync(join(__dirname, 'watch/jest-watch.txt'), 'utf8'))
+    const failures = messages()
+    expect(failures).toHaveLength(1)
+    await run.write('\nWatch Usage\n › Press q to quit watch mode.\n')
+    await vi.advanceTimersByTimeAsync(6000)
+    expect(messages()).toEqual(failures)
+    expect(savedMessages()).toEqual(failures)
+    await run.write('\nWatch Usage: Press w to show more.')
+    await run.end(130)
+    expect(messages()).toEqual(failures)
+  })
+
   it('publishes live results without treating them as watch passes', async () => {
     const run = await start()
     await run.write(error('one'))
@@ -378,7 +424,7 @@ describe('run lifecycle', () => {
     await vi.advanceTimersByTimeAsync(1500)
     expect(messages()).toEqual([])
     state.events.get('edit')?.({
-      document: { uri: { scheme: 'file', fsPath: '/repo/src/cart.ts' } },
+      document: { uri: { scheme: 'file', fsPath: resolve('/repo/src/cart.ts') } },
       contentChanges: [
         {
           range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },

@@ -7,7 +7,7 @@ import { compileMatchers } from '../src/matchers'
 import { Output } from '../src/output'
 import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
-import { lastPass } from '../src/watch'
+import { lastPass, WatchPass } from '../src/watch'
 
 describe('clean', () => {
   it('strips colors and shell integration markers', () => {
@@ -88,7 +88,13 @@ describe('pickParsers', () => {
   it("selects the watcher's parser", () => {
     expect(pickParsers('jest --watch')).toEqual([parsers.jest])
     expect(pickParsers('jest --watchAll')).toEqual([parsers.jest])
-    expect(pickParsers('nodemon app.js')).toEqual([parsers.node])
+  })
+
+  it('keeps fallback parsing for nodemon child tools', () => {
+    const lines = clean(readFileSync(join(__dirname, 'fixtures/python/chained.txt'), 'utf8'))
+    expect(parseAll(pickParsers('nodemon app.py'), lines)).toEqual(parsers.python(lines))
+    expect(pickParsers('nodemon app.py')).toEqual(Object.values(parsers))
+    expect(pickParsers('nodemon app.js')).toEqual(Object.values(parsers))
   })
 
   it('finds commands inside a chain', () => {
@@ -229,7 +235,10 @@ describe('parseAll', () => {
 
 describe('extension matchers', () => {
   const contributions = JSON.parse(readFileSync(join(__dirname, 'matchers', 'contributes.json'), 'utf8'))
-  const compiled = compileMatchers(Object.values(contributions))
+  const compiled = compileMatchers(Object.values(contributions), {
+    cwd: resolve('/repo'),
+    workspaceFolders: [{ name: 'app', path: resolve('/repo') }],
+  })
   const fixture = (name: string) => clean(readFileSync(join(__dirname, 'matchers', name), 'utf8'))
 
   it.each(['stylelint-unix.txt', 'stylelint-compact.txt'])('reads the real %s capture', (name) => {
@@ -264,7 +273,7 @@ describe('extension matchers', () => {
         },
         { line: 5, message: 'consecutive blank lines [Expected: 1; Actual: 2]', code: 'Multiple' },
       ].map((p) => ({
-        file: 'doc.md',
+        file: resolve('/repo/doc.md'),
         col: undefined,
         severity: 'error',
         source: 'markdownlint',
@@ -286,21 +295,21 @@ describe('extension matchers', () => {
       ]),
     ).toEqual([
       {
-        file: 'lib/shop.ex',
+        file: resolve('/repo/lib/shop.ex'),
         line: 7,
         severity: 'error',
         message: '** (CompileError) lib/shop.ex:7: undefined function buy/0',
         source: 'elixir',
       },
       {
-        file: 'lib/shop.ex',
+        file: resolve('/repo/lib/shop.ex'),
         line: 9,
         severity: 'warning',
         message: 'variable "cart" is unused\n: Shop.buy/0',
         source: 'elixir',
       },
       {
-        file: 'test/shop_test.exs',
+        file: resolve('/repo/test/shop_test.exs'),
         line: 12,
         severity: 'warning',
         message: 'test buys tea (ShopTest)',
@@ -334,15 +343,48 @@ describe('extension matchers', () => {
     expect(parseAll([...chosen, ...compiled], ['src/a.css:2:3: W C2 bad'])[0].severity).toBe('warning')
   })
 
-  it.each(['relative', 'absolute', 'autoDetect'])('keeps printed paths with %s fileLocation', (kind) => {
-    const chosen = compileMatchers([
-      { problemMatchers: [{ owner: 'lint', fileLocation: [kind, `\${cwd}`], pattern: row }] },
-    ])
-    for (const file of ['src/a.css', '/repo/a.css', 'C:\\repo\\a.css']) {
-      expect(parseAll(chosen, [`${file}:2:3: I C1 bad`])).toEqual([
-        { file, line: 2, col: 3, severity: 'info', code: 'C1', message: 'bad', source: 'lint' },
-      ])
-    }
+  it('resolves relative matcher paths before generic lookup using the real stylelint capture', async () => {
+    const matcher = contributions.stylelint
+    const chosen = compileMatchers(
+      [
+        {
+          ...matcher,
+          problemMatchers: matcher.problemMatchers.map((m: object) => ({
+            ...m,
+            fileLocation: ['relative', `\${workspaceFolder}/src`],
+          })),
+        },
+      ],
+      { cwd: resolve('/repo'), workspaceFolders: [{ name: 'app', path: resolve('/repo') }] },
+    )
+    const lines = fixture('stylelint-unix.txt').map((line) => line.replace('/private/tmp/claude-501/gl-matchers/', ''))
+    const found = parseAll(chosen, lines)
+    expect(found).toHaveLength(3)
+    const files = new Set([resolve('/repo/a.css'), resolve('/repo/src/a.css')])
+    expect(await resolveFile(found[0].file, [resolve('/repo')], async (file) => files.has(file))).toBe(
+      resolve('/repo/src/a.css'),
+    )
+  })
+
+  it.each([
+    ['relative', 'a.css', '/repo/a.css'],
+    [['relative', `\${cwd}/styles`], 'a.css', '/repo/packages/app/styles/a.css'],
+    [['relative', `\${workspaceRoot}/src`], 'a.css', '/repo/src/a.css'],
+    [['relative', `\${workspaceFolder:shared}/src`], 'a.css', '/shared/src/a.css'],
+    ['autoDetect', 'a.css', '/repo/a.css'],
+    ['autoDetect', resolve('/elsewhere/a.css'), '/elsewhere/a.css'],
+    ['absolute', resolve('/elsewhere/a.css'), '/elsewhere/a.css'],
+    ['absolute', 'a.css', undefined],
+    [['relative', `\${workspaceFolder:missing}`], 'a.css', undefined],
+  ])('applies fileLocation %j to %s', (fileLocation, file, expected) => {
+    const chosen = compileMatchers([{ problemMatchers: [{ owner: 'lint', fileLocation, pattern: row }] }], {
+      cwd: resolve('/repo/packages/app'),
+      workspaceFolders: [
+        { name: 'app', path: resolve('/repo') },
+        { name: 'shared', path: resolve('/shared') },
+      ],
+    })
+    expect(parseAll(chosen, [`${file}:2:3: I C1 bad`]).map((p) => p.file)).toEqual(expected ? [resolve(expected)] : [])
   })
 
   it.each([
@@ -513,15 +555,22 @@ describe('watch passes', () => {
     for (const size of [1, 7, 512, raw.length]) {
       const stream = new Output(pickParsers(command))
       const counts: number[] = []
+      const watch = new WatchPass()
       for (let i = 0; i < raw.length; i += size) {
         stream.append(raw.slice(i, i + size), (line) => {
-          if (!lastPass(`${line}\n`)) return
+          if (!watch.accept(`${line}\n`)) return
           counts.push(stream.snapshot().length)
           stream.reset()
         })
       }
       expect(counts, `${size} bytes at a time`).toEqual([1, 0, 1])
     }
+  })
+
+  it.each([1, 7, 512])('ignores repeated jest help without another completed run, %i bytes at a time', (size) => {
+    const raw = capture('jest-watch.txt')
+    const help = '\nWatch Usage\n › Press q to quit watch mode.\n'
+    expect(problemsPerPass('jest --watchAll', split(raw + help + help, size))).toEqual([1, 0, 1])
   })
 
   it('keeps only the newest pass when several arrive at once', () => {
@@ -533,6 +582,18 @@ describe('watch passes', () => {
 
   it('finds nothing in output that never waits', () => {
     expect(lastPass('src/a.ts(1,1): error TS2322: x\nFound 1 error.\n')).toBeUndefined()
+  })
+
+  it('requires a completed jest run before accepting either help format', () => {
+    const watch = new WatchPass()
+    expect(watch.accept('Watch Usage\n')).toBe(false)
+    expect(watch.accept('No tests found\n')).toBe(false)
+    expect(watch.accept('Watch Usage: Press w to show more.')).toBe(false)
+    expect(watch.accept('Ran all test suites matching app.\n')).toBe(false)
+    expect(watch.accept('Watch Usage: Press w to show more.')).toBe(true)
+    expect(watch.accept('Watch Usage\n')).toBe(false)
+    expect(watch.accept('No tests found related to files changed since last commit.\n')).toBe(false)
+    expect(watch.accept('Watch Usage\n')).toBe(true)
   })
 })
 

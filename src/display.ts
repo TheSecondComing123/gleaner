@@ -7,6 +7,7 @@ export interface Shown {
   range: { start: Position }
   message: string
   code?: string | number | { value: string | number }
+  source?: string
 }
 
 export interface Change {
@@ -33,14 +34,21 @@ function sameProblem(a: Shown, b: Shown): boolean {
 
 // What to show for one file: every run's problems once, minus what another source already reports.
 export function display<T extends Shown>(runs: T[][], others: Shown[]): T[] {
-  const seen = new Set<string>()
+  const seen = new Map<string, number>()
   const shown: T[] = []
   for (const problems of runs) {
     for (const problem of problems) {
       const key = `${at(problem)}|${normalizeCode(problem.code)}|${problem.message}`
-      if (seen.has(key)) continue
-      seen.add(key)
-      if (!others.some((other) => sameProblem(other, problem))) shown.push(problem)
+      const previous = seen.get(key)
+      if (previous !== undefined) {
+        if (shown[previous].source?.endsWith(' (last session)') && !problem.source?.endsWith(' (last session)'))
+          shown[previous] = problem
+        continue
+      }
+      if (!others.some((other) => sameProblem(other, problem))) {
+        seen.set(key, shown.length)
+        shown.push(problem)
+      }
     }
   }
   return shown

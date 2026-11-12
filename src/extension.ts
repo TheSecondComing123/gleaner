@@ -7,7 +7,7 @@ import type { Problem } from './problem'
 import { Problems } from './problems'
 import { resolveFile } from './resolve'
 import { MAX_PROBLEMS, type SavedRun } from './session'
-import { lastPass } from './watch'
+import { WatchPass } from './watch'
 
 const SESSION_KEY = 'committedProblems'
 // read() may still be flushing
@@ -50,11 +50,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const withoutIntegration = new Set<vscode.Terminal>()
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0)
   const readMatchers = () =>
-    compileMatchers(
-      vscode.extensions.all
-        .filter((extension) => extension.id !== context.extension.id)
-        .map((extension) => extension.packageJSON.contributes),
-    )
+    vscode.extensions.all
+      .filter((extension) => extension.id !== context.extension.id)
+      .map((extension) => extension.packageJSON.contributes)
   let extensionMatchers = readMatchers()
   const warnings = new Map<string, string>()
   const committedWarnings = new Map<string, string>()
@@ -322,12 +320,21 @@ export function activate(context: vscode.ExtensionContext): void {
           chosen.length === Object.keys(parsers).length &&
           vscode.workspace.getConfiguration('gleaner').get<boolean>('extensionMatchers', true)
         )
-          chosen.push(...extensionMatchers)
+          chosen.push(
+            ...compileMatchers(extensionMatchers, {
+              cwd: run.cwds.at(-1),
+              workspaceFolders: (vscode.workspace.workspaceFolders ?? []).map((folder) => ({
+                name: folder.name,
+                path: folder.uri.fsPath,
+              })),
+            }),
+          )
         run.output = new Output(chosen)
+        const watch = new WatchPass()
         for await (const chunk of stream) {
           if (run.superseded || run.sealed) break
           run.output.append(chunk, (line) => {
-            if (!lastPass(`${line}\n`) || runs.get(execution) !== run) return
+            if (!watch.accept(`${line}\n`) || runs.get(execution) !== run) return
             run.live.stop()
             run.watchPublish = publish(run, 'pass', 0, clears)
             run.output?.reset()

@@ -1,4 +1,6 @@
+import * as path from 'node:path'
 import type { Parser, Problem, Severity } from './problem'
+import { fromFileUrl } from './resolve'
 
 const FIELDS = ['file', 'line', 'column', 'endLine', 'endColumn', 'location', 'severity', 'code', 'message'] as const
 type Field = (typeof FIELDS)[number]
@@ -19,7 +21,12 @@ function entries(value: unknown): Contribution[] {
   return Array.isArray(value) ? value.map(object).filter((item) => item !== undefined) : []
 }
 
-export function compileMatchers(contributions: unknown[]): Parser[] {
+interface MatcherContext {
+  cwd?: string
+  workspaceFolders?: { name: string; path: string }[]
+}
+
+export function compileMatchers(contributions: unknown[], context: MatcherContext = {}): Parser[] {
   const matchers = contributions.flatMap((value) => entries(object(value)?.problemMatchers))
   const patterns = contributions.flatMap((value) => entries(object(value)?.problemPatterns))
   const namedMatchers = new Map(matchers.filter((m) => typeof m.name === 'string').map((m) => [m.name, m]))
@@ -63,12 +70,51 @@ export function compileMatchers(contributions: unknown[]): Parser[] {
       !captures.some((c) => c.line !== undefined || c.location !== undefined)
     )
       return []
-    // printed paths already resolve against the run's cwd and workspace folders
     const source =
       [matcher.source, matcher.owner, matcher.name].find((s): s is string => typeof s === 'string') ?? 'extension'
     const fallback = severity(matcher.severity) ?? 'error'
-    return [parser(compiled, source, fallback)]
+    const parse = parser(compiled, source, fallback)
+    if (matcher.fileLocation === undefined) return [parse]
+    return [
+      (lines: string[]) =>
+        parse(lines).flatMap((p) => {
+          const file = matcherFile(p.file, matcher.fileLocation, context)
+          return file === undefined ? [] : [{ ...p, file }]
+        }),
+    ]
   })
+}
+
+function matcherFile(file: string, location: unknown, context: MatcherContext): string | undefined {
+  const [mode, prefix] = Array.isArray(location) ? location : [location]
+  if (!['relative', 'absolute', 'autoDetect'].includes(mode)) return undefined
+  if (file.startsWith('file://')) file = path.normalize(fromFileUrl(file))
+  if (mode === 'absolute') return path.isAbsolute(file) ? file : undefined
+  if (mode === 'autoDetect' && path.isAbsolute(file)) return file
+  const folders = context.workspaceFolders ?? []
+  const folder =
+    folders
+      .filter((f) => {
+        if (!context.cwd) return false
+        const relative = path.relative(f.path, context.cwd)
+        return relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)
+      })
+      .sort((a, b) => b.path.length - a.path.length)[0] ?? folders[0]
+  let unresolved = false
+  const base = (typeof prefix === 'string' ? prefix : `\${workspaceFolder}`).replace(
+    /\$\{([^}]+)\}/g,
+    (_, variable: string) => {
+      let value: string | undefined
+      if (variable === 'cwd') value = context.cwd
+      else if (variable === 'workspaceFolder' || variable === 'workspaceRoot') value = folder?.path ?? context.cwd
+      else if (variable.startsWith('workspaceFolder:')) value = folders.find((f) => f.name === variable.slice(16))?.path
+      if (value === undefined) unresolved = true
+      return value ?? ''
+    },
+  )
+  if (unresolved) return undefined
+  const dir = path.isAbsolute(base) ? base : (context.cwd ?? folder?.path)
+  return dir ? path.resolve(dir, base, file) : undefined
 }
 
 function compilePattern(value: unknown): Pattern | undefined {

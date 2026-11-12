@@ -1,7 +1,7 @@
 import { clean } from './clean'
 import { parseAll } from './parsers'
 import type { Parser, Problem } from './problem'
-import { lastPass } from './watch'
+import { isJestPrompt } from './watch'
 
 const CHUNK_LINES = 1000
 const OVERLAP_LINES = 300
@@ -30,7 +30,7 @@ export class Output {
       if (end - start > room) this.losses.add('long lines truncated')
       if (newline < 0) {
         // jest's compact watch prompt has no newline.
-        if (lineReady && lastPass(clean(this.partial, 1).join('\n'))) lineReady(this.complete())
+        if (lineReady && isJestPrompt(clean(this.partial, 1).join('\n'))) lineReady(this.complete())
         break
       }
       const line = this.complete()
@@ -44,11 +44,39 @@ export class Output {
     this.partial = ''
     this.lines.push(line)
     if (this.lines.length >= CHUNK_LINES) {
-      this.merge(this.saved, parseAll(this.chosen, this.lines))
-      this.lines = this.lines.slice(-OVERLAP_LINES)
-      this.losses.add(`older output context dropped (${OVERLAP_LINES} overlap lines retained)`)
+      this.retire()
+      this.losses.add(`older output context dropped (at least ${OVERLAP_LINES} overlap lines retained)`)
     }
     return line
+  }
+
+  private retire(): void {
+    const full = parseAll(this.chosen, this.lines)
+    const expected = new Set(full.map((p) => JSON.stringify(p)))
+    for (let cut = this.lines.length - OVERLAP_LINES; cut > 0; cut -= OVERLAP_LINES) {
+      const prefix = parseAll(this.chosen, this.lines.slice(0, cut))
+      const tail = parseAll(this.chosen, this.lines.slice(cut))
+      const combined = new Map<string, Problem>()
+      this.merge(combined, prefix)
+      this.merge(combined, tail)
+      // keep more context when cutting through a block changes its parse.
+      if (combined.size !== expected.size || [...combined.values()].some((p) => !expected.has(JSON.stringify(p))))
+        continue
+      this.merge(
+        this.saved,
+        prefix.filter((p) => expected.has(JSON.stringify(p))),
+      )
+      this.lines = this.lines.slice(cut)
+      return
+    }
+    // blocks longer than the window exceed the retained context budget.
+    const tail = this.lines.slice(-OVERLAP_LINES)
+    const replaceable = new Set(parseAll(this.chosen, tail).map(key))
+    this.merge(
+      this.saved,
+      full.filter((p) => !replaceable.has(key(p))),
+    )
+    this.lines = tail
   }
 
   snapshot(final = false): Problem[] {

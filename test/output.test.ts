@@ -29,12 +29,41 @@ describe('streamed output', () => {
     expect(stream.snapshot().map((p) => p.message)).toEqual(['late'])
   })
 
+  it.each(captures)('preserves %s across chunk boundaries', (capture) => {
+    const lines = clean(readFileSync(join(fixtures, capture), 'utf8'))
+    const expected = parseAll(Object.values(parsers), lines)
+    const splits = new Set([1, 2, 3, 4, 5, Math.floor(lines.length / 2), lines.length - 1])
+    for (const split of splits) {
+      if (split < 1 || split >= lines.length) continue
+      const stream = output()
+      stream.append('progress\n'.repeat(1000 - split))
+      stream.append(`${lines.slice(0, split).join('\n')}\n`)
+      stream.snapshot()
+      stream.append(`${lines.slice(split).join('\n')}\n`)
+      expect(stream.snapshot(true), `split at line ${split}`).toEqual(expected)
+      stream.append(`\n${'progress\n'.repeat(1000)}`)
+      expect(stream.snapshot(true), `retired after line ${split}`).toEqual(expected)
+    }
+  })
+
   it('keeps early and late errors across 15,000 lines', () => {
     const stream = output()
     stream.append(error('early'))
     for (let i = 0; i < 15_001; i++) stream.append('progress\n')
     stream.append(error('late'))
     expect(stream.snapshot().map((p) => p.message)).toEqual(['early', 'late'])
+  })
+
+  it('retains the start of a block when the overlap would split it', () => {
+    const stream = new Output([parsers.jest])
+    stream.append('progress\n'.repeat(690))
+    stream.append('FAIL a.test.js\n  ● adds\n    wrong sum\n')
+    stream.append('\n'.repeat(20))
+    stream.append('    at add (a.test.js:9:4)\n')
+    stream.append(`Test Suites: 1 failed\n${'progress\n'.repeat(1000)}`)
+    expect(stream.snapshot(true)).toEqual([
+      { file: 'a.test.js', line: 9, col: 4, severity: 'error', message: 'adds\nwrong sum', source: 'jest' },
+    ])
   })
 
   it('parses a python traceback across a chunk edge without doubles', () => {
