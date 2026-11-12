@@ -20,6 +20,7 @@ no tasks.json. no problem matchers. nothing to set up.
 
 - **zero setup.** install it and keep typing the commands you already type.
 - **40+ tools.** compilers, type checkers, linters, test runners and crash traces, out of the box.
+- **more from your extensions.** picks up their problem matchers for commands it doesn't know yet.
 - **always current.** fix an error and rerun: it's gone. `tsc --watch` and vitest update on every save. every other command keeps its own list.
 - **no noise.** a problem only shows up if its file really exists, so random output never turns into fake errors.
 - **no doubles.** if your language server already shows an error, gleaner doesn't list it again. two commands that report the same error show it once.
@@ -61,11 +62,12 @@ open a terminal in vs code and run your build, linter or tests. that's it.
 - rerun a command to refresh its problems. if you stop a run with ctrl+c, the last list stays.
 - **gleaner: clear problems** in the command palette clears everything.
 
-| setting                   | default                               | what it does                                                                             |
-| ------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `gleaner.enable`          | `true`                                | turn gleaner on or off                                                                   |
-| `gleaner.hideDuplicates`  | `true`                                | hide a problem another extension, like a language server, already shows at the same spot |
-| `gleaner.ignoredCommands` | `ls`, `cat`, `grep`, `rg`, `git`, ... | commands to never read, for output that only looks like errors                           |
+| setting                     | default                               | what it does                                                                             |
+| --------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `gleaner.enable`            | `true`                                | turn gleaner on or off                                                                   |
+| `gleaner.hideDuplicates`    | `true`                                | hide a problem another extension, like a language server, already shows at the same spot |
+| `gleaner.extensionMatchers` | `true`                                | use problem matchers from installed extensions for commands gleaner doesn't know         |
+| `gleaner.ignoredCommands`   | `ls`, `cat`, `grep`, `rg`, `git`, ... | commands to never read, for output that only looks like errors                           |
 
 ## faq
 
