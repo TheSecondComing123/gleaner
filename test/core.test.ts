@@ -144,6 +144,24 @@ describe('pickParsers', () => {
     expect(pickParsers('cmake --build build')).toEqual([parsers.msbuild, parsers.cmake, parsers.gcc])
   })
 
+  it.each(['mvn', './mvnw', 'mvnw', 'gradle', './gradlew', 'gradlew'])(
+    'reads compile errors and test failures from %s',
+    (command) => {
+      const tool = command.includes('mvn') ? 'maven' : 'gradle'
+      const chosen = pickParsers(`${command} ${tool === 'maven' ? 'test' : 'build'}`)
+      expect(chosen).toEqual([parsers.javac, parsers.java])
+      for (const [parser, task] of [
+        ['javac', 'compile'],
+        ['java', 'test'],
+      ]) {
+        const file = join(__dirname, 'fixtures', parser, `${tool}-${task}`)
+        const lines = clean(readFileSync(`${file}.txt`, 'utf8'))
+        const expected = JSON.parse(readFileSync(`${file}.json`, 'utf8'))
+        expect(parseAll(chosen, lines)).toEqual(expected)
+      }
+    },
+  )
+
   it('reads only the first command of a pipeline', () => {
     expect(pickParsers('grep -n x src | wc -l')).toEqual([])
     expect(pickParsers('cargo build 2>&1 | tee log')).toEqual([parsers.rustc])

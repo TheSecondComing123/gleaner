@@ -1,0 +1,10 @@
+[
+  {
+    "file": "/private/tmp/claude-501/gl-java/gradle/src/main/java/shop/Price.java",
+    "line": 8,
+    "col": 23,
+    "severity": "error",
+    "message": "incompatible types: possible lossy conversion from double to int",
+    "source": "javac"
+  }
+]

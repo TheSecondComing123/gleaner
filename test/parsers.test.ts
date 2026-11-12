@@ -20,3 +20,28 @@ for (const name of readdirSync(root)) {
     }
   })
 }
+
+describe('java build tools', () => {
+  it('keeps distinct columns while dropping repeated maven diagnostics', () => {
+    const lines = [
+      '[ERROR] /repo/Price.java:[8,23] cannot find symbol',
+      '[ERROR] /repo/Price.java:[8,40] cannot find symbol',
+      '[ERROR] /repo/Price.java:[8,23] cannot find symbol',
+    ]
+    expect(parsers.javac(lines).map((p) => p.col)).toEqual([23, 40])
+  })
+
+  it('requires source locations for test failures and clears unfinished blocks', () => {
+    expect(
+      parsers.java([
+        '[ERROR] shop.PriceTest.missing -- Time elapsed: 0.01 s <<< FAILURE!',
+        'java.lang.AssertionError: no frame',
+        '[INFO] Results:',
+        '[ERROR] Failures:',
+        'PriceTest > missing() FAILED',
+        '> Task :test FAILED',
+        '    java.lang.AssertionError at PriceTest.java:9',
+      ]),
+    ).toEqual([])
+  })
+})

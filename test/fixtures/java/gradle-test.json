@@ -1,0 +1,16 @@
+[
+  {
+    "file": "PriceTest.java",
+    "line": 15,
+    "severity": "error",
+    "message": "PriceTest > handlesNull()\njava.lang.NullPointerException",
+    "source": "java"
+  },
+  {
+    "file": "PriceTest.java",
+    "line": 9,
+    "severity": "error",
+    "message": "PriceTest > takesTenPercentOff()\norg.opentest4j.AssertionFailedError",
+    "source": "java"
+  }
+]

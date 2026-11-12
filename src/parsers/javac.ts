@@ -2,6 +2,7 @@ import type { Problem, Severity } from '../problem'
 
 // `Main.java:5: error: msg`
 const HEAD = /^(.+\.java):(\d+): (error|warning): (?:\[([\w-]+)\] )?(.*)$/
+const MAVEN = /^\[(ERROR|WARNING)\] (.+\.java):\[(\d+),(\d+)\] (.*)$/
 const CARET = /^\s*\^$/
 
 const SEVERITY: Record<string, Severity> = { error: 'error', warning: 'warning' }
@@ -10,10 +11,26 @@ export function javac(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let current: Problem | undefined
   let state: 'source' | 'caret' | 'detail' = 'detail'
+  let indent = 0
 
-  for (const line of lines) {
+  for (const raw of lines) {
+    const maven = MAVEN.exec(raw)
+    if (maven) {
+      problems.push({
+        file: maven[2],
+        line: Number(maven[3]),
+        col: Number(maven[4]),
+        severity: maven[1] === 'ERROR' ? 'error' : 'warning',
+        message: maven[5],
+        source: 'javac',
+      })
+      current = undefined
+      continue
+    }
+    let line = raw.trimStart()
     const head = HEAD.exec(line)
     if (head) {
+      indent = raw.length - line.length
       current = {
         file: head[1],
         line: Number(head[2]),
@@ -27,6 +44,7 @@ export function javac(lines: string[]): Problem[] {
       continue
     }
     if (!current) continue
+    line = raw.slice(indent)
 
     if (state === 'source') {
       state = 'caret'
@@ -42,5 +60,12 @@ export function javac(lines: string[]): Problem[] {
     if (line.startsWith('  ')) current.message += `\n${line.slice(2)}`
     else current = undefined
   }
-  return problems
+  // build tools repeat diagnostics in their failure summaries
+  const seen = new Set<string>()
+  return problems.filter((p) => {
+    const key = JSON.stringify([p.file, p.line, p.col, p.severity, p.code, p.message])
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }

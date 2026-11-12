@@ -1,0 +1,16 @@
+[
+  {
+    "file": "PriceTest.java",
+    "line": 15,
+    "severity": "error",
+    "message": "shop.PriceTest.handlesNull\njava.lang.NullPointerException: Cannot invoke \"String.length()\" because \"name\" is null",
+    "source": "java"
+  },
+  {
+    "file": "PriceTest.java",
+    "line": 9,
+    "severity": "error",
+    "message": "shop.PriceTest.takesTenPercentOff\norg.opentest4j.AssertionFailedError: expected: <18.0> but was: <-180.0>",
+    "source": "java"
+  }
+]

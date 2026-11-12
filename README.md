@@ -40,7 +40,7 @@ no tasks.json. no problem matchers. nothing to set up.
 | rust                   | `cargo build`, `cargo check`, `cargo clippy`, `cargo test`, `rustc`                                    |
 | go                     | `go build`, `go vet`, `go test`, `go run` panics                                                       |
 | python                 | tracebacks, `pytest`, `pyright`, `mypy`, `ruff`, `flake8`, `pylint`                                    |
-| java                   | `javac`, uncaught exceptions from `java`                                                               |
+| java                   | `javac`, `mvn compile`, `mvn test`, `gradle build`, uncaught exceptions from `java`                    |
 | c#                     | `dotnet build`, `msbuild`                                                                              |
 | ruby, lua              | crashes and syntax errors from `ruby`, `ruby -c`, `lua`, `luajit`                                      |
 | shell                  | `shellcheck`                                                                                           |

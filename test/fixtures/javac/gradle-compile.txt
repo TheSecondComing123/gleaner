@@ -1,0 +1,25 @@
+
+> Task :compileJava FAILED
+/private/tmp/claude-501/gl-java/gradle/src/main/java/shop/Price.java:8: error: incompatible types: possible lossy conversion from double to int
+    int cents = price * 100;
+                      ^
+1 error
+
+[Incubating] Problems report is available at: file:///private/tmp/claude-501/gl-java/gradle/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /private/tmp/claude-501/gl-java/gradle/src/main/java/shop/Price.java:8: error: incompatible types: possible lossy conversion from double to int
+      int cents = price * 100;
+                        ^
+  1 error
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 3s
+1 actionable task: 1 executed

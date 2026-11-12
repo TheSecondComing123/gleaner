@@ -1,0 +1,29 @@
+
+Welcome to Gradle 9.9.1!
+
+Here are the highlights of this release:
+ - Performance improvements for Kotlin DSL compilation
+ - Test filtering for non-method JUnit Platform tests
+ - Wrapper settings preserved on upgrade
+ - Predefined groups in the Problems API
+
+For more details see https://docs.gradle.org/9.9.1/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :compileJava
+> Task :processResources NO-SOURCE
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+PriceTest > handlesNull() FAILED
+    java.lang.NullPointerException at PriceTest.java:15
+
+PriceTest > takesTenPercentOff() FAILED
+    org.opentest4j.AssertionFailedError at PriceTest.java:9
+
+> Task :test FAILED
+3 actionable tasks: 3 executed
