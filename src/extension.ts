@@ -7,7 +7,7 @@ import { LiveUpdates, Output } from './output'
 import { DEFAULT_IGNORED, parsers, pickParsers } from './parsers'
 import type { Problem } from './problem'
 import { type OutputDiagnostic, Problems } from './problems'
-import { resolveFile } from './resolve'
+import { mapPath, resolveFile } from './resolve'
 import { MAX_PROBLEMS, type SavedRun } from './session'
 import { registerOutputViewer } from './viewer'
 import { WatchPass } from './watch'
@@ -28,6 +28,7 @@ interface Run {
   key: string
   generation: number
   cwds: string[]
+  mappingLogs: Set<string>
   output?: Output
   live: LiveUpdates
   // only finished watch passes count here
@@ -210,11 +211,29 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     const dirs = [...new Set([...run.cwds].reverse().concat(workspaceDirs()))]
+    const mappings = vscode.workspace.getConfiguration('gleaner').get<Record<string, string>>('pathMappings', {})
+    const folders = (vscode.workspace.workspaceFolders ?? []).map((folder) => ({
+      name: folder.name,
+      path: folder.uri.fsPath,
+    }))
+    const logMapping = (message: string): void => {
+      if (run.mappingLogs.has(message)) return
+      run.mappingLogs.add(message)
+      log.appendLine(message)
+    }
     const lookups = new Map<string, Promise<string | undefined>>()
     const find = (file: string): Promise<string | undefined> => {
       const known = lookups.get(file)
       if (known) return known
-      const lookup = locate(file, dirs)
+      const lookup = (async () => {
+        const mapped = mapPath(file, mappings, folders)
+        if (mapped && 'error' in mapped) logMapping(mapped.error)
+        else if (mapped) {
+          if (await exists(mapped.path)) return mapped.path
+          logMapping(`mapped ${file} to ${mapped.target}, not found`)
+        }
+        return locate(file, dirs)
+      })()
       lookups.set(file, lookup)
       return lookup
     }
@@ -332,6 +351,7 @@ export function activate(context: vscode.ExtensionContext): void {
         key,
         generation,
         cwds: previous?.cwds ?? (execution.cwd ? [execution.cwd.fsPath] : []),
+        mappingLogs: previous?.mappingLogs ?? new Set(),
         cycle: 0,
         revision: 0,
         superseded: false,

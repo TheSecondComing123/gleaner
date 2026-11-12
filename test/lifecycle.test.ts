@@ -18,6 +18,9 @@ const state = vi.hoisted(() => ({
   logs: [] as string[],
   clear: () => {},
   stat: async (_file: string) => {},
+  mappings: {} as Record<string, string>,
+  folders: [] as { name: string; uri: { fsPath: string } }[],
+  matches: [] as { fsPath: string }[],
   contributions: [] as unknown[],
   enabled: true,
   saved: new Map<string, unknown>(),
@@ -66,6 +69,21 @@ vi.mock('vscode', () => {
       ) {}
     },
     DiagnosticSeverity: { Error: 0, Warning: 1, Information: 2 },
+    Location: class {
+      range: Range
+      constructor(
+        public uri: vscode.Uri,
+        at: Range | Position,
+      ) {
+        this.range = at instanceof Position ? new Range(at, at) : at
+      }
+    },
+    DiagnosticRelatedInformation: class {
+      constructor(
+        public location: vscode.Location,
+        public message: string,
+      ) {}
+    },
     Disposable: class {
       constructor(public dispose: () => void) {}
     },
@@ -111,16 +129,19 @@ vi.mock('vscode', () => {
         const lines = state.opened.split('\n')
         return { lineCount: lines.length, lineAt: (line: number) => ({ text: lines[line] }) }
       },
-      workspaceFolders: [],
+      get workspaceFolders() {
+        return state.folders
+      },
       textDocuments: [],
       getConfiguration: () => ({
-        get: (name: string, fallback: unknown) => (name === 'enable' ? state.enabled : fallback),
+        get: (name: string, fallback: unknown) =>
+          name === 'enable' ? state.enabled : name === 'pathMappings' ? state.mappings : fallback,
       }),
       fs: {
         readFile: async () => new TextEncoder().encode('{}'),
         stat: (uri: { fsPath: string }) => state.stat(uri.fsPath),
       },
-      findFiles: async () => [],
+      findFiles: async () => state.matches,
       onDidChangeConfiguration: event('config'),
       onDidChangeTextDocument: event('edit'),
     },
@@ -239,6 +260,9 @@ beforeEach(() => {
   state.saved.clear()
   state.contributions = []
   state.stat = async () => {}
+  state.mappings = {}
+  state.folders = []
+  state.matches = []
   Object.assign(state.status, { text: '', tooltip: '', visible: false })
   subscriptions = []
   activate({
@@ -257,6 +281,90 @@ afterEach(() => {
   for (const subscription of subscriptions) subscription.dispose()
   vi.clearAllTimers()
   vi.useRealTimers()
+})
+
+describe('path mapping lookup', () => {
+  it('maps primary and related locations before accepting existing build copies', async () => {
+    const copy = resolve('/build/copy')
+    state.mappings = { [copy]: 'src' }
+    state.folders = [{ name: 'shop', uri: { fsPath: resolve('/repo/shop') } }]
+    const files = new Set(
+      ['main.cpp', 'types.h'].flatMap((file) => [join(copy, file), resolve('/repo/shop/src', file)]),
+    )
+    const checked: string[] = []
+    state.stat = async (file) => {
+      checked.push(file)
+      if (!files.has(file)) throw new Error('not found')
+    }
+    const run = await start('gcc main.cpp')
+    await run.write(`${join(copy, 'main.cpp')}:7:3: error: broken\n${join(copy, 'types.h')}:4:1: note: declared here\n`)
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([resolve('/repo/shop/src/main.cpp')])
+    expect([...state.shown.values()].flat()[0].relatedInformation?.[0].location.uri.fsPath).toBe(
+      resolve('/repo/shop/src/types.h'),
+    )
+    expect(checked).toEqual([resolve('/repo/shop/src/main.cpp'), resolve('/repo/shop/src/types.h')])
+  })
+
+  it('uses a mapping before suffix lookup and anchors its target to the workspace, not cwd', async () => {
+    state.mappings = { src: 'original' }
+    state.folders = [{ name: 'shop', uri: { fsPath: resolve('/workspace/shop') } }]
+    state.matches = [{ fsPath: resolve('/elsewhere/src/cart.ts') }]
+    state.stat = async (file) => {
+      if (file !== resolve('/workspace/shop/original/cart.ts')) throw new Error('not found')
+    }
+    const run = await start()
+    await run.write(error('mapped'))
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([resolve('/workspace/shop/original/cart.ts')])
+  })
+
+  it('logs a missing mapped file once across live and final publishes, then retries on a new run', async () => {
+    const file = resolve('/app/src/a.ts')
+    state.mappings = { [resolve('/app/src')]: 'src' }
+    state.folders = [{ name: 'shop', uri: { fsPath: resolve('/workspace/shop') } }]
+    state.stat = async (file) => {
+      if (file !== resolve('/app/src/a.ts')) throw new Error('not found')
+    }
+    const run = await start()
+    await run.write(`${file}(7,3): error TS2322: fallback\n`)
+    await vi.advanceTimersByTimeAsync(1500)
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([file])
+    const message = `mapped ${file} to src/a.ts, not found`
+    expect(state.logs.filter((line) => line === message)).toHaveLength(1)
+    const next = await start()
+    await next.write(`${file}(7,3): error TS2322: fallback\n`)
+    await next.end(1)
+    expect(state.logs.filter((line) => line === message)).toHaveLength(2)
+  })
+
+  it('falls back to the original suffix lookup when the mapped target is missing', async () => {
+    state.mappings = { src: 'missing' }
+    state.folders = [{ name: 'shop', uri: { fsPath: resolve('/workspace/shop') } }]
+    state.stat = async () => {
+      throw new Error('not found')
+    }
+    state.matches = [{ fsPath: resolve('/workspace/shop/nested/src/cart.ts') }]
+    const run = await start()
+    await run.write(error('fallback'))
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([resolve('/workspace/shop/nested/src/cart.ts')])
+    expect(state.logs).toContain('mapped src/cart.ts to missing/cart.ts, not found')
+  })
+
+  it('logs and ignores ambiguous relative targets in a multi-root workspace', async () => {
+    state.mappings = { [resolve('/app')]: 'src' }
+    state.folders = ['shop', 'other'].map((name) => ({ name, uri: { fsPath: resolve('/workspace', name) } }))
+    const run = await start()
+    await run.write(`${resolve('/app/a.ts')}(7,3): error TS2322: fallback\n`)
+    await vi.advanceTimersByTimeAsync(1500)
+    await run.end(1)
+    expect([...state.shown.keys()]).toEqual([resolve('/app/a.ts')])
+    expect(state.logs.filter((line) => line.startsWith('ignored path mapping'))).toEqual([
+      expect.stringContaining(`use \${workspaceFolder:name}`),
+    ])
+  })
 })
 
 describe('run lifecycle', () => {
