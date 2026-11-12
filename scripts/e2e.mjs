@@ -8,6 +8,7 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -61,6 +62,44 @@ function line(name: string): string {
 }
 
 for (const name of order) console.log(line(name))
+`,
+)
+
+// the README shot: a test run with real bugs. vitest comes from this repo, so it works offline
+symlinkSync(join(root, 'node_modules'), join(demo, 'node_modules'), 'junction')
+writeFileSync(
+  join(demo, 'src', 'price.ts'),
+  `export const round = (n: number) => Math.round(n * 100) / 100
+export const discount = (price: number, percent: number) => price - price * percent
+export const withTax = (price: number) => Math.floor(price * 108) / 100
+`,
+)
+writeFileSync(
+  join(demo, 'src', 'price.test.ts'),
+  `import { expect, it } from 'vitest'
+import { discount, round } from './price'
+
+it('rounds to cents', () => {
+  expect(round(4.567)).toBe(4.57)
+})
+
+it('rounds half a cent up', () => {
+  expect(round(1.005)).toBe(1.01)
+})
+
+it('takes 10% off', () => {
+  expect(discount(20, 10)).toBe(18)
+})
+`,
+)
+writeFileSync(
+  join(demo, 'src', 'tax.test.ts'),
+  `import { expect, it } from 'vitest'
+import { withTax } from './price'
+
+it('adds 8% tax', () => {
+  expect(withTax(19.99)).toBe(21.59)
+})
 `,
 )
 
@@ -391,12 +430,6 @@ try {
   await command('Terminal: Kill All Terminals')
   await page.keyboard.press('Control+Backquote')
   await ready()
-  // the editor needs 9 lines; the terminal gets the rest so the TypeError line shows
-  const panel = await page.locator('.part.panel').boundingBox()
-  await page.mouse.move(700, panel.y - 1)
-  await page.mouse.down()
-  await page.mouse.move(700, panel.y - 250, { steps: 10 })
-  await page.mouse.up()
   // shell banners (and whatever they print about the machine) stay out of the shot
   await page.keyboard.type('clear')
   await page.keyboard.press('Enter')
@@ -404,8 +437,30 @@ try {
   await page.keyboard.type('node src/receipt.ts')
   await page.keyboard.press('Enter')
   await status(1, 'runtime crash')
+
+  // the README shot: a failing test run, listed in the problems panel
+  await command('Gleaner: Clear Problems')
+  await command('View: Close All Editors')
+  await page.keyboard.press('ControlOrMeta+P')
+  await page.keyboard.type('price.test.ts')
+  await page.waitForTimeout(500)
+  await page.keyboard.press('Enter')
+  await command('Terminal: Focus Terminal')
+  await page.keyboard.type('clear')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(800)
+  await page.keyboard.type('npx vitest run')
+  await page.keyboard.press('Enter')
+  await status(3, 'test run')
+  await command('Problems: Focus on Problems View')
+  // room for all three failures; the editor only needs 15 lines
+  const panel = await page.locator('.part.panel').boundingBox()
+  await page.mouse.move(700, panel.y - 1)
+  await page.mouse.down()
+  await page.mouse.move(700, panel.y - 120, { steps: 10 })
+  await page.mouse.up()
   // the squiggle sits under the text layer: put the cursor on it, then show the hover
-  const squiggle = await page.locator('.squiggly-error').first().boundingBox()
+  const squiggle = await page.locator('.squiggly-error').last().boundingBox()
   await page.mouse.click(squiggle.x + squiggle.width / 2, squiggle.y + squiggle.height / 2)
   await page.keyboard.press('ControlOrMeta+K')
   await page.keyboard.press('ControlOrMeta+I')

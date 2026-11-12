@@ -10,7 +10,7 @@
 
 <br>
 
-![a node crash in the terminal, as a squiggle on the line that threw](media/screenshot.png)
+![a failing vitest run, each failure as a squiggle and a row in the problems panel](media/screenshot.png)
 
 run `tsc`, `cargo build` or `pytest` like you always do. gleaner catches the errors as they scroll by and puts them where you can use them: squiggles in your code, a list in the problems panel, one click from the line.
 
