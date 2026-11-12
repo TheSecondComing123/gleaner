@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { type Change, display, mapPosition, normalizeCode, type Position } from './display'
+import { restoreSession, type SavedRun, serializeSession } from './session'
 
 const key = (d: vscode.Diagnostic) =>
   `${d.range.start.line}:${d.range.start.character}|${d.source}|${normalizeCode(d.code)}|${d.message}`
@@ -20,14 +21,40 @@ export class Problems implements vscode.Disposable {
     // one spelling per file: Uri.fsPath is what edits and other sources report
     const normalized = new Map([...files].map(([file, list]) => [vscode.Uri.file(file).fsPath, list]))
     if (!options.provisional) {
+      this.committed.delete(run)
       if (normalized.size) this.committed.set(run, normalized)
-      else this.committed.delete(run)
     }
     if (options.show !== false) this.show(run, normalized)
   }
 
   restore(run: string): void {
     this.show(run, this.committed.get(run) ?? new Map())
+  }
+
+  save(): SavedRun[] {
+    return serializeSession(this.committed)
+  }
+
+  load(saved: readonly SavedRun[], dirty: ReadonlySet<string>): void {
+    const range = (r: SavedRun['problems'][number]['range']) =>
+      new vscode.Range(r.start.line, r.start.character, r.end.line, r.end.character)
+    for (const run of restoreSession(saved, dirty)) {
+      const files = new Map<string, vscode.Diagnostic[]>()
+      for (const p of run.problems) {
+        const d = new vscode.Diagnostic(range(p.range), p.message, p.severity)
+        d.source = p.source
+        d.code = typeof p.code === 'object' ? { value: p.code.value, target: vscode.Uri.parse(p.code.target) } : p.code
+        d.relatedInformation = p.related?.map(
+          (r) =>
+            new vscode.DiagnosticRelatedInformation(
+              new vscode.Location(vscode.Uri.file(r.file), range(r.range)),
+              r.message,
+            ),
+        )
+        files.set(p.file, [...(files.get(p.file) ?? []), d])
+      }
+      this.set(run.key, files)
+    }
   }
 
   private show(run: string, normalized: Map<string, vscode.Diagnostic[]>): void {

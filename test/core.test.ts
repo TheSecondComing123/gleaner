@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
 import { display, mapPosition, type Shown } from '../src/display'
 import { compileMatchers } from '../src/matchers'
+import { Output } from '../src/output'
 import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
 import { lastPass } from '../src/watch'
@@ -84,6 +85,12 @@ describe('commandName', () => {
 })
 
 describe('pickParsers', () => {
+  it("selects the watcher's parser", () => {
+    expect(pickParsers('jest --watch')).toEqual([parsers.jest])
+    expect(pickParsers('jest --watchAll')).toEqual([parsers.jest])
+    expect(pickParsers('nodemon app.js')).toEqual([parsers.node])
+  })
+
   it('finds commands inside a chain', () => {
     expect(pickParsers('cd app && tsc')).toEqual([parsers.tsc])
     expect(pickParsers('tsc; clang -c main.c')).toEqual([parsers.tsc, parsers.gcc])
@@ -493,9 +500,35 @@ describe('watch passes', () => {
     expect(problemsPerPass('vitest watch', split(capture('vitest-watch.txt'), size))).toEqual([1, 0, 1])
   })
 
+  it.each([1, 7, 64])('splits jest and nodemon into their passes, %i bytes at a time', (size) => {
+    expect(problemsPerPass('jest --watchAll', split(capture('jest-watch.txt'), size))).toEqual([1, 0, 1])
+    expect(problemsPerPass('nodemon app.js', split(capture('nodemon.txt'), size))).toEqual([1, 0, 1])
+  })
+
+  it.each([
+    ['jest --watchAll', 'jest-watch.txt'],
+    ['nodemon app.js', 'nodemon.txt'],
+  ])('streams each pass of %s from its real capture', (command, name) => {
+    const raw = capture(name)
+    for (const size of [1, 7, 512, raw.length]) {
+      const stream = new Output(pickParsers(command))
+      const counts: number[] = []
+      for (let i = 0; i < raw.length; i += size) {
+        stream.append(raw.slice(i, i + size), (line) => {
+          if (!lastPass(`${line}\n`)) return
+          counts.push(stream.snapshot().length)
+          stream.reset()
+        })
+      }
+      expect(counts, `${size} bytes at a time`).toEqual([1, 0, 1])
+    }
+  })
+
   it('keeps only the newest pass when several arrive at once', () => {
     expect(problemsPerPass('tsc --watch -p .', split(capture('tsc-watch.txt'), 1 << 20))).toEqual([2])
     expect(problemsPerPass('vitest watch', split(capture('vitest-watch.txt'), 1 << 20))).toEqual([1])
+    expect(problemsPerPass('jest --watchAll', split(capture('jest-watch.txt'), 1 << 20))).toEqual([1])
+    expect(problemsPerPass('nodemon app.js', split(capture('nodemon.txt'), 1 << 20))).toEqual([1])
   })
 
   it('finds nothing in output that never waits', () => {

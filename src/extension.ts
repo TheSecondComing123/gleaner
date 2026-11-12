@@ -6,9 +6,10 @@ import { DEFAULT_IGNORED, parsers, pickParsers } from './parsers'
 import type { Problem } from './problem'
 import { Problems } from './problems'
 import { resolveFile } from './resolve'
+import { MAX_PROBLEMS, type SavedRun } from './session'
 import { lastPass } from './watch'
 
-const MAX_PROBLEMS = 500
+const SESSION_KEY = 'committedProblems'
 // read() may still be flushing
 const DRAIN_MS = 500
 const REREPORT_MS = 2000
@@ -57,6 +58,11 @@ export function activate(context: vscode.ExtensionContext): void {
   let extensionMatchers = readMatchers()
   const warnings = new Map<string, string>()
   const committedWarnings = new Map<string, string>()
+  const save = (): void => {
+    void context.workspaceState.update(SESSION_KEY, problems.save()).then(undefined, (error: unknown) => {
+      log.appendLine(`could not save problems: ${String(error)}`)
+    })
+  }
 
   const updateStatus = (): void => {
     const warning = [...warnings.values()].join('\n')
@@ -88,6 +94,15 @@ export function activate(context: vscode.ExtensionContext): void {
       withoutIntegration.add(terminal)
       updateStatus()
     }, INTEGRATION_GRACE_MS)
+  }
+  if (vscode.workspace.getConfiguration('gleaner').get<boolean>('enable', true)) {
+    problems.load(
+      context.workspaceState.get<SavedRun[]>(SESSION_KEY, []),
+      new Set(
+        vscode.workspace.textDocuments.filter((d) => d.isDirty && d.uri.scheme === 'file').map((d) => d.uri.fsPath),
+      ),
+    )
+    updateStatus()
   }
   vscode.window.terminals.forEach(watchIntegration)
 
@@ -194,6 +209,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const files = new Map<string, vscode.Diagnostic[]>()
     for (const [i, { file }] of kept.entries()) files.set(file, [...(files.get(file) ?? []), diagnostics[i]])
     problems.set(run.key, files, { provisional: kind === 'provisional', show })
+    if (kind !== 'provisional') save()
     const warning = losses.length ? `${run.command}: ${losses.join('; ')}` : ''
     if (kind !== 'provisional') {
       if (warning) committedWarnings.set(run.key, warning)
@@ -219,6 +235,7 @@ export function activate(context: vscode.ExtensionContext): void {
     warnings.clear()
     committedWarnings.clear()
     problems.clear()
+    save()
     updateStatus()
   }
 
@@ -255,6 +272,7 @@ export function activate(context: vscode.ExtensionContext): void {
       // a git diff view has the same path under another scheme
       if (!contentChanges.length || document.uri.scheme !== 'file' || !problems.touches(document.uri.fsPath)) return
       problems.edit(document.uri.fsPath, contentChanges)
+      save()
       updateStatus()
     }),
     vscode.window.onDidOpenTerminal(watchIntegration),

@@ -1,6 +1,7 @@
 import { clean } from './clean'
 import { parseAll } from './parsers'
 import type { Parser, Problem } from './problem'
+import { lastPass } from './watch'
 
 const CHUNK_LINES = 1000
 const OVERLAP_LINES = 300
@@ -27,7 +28,11 @@ export class Output {
       const room = MAX_RAW_LINE - this.partial.length
       this.partial += chunk.slice(start, Math.min(end, start + room))
       if (end - start > room) this.losses.add('long lines truncated')
-      if (newline < 0) break
+      if (newline < 0) {
+        // jest's compact watch prompt has no newline.
+        if (lineReady && lastPass(clean(this.partial, 1).join('\n'))) lineReady(this.complete())
+        break
+      }
       const line = this.complete()
       lineReady?.(line)
       start = newline + 1

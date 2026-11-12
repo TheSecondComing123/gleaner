@@ -1,0 +1,161 @@
+[2J[3J[H[1m[2mDetermining test suites to run...[22m[22m[999D[K
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s[K[1A[K[1A[K[1A[K[1A[K[1A
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[0m[7m[1m[31m FAIL [39m[22m[27m[0m [2m./[22m[1ma.test.js[22m
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A  [31m✕[39m [2madds (3 ms)[22m
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[1m[31m  [1m● [22m[1madds[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m3[39m
+    Received: [31m2[39m
+[2m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m 1 |[39m test([32m"adds"[39m[33m,[39m () [33m=>[39m { expect([35m1[39m [33m+[39m [35m1[39m)[33m.[39mtoBe([35m3[39m) })[22m
+[2m     [90m   |[39m                                    [31m[1m^[22m[2m[39m[22m
+[2m     [90m 2 |[39m[0m[22m
+[2m[22m
+[2m      [2mat Object.toBe ([22m[2m[0m[36ma.test.js[39m[0m[2m:1:36)[22m[2m[22m
+
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[999D[K[1mTest Suites: [22m[1m[31m1 failed[39m[22m, 1 total
+[1mTests:       [22m[1m[31m1 failed[39m[22m, 1 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0.281 s
+[2mRan all test suites[22m[2m.[22m
+
+[1mWatch Usage[22m
+[2m › Press [22mf[2m to run only failed tests.[22m
+[2m › Press [22mo[2m to only run tests related to changed files.[22m
+[2m › Press[22m p [2mto filter by a filename regex pattern.[22m
+[2m › Press[22m t [2mto filter by a test name regex pattern.[22m
+[2m › Press[22m q [2mto quit watch mode.[22m
+[2m › Press[22m i [2mto run failing tests interactively.[22m
+[2m › Press [22mEnter[2m to trigger a test run.[22m
+[2J[3J[H[1m[2mDetermining test suites to run...[22m[22m[999D[K
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[0m[7m[1m[32m PASS [39m[22m[27m[0m [2m./[22m[1ma.test.js[22m
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A  [32m✓[39m [2madds (1 ms)[22m
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[999D[K[1mTest Suites: [22m[1m[32m1 passed[39m[22m, 1 total
+[1mTests:       [22m[1m[32m1 passed[39m[22m, 1 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0.22 s, estimated 1 s
+[2mRan all test suites[22m[2m.[22m
+
+[1mWatch Usage: [22m[2mPress [22mw[2m to show more.[22m[2J[3J[H[1m[2mDetermining test suites to run...[22m[22m[999D[K
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[0m[7m[1m[31m FAIL [39m[22m[27m[0m [2m./[22m[1ma.test.js[22m
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A  [31m✕[39m [2madds (2 ms)[22m
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[1m[31m  [1m● [22m[1madds[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m5[39m
+    Received: [31m4[39m
+[2m[22m
+[2m    [0m[31m[1m>[22m[2m[39m[90m 1 |[39m test([32m"adds"[39m[33m,[39m () [33m=>[39m { expect([35m2[39m [33m+[39m [35m2[39m)[33m.[39mtoBe([35m5[39m) })[22m
+[2m     [90m   |[39m                                    [31m[1m^[22m[2m[39m[22m
+[2m     [90m 2 |[39m[0m[22m
+[2m[22m
+[2m      [2mat Object.toBe ([22m[2m[0m[36ma.test.js[39m[0m[2m:1:36)[22m[2m[22m
+
+
+[0m[7m[33m[1m RUNS [22m[39m[27m[0m [1m...[22m
+
+[1mTest Suites: [22m0 of 1 total
+[1mTests:       [22m0 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0 s, estimated 1 s[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[999D[K[1mTest Suites: [22m[1m[31m1 failed[39m[22m, 1 total
+[1mTests:       [22m[1m[31m1 failed[39m[22m, 1 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        0.23 s, estimated 1 s
+[2mRan all test suites[22m[2m.[22m
+
+[1mWatch Usage: [22m[2mPress [22mw[2m to show more.[22m

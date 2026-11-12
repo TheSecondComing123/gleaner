@@ -87,6 +87,7 @@ const COMMANDS: Record<string, string[]> = {
   dotnet: ['msbuild'],
   msbuild: ['msbuild'],
   node: ['node'],
+  nodemon: ['node'],
   tsx: ['node'],
   'ts-node': ['node'],
   eslint: ['eslint'],

@@ -7,6 +7,7 @@ const state = vi.hoisted(() => ({
   clear: () => {},
   stat: async () => {},
   enabled: true,
+  saved: new Map<string, unknown>(),
   status: { text: '', tooltip: '', visible: false },
 }))
 
@@ -63,6 +64,7 @@ vi.mock('vscode', () => {
     },
     workspace: {
       workspaceFolders: [],
+      textDocuments: [],
       getConfiguration: () => ({
         get: (name: string, fallback: unknown) => (name === 'enable' ? state.enabled : fallback),
       }),
@@ -99,6 +101,7 @@ vi.mock('vscode', () => {
 
 import type * as vscode from 'vscode'
 import { activate } from '../src/extension'
+import type { SavedRun } from '../src/session'
 
 class Feed {
   private chunks: string[] = []
@@ -129,6 +132,8 @@ class Feed {
 
 const tick = () => vi.advanceTimersByTimeAsync(0)
 const messages = () => [...state.shown.values()].flat().map((p) => p.message)
+const savedMessages = () =>
+  ((state.saved.get('committedProblems') ?? []) as SavedRun[]).flatMap((r) => r.problems.map((p) => p.message))
 const error = (message: string) => `src/cart.ts(7,3): error TS2322: ${message}\n`
 let subscriptions: vscode.Disposable[]
 let terminalId = 0
@@ -159,10 +164,20 @@ beforeEach(() => {
   state.shown.clear()
   state.logs.length = 0
   state.enabled = true
+  state.saved.clear()
   state.stat = async () => {}
   Object.assign(state.status, { text: '', tooltip: '', visible: false })
   subscriptions = []
-  activate({ subscriptions, extension: { id: 'test' } } as unknown as vscode.ExtensionContext)
+  activate({
+    subscriptions,
+    extension: { id: 'test' },
+    workspaceState: {
+      get: (key: string, fallback: unknown) => state.saved.get(key) ?? fallback,
+      update: async (key: string, value: unknown) => {
+        state.saved.set(key, value)
+      },
+    },
+  } as unknown as vscode.ExtensionContext)
 })
 
 afterEach(() => {
@@ -177,9 +192,11 @@ describe('run lifecycle', () => {
     await run.write(error('one'))
     await vi.advanceTimersByTimeAsync(1500)
     expect(messages()).toEqual(['one'])
+    expect(savedMessages()).toEqual([])
     await run.write(error('two'))
     await run.end(1)
     expect(messages()).toEqual(['one', 'two'])
+    expect(savedMessages()).toEqual(['one', 'two'])
     expect(state.logs.some((line) => line.includes('watch stopped'))).toBe(false)
   })
 
@@ -193,6 +210,7 @@ describe('run lifecycle', () => {
     expect(messages()).toEqual([])
     await second.end(130)
     expect(messages()).toEqual(['one', 'two'])
+    expect(savedMessages()).toEqual(['one', 'two'])
   })
 
   it('commits problems on failure and clears them on a clean exit', async () => {
@@ -216,6 +234,7 @@ describe('run lifecycle', () => {
     const run = await start('tsc --watch')
     await run.write(`${error('pass')}Watching for file changes.\n`)
     expect(messages()).toEqual(['pass'])
+    expect(savedMessages()).toEqual(['pass'])
     await vi.advanceTimersByTimeAsync(6000)
     expect(messages()).toEqual(['pass'])
     await run.write(error('unfinished'))
@@ -261,6 +280,7 @@ describe('run lifecycle', () => {
     await tick()
     await older.end(1)
     expect(messages()).toEqual(['new'])
+    expect(savedMessages()).toEqual(['new'])
   })
 
   it('clear blocks pending publishes and rollback, but allows new output', async () => {
@@ -272,6 +292,7 @@ describe('run lifecycle', () => {
     state.clear()
     await vi.advanceTimersByTimeAsync(6000)
     expect(messages()).toEqual([])
+    expect(savedMessages()).toEqual([])
     await second.end(130)
     expect(messages()).toEqual([])
     const third = await start()
