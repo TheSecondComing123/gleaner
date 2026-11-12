@@ -13,7 +13,7 @@ export function tsc(lines: string[]): Problem[] {
   let current: Problem | undefined
   let state: 'message' | 'frame' | 'related' = 'frame'
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const head = HEAD.exec(line)
     if (head) {
       current = {
@@ -24,6 +24,7 @@ export function tsc(lines: string[]): Problem[] {
         code: head[7],
         message: head[8],
         source: 'tsc',
+        output: { start: index, end: index + 1 },
       }
       problems.push(current)
       state = 'message'
@@ -32,13 +33,16 @@ export function tsc(lines: string[]): Problem[] {
     if (!current) continue
 
     if (state === 'message' && line.startsWith('  ')) {
+      if (current.output) current.output.end = index + 1
       current.message += `\n${line.slice(2)}`
       continue
     }
     if (state === 'message') state = 'frame'
 
     const related = RELATED.exec(line)
+    if (FRAME.test(line) && current.output) current.output.end = index + 1
     if (related) {
+      if (current.output) current.output.end = index + 1
       current.related = [
         ...(current.related ?? []),
         { file: related[1], line: Number(related[2]), col: Number(related[3]), message: '' },
@@ -48,7 +52,10 @@ export function tsc(lines: string[]): Problem[] {
     }
     if (state === 'related' && !FRAME.test(line)) {
       const last = current.related?.at(-1)
-      if (last && !last.message) last.message = line.trim()
+      if (last && !last.message) {
+        last.message = line.trim()
+        if (current.output) current.output.end = index + 1
+      }
     }
   }
   return problems

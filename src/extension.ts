@@ -1,12 +1,15 @@
+import { randomUUID } from 'node:crypto'
 import * as path from 'node:path'
 import * as vscode from 'vscode'
+import { OutputHistory, type OutputReference } from './history'
 import { compileMatchers } from './matchers'
 import { LiveUpdates, Output } from './output'
 import { DEFAULT_IGNORED, parsers, pickParsers } from './parsers'
 import type { Problem } from './problem'
-import { Problems } from './problems'
+import { type OutputDiagnostic, Problems } from './problems'
 import { resolveFile } from './resolve'
 import { MAX_PROBLEMS, type SavedRun } from './session'
+import { registerOutputViewer } from './viewer'
 import { WatchPass } from './watch'
 
 const SESSION_KEY = 'committedProblems'
@@ -17,6 +20,8 @@ const INTEGRATION_GRACE_MS = 5000
 const SHELL_INTEGRATION_DOCS = 'https://code.visualstudio.com/docs/terminal/shell-integration'
 
 interface Run {
+  id: string
+  started: number
   terminal: vscode.Terminal
   command: string
   // rerun replaces, any terminal
@@ -43,6 +48,8 @@ const SEVERITY = {
 
 export function activate(context: vscode.ExtensionContext): void {
   const problems = new Problems()
+  const history = new OutputHistory()
+  registerOutputViewer(context, history, problems)
   problems.hideDuplicates = vscode.workspace.getConfiguration('gleaner').get<boolean>('hideDuplicates', true)
   const log = vscode.window.createOutputChannel('Gleaner')
   const runs = new Map<vscode.TerminalShellExecution, Run>()
@@ -107,6 +114,8 @@ export function activate(context: vscode.ExtensionContext): void {
   // newest run wins
   const latest = new Map<string, number>()
   let nextGeneration = 0
+  const sessionId = randomUUID()
+  let nextRun = 0
   // clear drops ended runs
   let clears = 0
 
@@ -173,6 +182,20 @@ export function activate(context: vscode.ExtensionContext): void {
     const losses = run.output?.warnings ?? []
     if (run.drainTimedOut) losses.push('output drain timed out; trailing output may be missing')
     if (!current(run, cleared)) return
+    const outputId = `${run.id}/${kind === 'pass' ? cycle : cycle + 1}`
+    history.set({
+      id: outputId,
+      command: run.command,
+      folder: run.cwds[0] ?? '',
+      started: run.started,
+      updated: Date.now(),
+      state: kind,
+      pass: kind === 'pass' ? cycle : undefined,
+      exitCode: kind === 'final' ? exitCode : undefined,
+      ...(run.output?.retainedOutput(kind === 'final') ?? { lines: [], lineCount: 0 }),
+      warnings: [...losses],
+      focus: found[0]?.output,
+    })
     if (kind === 'provisional' && run.cycle && !found.length) return
     if (kind === 'final' && exitCode !== 0 && !found.length) {
       restore(run)
@@ -199,7 +222,11 @@ export function activate(context: vscode.ExtensionContext): void {
     const real = located.filter((x): x is { problem: Problem; file: string } => x.file !== undefined)
     const kept = real.slice(-MAX_PROBLEMS)
     if (real.length > kept.length) losses.push(`older problems dropped (${MAX_PROBLEMS} display limit)`)
-    const diagnostics = await Promise.all(kept.map(({ problem }) => toDiagnostic(problem, find)))
+    const diagnostics = await Promise.all(
+      kept.map(({ problem }) =>
+        toDiagnostic(problem, find, { id: outputId, span: problem.output && { ...problem.output } }),
+      ),
+    )
     if (!current(run, cleared) || run.cycle !== cycle) return
     const show = run.revision === revision
     if (kind === 'provisional' && !show) return
@@ -233,6 +260,7 @@ export function activate(context: vscode.ExtensionContext): void {
     warnings.clear()
     committedWarnings.clear()
     problems.clear()
+    history.clear()
     save()
     updateStatus()
   }
@@ -297,6 +325,8 @@ export function activate(context: vscode.ExtensionContext): void {
       const generation = previous?.generation ?? nextGeneration++
       if (!previous) latest.set(key, generation)
       const run: Run = {
+        id: previous?.id ?? `${sessionId}/${nextRun++}`,
+        started: previous?.started ?? Date.now(),
         terminal,
         command,
         key,
@@ -336,8 +366,9 @@ export function activate(context: vscode.ExtensionContext): void {
           run.output.append(chunk, (line) => {
             if (!watch.accept(`${line}\n`) || runs.get(execution) !== run) return
             run.live.stop()
-            run.watchPublish = publish(run, 'pass', 0, clears)
+            run.watchPublish = publish(run, 'pass', undefined, clears)
             run.output?.reset()
+            run.started = Date.now()
           })
           if (runs.get(execution) === run && run.output.hasOutput) run.live.append()
         }
@@ -393,13 +424,19 @@ async function exists(file: string): Promise<boolean> {
 async function toDiagnostic(
   problem: Problem,
   find: (file: string) => Promise<string | undefined>,
+  output: OutputReference,
 ): Promise<vscode.Diagnostic> {
   const start = new vscode.Position(Math.max(problem.line - 1, 0), Math.max((problem.col ?? 1) - 1, 0))
   const end =
     problem.endLine !== undefined
       ? new vscode.Position(Math.max(problem.endLine - 1, 0), Math.max((problem.endCol ?? 1) - 1, 0))
       : start
-  const diagnostic = new vscode.Diagnostic(new vscode.Range(start, end), problem.message, SEVERITY[problem.severity])
+  const diagnostic: OutputDiagnostic = new vscode.Diagnostic(
+    new vscode.Range(start, end),
+    problem.message,
+    SEVERITY[problem.severity],
+  )
+  diagnostic.output = output
   diagnostic.source = problem.source
   if (problem.code) diagnostic.code = problem.code
   const related: vscode.DiagnosticRelatedInformation[] = []

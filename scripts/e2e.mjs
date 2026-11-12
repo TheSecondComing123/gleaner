@@ -522,6 +522,25 @@ close($done);
   await page.keyboard.press('Enter')
   await status(1, 'runtime crash')
 
+  await command('Gleaner: Show Output')
+  await page.getByRole('option', { name: /node src\/receipt.ts/ }).click()
+  await page.waitForTimeout(1000)
+  await page.keyboard.press('ControlOrMeta+C')
+  const selectedCrashOutput = await app.evaluate(({ clipboard }) => clipboard.readText())
+  await page.keyboard.press('ControlOrMeta+A')
+  await page.keyboard.press('ControlOrMeta+C')
+  const crashOutput = await app.evaluate(({ clipboard }) => clipboard.readText())
+  if (
+    [crashOutput, selectedCrashOutput].every(
+      (text) => text.includes('TypeError:') && text.includes('at line (') && text.includes('receipt.ts:5:'),
+    )
+  ) {
+    console.log('runtime output: TypeError and stack retained and highlighted')
+  } else {
+    console.error(`runtime output missing TypeError or stack: ${crashOutput}; selected: ${selectedCrashOutput}`)
+    failed = true
+  }
+
   // the README shot: a failing test run, listed in the problems panel
   await command('Gleaner: Clear Problems')
   await command('View: Close All Editors')

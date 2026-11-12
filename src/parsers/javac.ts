@@ -13,7 +13,7 @@ export function javac(lines: string[]): Problem[] {
   let state: 'source' | 'caret' | 'detail' = 'detail'
   let indent = 0
 
-  for (const raw of lines) {
+  for (const [index, raw] of lines.entries()) {
     const maven = MAVEN.exec(raw)
     if (maven) {
       problems.push({
@@ -23,6 +23,7 @@ export function javac(lines: string[]): Problem[] {
         severity: maven[1] === 'ERROR' ? 'error' : 'warning',
         message: maven[5],
         source: 'javac',
+        output: { start: index, end: index + 1 },
       })
       current = undefined
       continue
@@ -38,6 +39,7 @@ export function javac(lines: string[]): Problem[] {
         code: head[4],
         message: head[5],
         source: 'javac',
+        output: { start: index, end: index + 1 },
       }
       problems.push(current)
       state = 'source'
@@ -45,6 +47,7 @@ export function javac(lines: string[]): Problem[] {
     }
     if (!current) continue
     line = raw.slice(indent)
+    if (current.output) current.output.end = index + 1
 
     if (state === 'source') {
       state = 'caret'

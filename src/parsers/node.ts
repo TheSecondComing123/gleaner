@@ -18,6 +18,8 @@ function location(path: string): string | undefined {
 
 export function node(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let index = 0
+  let start = 0
   let text: string[] = []
   let afterCaret = false
   let header: { file: string; line: number } | undefined
@@ -44,6 +46,7 @@ export function node(lines: string[]): Problem[] {
         severity: 'error',
         message,
         source: 'node',
+        output: { start, end: index },
         related: first && rest.length ? rest : undefined,
       })
     crash = undefined
@@ -52,7 +55,8 @@ export function node(lines: string[]): Problem[] {
     afterCaret = false
   }
 
-  for (const line of lines) {
+  for (index = 0; index < lines.length; index++) {
+    const line = lines[index]
     const frame = FRAME.exec(line)
     if (frame) {
       crash ??= { message: errorText(), frames: [] }
@@ -73,6 +77,7 @@ export function node(lines: string[]): Problem[] {
 
     const head = HEADER.exec(line)
     if (head) {
+      start = index
       const file = location(head[1])
       header = file ? { file, line: Number(head[2]) } : undefined
       text = []
@@ -82,7 +87,10 @@ export function node(lines: string[]): Problem[] {
       afterCaret = true
     } else if (line === '') {
       if (!afterCaret) text = []
-    } else text.push(line)
+    } else {
+      if (!header && ERROR_LINE.test(line)) start = index
+      text.push(line)
+    }
   }
   finish()
   return problems

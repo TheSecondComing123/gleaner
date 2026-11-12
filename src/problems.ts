@@ -1,6 +1,9 @@
 import * as vscode from 'vscode'
 import { type Change, display, mapPosition, normalizeCode, type Position } from './display'
+import type { OutputReference } from './history'
 import { restoreSession, type SavedRun, serializeSession } from './session'
+
+export type OutputDiagnostic = vscode.Diagnostic & { output?: OutputReference }
 
 const key = (d: vscode.Diagnostic) =>
   `${d.range.start.line}:${d.range.start.character}|${d.source}|${normalizeCode(d.code)}|${d.message}`
@@ -62,6 +65,17 @@ export class Problems implements vscode.Disposable {
     if (normalized.size) this.byRun.set(run, normalized)
     else this.byRun.delete(run)
     for (const file of touched) this.render(file)
+  }
+
+  at(file: string, range: vscode.Range): { diagnostic: vscode.Diagnostic; output?: OutputReference }[] {
+    return [...this.byRun.values()].flatMap((files) =>
+      (files.get(file) ?? [])
+        .filter((d) => d.range.intersection(range))
+        .map((diagnostic: OutputDiagnostic) => ({
+          diagnostic,
+          output: diagnostic.output,
+        })),
+    )
   }
 
   has(file: string): boolean {

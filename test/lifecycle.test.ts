@@ -4,7 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const state = vi.hoisted(() => ({
   events: new Map<string, (value: unknown) => unknown>(),
-  shown: new Map<string, { message: string }[]>(),
+  shown: new Map<string, import('../src/problems').OutputDiagnostic[]>(),
+  commands: new Map<string, (...args: unknown[]) => unknown>(),
+  providers: new Map<string, vscode.TextDocumentContentProvider>(),
+  actions: undefined as vscode.CodeActionProvider | undefined,
+  picker: [] as { label: string; run: import('../src/history').RunOutput }[],
+  pick: true,
+  opened: '',
+  selection: undefined as vscode.Range | undefined,
+  decorations: [] as vscode.Range[],
+  information: [] as string[],
+  others: [] as vscode.Diagnostic[],
   logs: [] as string[],
   clear: () => {},
   stat: async (_file: string) => {},
@@ -28,6 +38,9 @@ vi.mock('vscode', () => {
       this.start = typeof start === 'number' ? new Position(start, end as number) : start
       this.end = typeof end === 'number' ? new Position(endLine ?? 0, endCol ?? 0) : end
     }
+    intersection(other: Range) {
+      return this.start.line <= other.end.line && this.end.line >= other.start.line ? this : undefined
+    }
   }
   const event = (name: string) => (callback: (value: unknown) => unknown) => {
     state.events.set(name, callback)
@@ -36,6 +49,15 @@ vi.mock('vscode', () => {
   return {
     Position,
     Range,
+    ThemeColor: class {},
+    TextEditorRevealType: { InCenterIfOutsideViewport: 1 },
+    CodeActionKind: { QuickFix: 'quickfix' },
+    CodeAction: class {
+      constructor(
+        public title: string,
+        public kind: string,
+      ) {}
+    },
     Diagnostic: class {
       constructor(
         public range: Range,
@@ -47,7 +69,10 @@ vi.mock('vscode', () => {
     Disposable: class {
       constructor(public dispose: () => void) {}
     },
-    Uri: { file: (file: string) => ({ fsPath: file, scheme: 'file' }) },
+    Uri: {
+      file: (file: string) => ({ fsPath: file, scheme: 'file' }),
+      from: (parts: unknown) => parts,
+    },
     StatusBarAlignment: { Left: 1 },
     extensions: {
       get all() {
@@ -56,21 +81,36 @@ vi.mock('vscode', () => {
       onDidChange: event('extensions'),
     },
     commands: {
-      registerCommand: (_name: string, callback: () => void) => {
-        state.clear = callback
+      registerCommand: (name: string, callback: (...args: unknown[]) => unknown) => {
+        state.commands.set(name, callback)
+        if (name === 'gleaner.clear') state.clear = callback
         return { dispose() {} }
       },
     },
     languages: {
       createDiagnosticCollection: () => ({
-        set: (uri: { fsPath: string }, list: { message: string }[]) => state.shown.set(uri.fsPath, list),
+        set: (uri: { fsPath: string }, list: vscode.Diagnostic[]) => state.shown.set(uri.fsPath, list),
         clear: () => state.shown.clear(),
-        dispose() {},
+        dispose: () => state.shown.clear(),
       }),
-      getDiagnostics: () => [],
+      registerCodeActionsProvider: (_selector: unknown, provider: vscode.CodeActionProvider) => {
+        state.actions = provider
+        return { dispose() {} }
+      },
+      getDiagnostics: () => [...state.shown.values()].flat().concat(state.others),
       onDidChangeDiagnostics: event('diagnostics'),
     },
     workspace: {
+      registerTextDocumentContentProvider: (scheme: string, provider: vscode.TextDocumentContentProvider) => {
+        state.providers.set(scheme, provider)
+        return { dispose() {} }
+      },
+      openTextDocument: async (uri: vscode.Uri) => {
+        const provider = state.providers.get(uri.scheme)
+        state.opened = String(await provider?.provideTextDocumentContent(uri, {} as vscode.CancellationToken))
+        const lines = state.opened.split('\n')
+        return { lineCount: lines.length, lineAt: (line: number) => ({ text: lines[line] }) }
+      },
       workspaceFolders: [],
       textDocuments: [],
       getConfiguration: () => ({
@@ -85,6 +125,23 @@ vi.mock('vscode', () => {
       onDidChangeTextDocument: event('edit'),
     },
     window: {
+      createTextEditorDecorationType: () => ({ dispose() {} }),
+      showInformationMessage: (text: string) => {
+        state.information.push(text)
+      },
+      showQuickPick: async (items: typeof state.picker) => {
+        state.picker = items
+        return state.pick ? items[0] : undefined
+      },
+      showTextDocument: async (_document: unknown, options: { selection: vscode.Range }) => {
+        state.selection = options.selection
+        return {
+          setDecorations: (_type: unknown, ranges: vscode.Range[]) => {
+            state.decorations = ranges
+          },
+          revealRange() {},
+        }
+      },
       terminals: [],
       createOutputChannel: () => ({ appendLine: (line: string) => state.logs.push(line), dispose() {} }),
       createStatusBarItem: () =>
@@ -170,6 +227,13 @@ beforeEach(() => {
   vi.useFakeTimers()
   state.events.clear()
   state.shown.clear()
+  state.commands.clear()
+  state.providers.clear()
+  state.picker = []
+  state.pick = true
+  state.opened = ''
+  state.information = []
+  state.others = []
   state.logs.length = 0
   state.enabled = true
   state.saved.clear()
@@ -479,5 +543,132 @@ describe('run lifecycle', () => {
     await vi.advanceTimersByTimeAsync(6000)
     await run.end(0)
     expect(messages()).toEqual([])
+  })
+})
+
+const shownProblems = () => [...state.shown.values()].flat()
+const showOutput = (output?: import('../src/history').OutputReference) =>
+  state.commands.get('gleaner.showOutput')?.(output)
+const codeActions = async (diagnostic: vscode.Diagnostic) =>
+  (await state.actions?.provideCodeActions(
+    { uri: { fsPath: resolve('/repo/src/cart.ts') } } as vscode.TextDocument,
+    diagnostic.range,
+    { diagnostics: [], triggerKind: 1, only: undefined },
+    {} as vscode.CancellationToken,
+  )) as vscode.CodeAction[]
+
+describe('problem output provenance', () => {
+  it('opens the committed log after an interrupted rerun restores its diagnostics', async () => {
+    const first = await start()
+    await first.write(`${error('committed')}  original detail\n`)
+    await first.end(1)
+    const origin = shownProblems()[0].output
+    const second = await start()
+    await second.write('different output\n')
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(messages()).toEqual([])
+    await second.end(130)
+    expect(shownProblems()[0].output).toEqual(origin)
+    await showOutput(origin)
+    expect(state.opened).toContain('error TS2322: committed\n  original detail')
+    expect(state.opened).not.toContain('different output')
+    expect(state.opened).toContain('exit 1:')
+    expect(state.decorations).toEqual([state.selection])
+  })
+
+  it('keeps watch pass output separate from a later unfinished pass and its synthetic exit', async () => {
+    const run = await start('tsc --watch')
+    await run.write(`${error('first')}Watching for file changes.\n`)
+    const first = shownProblems()[0].output
+    await run.write(`${error('second')}Watching for file changes.\n`)
+    const second = shownProblems()[0].output
+    expect(second?.id).not.toBe(first?.id)
+    await run.write(error('unfinished'))
+    await vi.advanceTimersByTimeAsync(1500)
+    await run.end(0)
+    expect(shownProblems()[0].output).toEqual(second)
+    await showOutput(second)
+    expect(state.opened).toContain('watch pass 2:')
+    expect(state.opened).toContain('error TS2322: second')
+    expect(state.opened).not.toContain('unfinished')
+    expect(state.opened).not.toContain('exit 0')
+    await showOutput(first)
+    expect(state.opened).toContain('error TS2322: first')
+  })
+
+  it('offers each producing run through code actions and the picker despite language-server dedupe', async () => {
+    const first = await start('tsc -p .')
+    await first.write(error('same'))
+    await first.end(1)
+    const diagnostic = shownProblems()[0]
+    state.others = [{ ...diagnostic, source: 'typescript' }]
+    state.events.get('diagnostics')?.({ uris: [{ scheme: 'file', fsPath: resolve('/repo/src/cart.ts') }] })
+    expect(messages()).toEqual([])
+    const second = await start('npx tsc -p .')
+    await second.write(error('same'))
+    await second.end(1)
+    expect(messages()).toEqual([])
+    const actions = await codeActions(diagnostic)
+    expect(actions).toHaveLength(2)
+    expect(actions.map((a) => a.title)).toEqual([
+      'gleaner: show output (tsc -p .)',
+      'gleaner: show output (npx tsc -p .)',
+    ])
+    await state.commands.get(actions[0].command?.command ?? '')?.(...(actions[0].command?.arguments ?? []))
+    expect(state.opened).toContain('$ tsc -p .')
+    await showOutput()
+    expect(state.picker.map((item) => item.label)).toEqual(['npx tsc -p .', 'tsc -p .'])
+    expect(state.opened).toContain('$ npx tsc -p .')
+    state.pick = false
+    await showOutput()
+    expect(state.opened).toContain('$ npx tsc -p .')
+  })
+
+  it('keeps a link through edits and explains when clear has removed its log', async () => {
+    const run = await start()
+    await run.write(error('before edit'))
+    await run.end(1)
+    const origin = shownProblems()[0].output
+    state.events.get('edit')?.({
+      document: { uri: { scheme: 'file', fsPath: resolve('/repo/src/cart.ts') } },
+      contentChanges: [{ range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }, text: '\n\n' }],
+    })
+    expect(shownProblems()[0].range.start.line).toBe(8)
+    expect(shownProblems()[0].output).toEqual(origin)
+    state.clear()
+    await showOutput(origin)
+    expect(state.information.at(-1)).toContain('evicted or cleared')
+    await showOutput()
+    expect(state.information.at(-1)).toContain('no retained output')
+  })
+
+  it('marks restored output unavailable and replaces that policy on rerun', async () => {
+    const run = await start()
+    await run.write(error('history'))
+    await run.end(1)
+    for (const subscription of subscriptions) subscription.dispose()
+    subscriptions = []
+    activate({
+      subscriptions,
+      extension: { id: 'test' },
+      workspaceState: {
+        get: (key: string, fallback: unknown) => state.saved.get(key) ?? fallback,
+        update: async (key: string, value: unknown) => {
+          state.saved.set(key, value)
+        },
+      },
+    } as unknown as vscode.ExtensionContext)
+    expect(shownProblems()[0].source).toContain('(last session)')
+    expect(shownProblems()[0].output).toBeUndefined()
+    const actions = await codeActions(shownProblems()[0])
+    expect(actions[0].title).toContain('output unavailable (last session)')
+    await state.commands.get(actions[0].command?.command ?? '')?.(...(actions[0].command?.arguments ?? []))
+    expect(state.information.at(-1)).toContain('last-session output is not retained')
+    const rerun = await start()
+    await rerun.write(error('current'))
+    await rerun.end(1)
+    expect(shownProblems()[0].output).toBeDefined()
+    await showOutput(shownProblems()[0].output)
+    expect(state.opened).toContain('error TS2322: current')
   })
 })

@@ -17,15 +17,23 @@ const SEVERITY: Record<string, Severity> = {
 
 export function gcc(lines: string[]): Problem[] {
   const problems: Problem[] = []
-  for (const line of lines) {
+  let contextStart: number | undefined
+  for (const [index, line] of lines.entries()) {
     const m = HEAD.exec(line)
-    if (!m) continue
+    if (!m) {
+      if (/^(In file included from |.+?: (?:In |At global scope)|\s+(?:from |required from ))/.test(line))
+        contextStart ??= index
+      const last = problems.at(-1)
+      if (last?.output && (!line || /^\s/.test(line))) last.output.end = index + 1
+      continue
+    }
     const [, file, row, col, kind, message, flag] = m
     // javac, mypy: their parsers win
     if (OTHER_LANGUAGES.test(file) || OTHER_TOOLS.test(message)) continue
     // notes become related info
     if (kind === 'note') {
       const last = problems.at(-1)
+      if (last?.output) last.output.end = index + 1
       if (last)
         last.related = [
           ...(last.related ?? []),
@@ -41,7 +49,9 @@ export function gcc(lines: string[]): Problem[] {
       message,
       code: flag,
       source: 'gcc',
+      output: { start: contextStart ?? index, end: index + 1 },
     })
+    contextStart = undefined
   }
   return problems
 }

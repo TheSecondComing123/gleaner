@@ -11,7 +11,7 @@ export function cmake(lines: string[]): Problem[] {
   let mode: 'message' | 'stack' | undefined
   let paragraph = false
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const head = HEAD.exec(line)
     if (head) {
       const [, kind, file, row] = head
@@ -21,6 +21,7 @@ export function cmake(lines: string[]): Problem[] {
         severity: kind.endsWith('Error') ? 'error' : 'warning',
         message: '',
         source: 'cmake',
+        output: { start: index, end: index + 1 },
       }
       problems.push(current)
       mode = 'message'
@@ -28,6 +29,7 @@ export function cmake(lines: string[]): Problem[] {
       continue
     }
     if (!current) continue
+    if (current.output) current.output.end = index + 1
     if (mode === 'message') {
       // wrapped at ~77 columns
       if (line.startsWith(' ')) {

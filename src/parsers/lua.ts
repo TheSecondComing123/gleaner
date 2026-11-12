@@ -16,6 +16,8 @@ interface Frame {
 
 export function lua(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let index = 0
+  let start = 0
   let crash: { message: string; at?: Frame; frames: Frame[] } | undefined
 
   const finish = () => {
@@ -30,6 +32,7 @@ export function lua(lines: string[]): Problem[] {
         severity: 'error',
         message: crash.message,
         source: 'lua',
+        output: { start, end: index },
       }
       // recursion repeats frames
       const seen = new Set([`${at.file}:${at.line}`])
@@ -47,10 +50,12 @@ export function lua(lines: string[]): Problem[] {
     crash = undefined
   }
 
-  for (const line of lines) {
+  for (index = 0; index < lines.length; index++) {
+    const line = lines[index]
     const head = HEAD.exec(line)
     if (head) {
       finish()
+      start = index
       const at = AT.exec(head[1])
       crash = at
         ? { message: at[3], at: { file: at[1], line: Number(at[2]), fn: '' }, frames: [] }

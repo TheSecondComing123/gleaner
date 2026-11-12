@@ -10,11 +10,16 @@ export function mypy(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let target: Problem | Related | undefined
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const head = HEAD.exec(line)
     if (!head) {
-      if (target && line && !line.startsWith(' ') && !STOP.test(line)) target.message += ` ${line}`
-      else target = undefined
+      const current = problems.at(-1)
+      if (current?.output && line.startsWith(' ')) current.output.end = index + 1
+      if (target && line && !line.startsWith(' ') && !STOP.test(line)) {
+        target.message += ` ${line}`
+        const last = problems.at(-1)
+        if (last?.output) last.output.end = index + 1
+      } else target = undefined
       continue
     }
     const [, file, row, col, kind, message] = head
@@ -22,11 +27,18 @@ export function mypy(lines: string[]): Problem[] {
     const last = problems.at(-1)
     // notes join their error
     if (kind === 'note' && last && last.file === at.file && last.line === at.line) {
+      if (last.output) last.output.end = index + 1
       target = { ...at, message }
       last.related = [...(last.related ?? []), target]
       continue
     }
-    const problem: Problem = { ...at, severity: kind === 'note' ? 'info' : 'error', message, source: 'mypy' }
+    const problem: Problem = {
+      ...at,
+      severity: kind === 'note' ? 'info' : 'error',
+      message,
+      source: 'mypy',
+      output: { start: index, end: index + 1 },
+    }
     problems.push(problem)
     target = problem
   }

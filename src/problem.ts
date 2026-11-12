@@ -7,7 +7,13 @@ export interface Related {
   message: string
 }
 
+export interface OutputSpan {
+  start: number
+  end: number
+}
+
 export interface Problem {
+  output?: OutputSpan
   file: string
   line: number
   col?: number

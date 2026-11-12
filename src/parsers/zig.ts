@@ -15,24 +15,34 @@ interface Frame {
 
 export function zig(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let index = 0
+  let start = 0
   let before: string[] = []
   let frames: Frame[] = []
 
   const flush = () => {
     // message: block above the trace
-    const start = Math.max(
+    const messageStart = Math.max(
       before.findLastIndex((l) => !/^\s/.test(l)),
       0,
     )
     const message = before
-      .slice(start)
+      .slice(messageStart)
       .map((l) => l.trim())
       .join('\n')
       .replace(/^thread \d+ panic: /, 'panic: ')
     // innermost user frame
     const user = frames.filter((f) => !LIBRARY.test(f.file))
     const at = user[0] ?? frames[0]
-    const problem: Problem = { file: at.file, line: at.line, col: at.col, severity: 'error', message, source: 'zig' }
+    const problem: Problem = {
+      file: at.file,
+      line: at.line,
+      col: at.col,
+      severity: 'error',
+      message,
+      source: 'zig',
+      output: { start, end: index },
+    }
     const seen = new Set([`${at.file}:${at.line}`])
     for (const f of user) {
       const key = `${f.file}:${f.line}`
@@ -48,20 +58,23 @@ export function zig(lines: string[]): Problem[] {
     before = []
   }
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
+  for (index = 0; index < lines.length; index++) {
+    const line = lines[index]
     const frame = FRAME.exec(line)
     if (frame) {
       frames.push({ file: frame[1], line: Number(frame[2]), col: Number(frame[3]), fn: frame[4] })
       continue
     }
     // source line and caret
-    if (frames.length && CARET.test(lines[i + 1] ?? '')) {
-      i++
+    if (frames.length && CARET.test(lines[index + 1] ?? '')) {
+      index++
       continue
     }
     if (frames.length) flush()
-    if (line.trim()) before.push(line)
+    if (line.trim()) {
+      if (!before.length || !/^\s/.test(line)) start = index
+      before.push(line)
+    }
   }
   if (frames.length) flush()
   return problems

@@ -19,6 +19,7 @@ const FRAME = /^\s*>?\s*\d*\s?\|/
 const END = /^(?:⎯|\s*Test (?:Suites|Files)|Summary of all failing tests)/
 
 interface Block {
+  start: number
   source: string
   titles: { file: string; title?: string }[]
   lines: string[]
@@ -28,6 +29,7 @@ interface Block {
 
 export function jest(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let index = 0
   let suite: string | undefined
   let block: Block | undefined
 
@@ -41,12 +43,14 @@ export function jest(lines: string[]): Problem[] {
         severity: 'error',
         message: [title, ...block.lines].filter(Boolean).join('\n'),
         source: block.source,
+        output: { start: block.start, end: index },
       })
     }
     block = undefined
   }
 
-  for (const line of lines) {
+  for (index = 0; index < lines.length; index++) {
+    const line = lines[index]
     const vitest = VITEST_TEST.exec(line) ?? VITEST_SUITE.exec(line)
     if (vitest) {
       const failure = { file: vitest[1], title: vitest[2] }
@@ -54,7 +58,7 @@ export function jest(lines: string[]): Problem[] {
       if (block?.source === 'vitest' && !block.lines.length && !block.inTrace) block.titles.push(failure)
       else {
         finish()
-        block = { source: 'vitest', titles: [failure], lines: [], inTrace: false }
+        block = { start: index, source: 'vitest', titles: [failure], lines: [], inTrace: false }
       }
       continue
     }
@@ -67,7 +71,7 @@ export function jest(lines: string[]): Problem[] {
     const jestTest = JEST_TEST.exec(line)
     if (jestTest && suite) {
       finish()
-      block = { source: 'jest', titles: [{ file: suite, title: jestTest[1] }], lines: [], inTrace: false }
+      block = { start: index, source: 'jest', titles: [{ file: suite, title: jestTest[1] }], lines: [], inTrace: false }
       continue
     }
     if (END.test(line)) {

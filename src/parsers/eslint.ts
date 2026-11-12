@@ -14,8 +14,9 @@ const SEVERITY: Record<string, Severity> = { error: 'error', warning: 'warning' 
 export function eslint(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let file: string | undefined
+  let start = 0
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const flat = (COMPACT.exec(line) ?? UNIX.exec(line))?.groups
     if (flat) {
       problems.push({
@@ -26,10 +27,12 @@ export function eslint(lines: string[]): Problem[] {
         message: flat.message,
         code: flat.code,
         source: 'eslint',
+        output: { start: index, end: index + 1 },
       })
       continue
     }
     if (FILE.test(line)) {
+      start = index
       file = line
       continue
     }
@@ -43,6 +46,7 @@ export function eslint(lines: string[]): Problem[] {
       message: row[4],
       code: row[5],
       source: 'eslint',
+      output: { start, end: index + 1 },
     })
   }
   return problems

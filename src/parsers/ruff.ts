@@ -14,12 +14,16 @@ const PYLINT_SEVERITY: Record<string, Severity> = { E: 'error', F: 'error', W: '
 export function ruff(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let previous = ''
+  let output: Problem['output']
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
+    if (HEADER.test(line) || LINE.test(line)) output = undefined
+    if (output) output.end = index + 1
     const arrow = ARROW.exec(line)
     const header = arrow && HEADER.exec(previous)
     previous = line
     if (arrow && header) {
+      output = { start: index - 1, end: index + 1 }
       problems.push({
         file: arrow[1],
         line: Number(arrow[2]),
@@ -28,6 +32,7 @@ export function ruff(lines: string[]): Problem[] {
         message: header[2],
         code: header[1],
         source: 'ruff',
+        output,
       })
       continue
     }
@@ -45,6 +50,7 @@ export function ruff(lines: string[]): Problem[] {
         message: message.replace(PYLINT_SYMBOL, ''),
         code,
         source: 'ruff',
+        output: { start: index, end: index + 1 },
       })
       continue
     }
@@ -56,6 +62,7 @@ export function ruff(lines: string[]): Problem[] {
       message,
       code,
       source: 'ruff',
+      output: { start: index, end: index + 1 },
     })
   }
   return problems

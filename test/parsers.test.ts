@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { clean } from '../src/clean'
 import { parsers } from '../src/parsers'
+import { diagnostics } from './diagnostics'
 
 // real output → expected .json
 const root = join(__dirname, 'fixtures')
@@ -15,7 +16,14 @@ for (const name of readdirSync(root)) {
         expect(parse, `no parser named ${name}`).toBeDefined()
         const lines = clean(readFileSync(join(root, name, file), 'utf8'))
         const expected = JSON.parse(readFileSync(join(root, name, file.replace(/\.txt$/, '.json')), 'utf8'))
-        expect(parse(lines)).toEqual(expected)
+        const found = parse(lines)
+        expect(diagnostics(found)).toEqual(expected)
+        for (const problem of found) {
+          if (!problem.output) throw new Error('missing output span')
+          expect(problem.output.start).toBeGreaterThanOrEqual(0)
+          expect(problem.output.end).toBeGreaterThan(problem.output.start)
+          expect(problem.output.end).toBeLessThanOrEqual(lines.length)
+        }
       })
     }
   })

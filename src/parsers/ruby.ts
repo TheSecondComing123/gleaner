@@ -19,6 +19,8 @@ interface Frame {
 
 export function ruby(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let index = 0
+  let start = 0
   let crash: { message: string; frames: Frame[] } | undefined
   let syntax: { file: string; line: number; message: string; notes: number } | undefined
   let source = 0
@@ -33,6 +35,7 @@ export function ruby(lines: string[]): Problem[] {
         severity: 'error',
         message: crash.message,
         source: 'ruby',
+        output: { start, end: index },
       }
       // block and iterator share a line
       const seen = new Set([`${at.file}:${at.line}`])
@@ -55,12 +58,14 @@ export function ruby(lines: string[]): Problem[] {
         severity: 'error',
         message: syntax.message,
         source: 'ruby',
+        output: { start, end: index },
       })
     crash = undefined
     syntax = undefined
   }
 
-  for (const line of lines) {
+  for (index = 0; index < lines.length; index++) {
+    const line = lines[index]
     const from = FROM.exec(line)
     if (from) {
       crash?.frames.push({ file: from[1], line: Number(from[2]), fn: from[3] })
@@ -79,18 +84,30 @@ export function ruby(lines: string[]): Problem[] {
           severity: 'error',
           message: note[2],
           source: 'ruby',
+          output: { start, end: index + 1 },
         })
       }
       if (src || note) continue
     }
     const head = HEAD.exec(line)
     const err = !head && SYNTAX.exec(line)
-    if (head || err) finish()
+    if (head || err) {
+      finish()
+      start = index
+    }
     if (head) crash = { message: head[4], frames: [{ file: head[1], line: Number(head[2]), fn: head[3] }] }
     else if (err) {
       if (err[3].startsWith('syntax errors found'))
         syntax = { file: err[1], line: Number(err[2]), message: err[3], notes: 0 }
-      else problems.push({ file: err[1], line: Number(err[2]), severity: 'error', message: err[3], source: 'ruby' })
+      else
+        problems.push({
+          file: err[1],
+          line: Number(err[2]),
+          severity: 'error',
+          message: err[3],
+          source: 'ruby',
+          output: { start, end: index + 1 },
+        })
     }
   }
   finish()

@@ -3,8 +3,9 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clean } from '../src/clean'
 import { LiveUpdates, Output } from '../src/output'
-import { parseAll, parsers, pickParsers } from '../src/parsers'
+import { parseAll as parseOutput, parsers, pickParsers } from '../src/parsers'
 import { lastPass } from '../src/watch'
+import { diagnostics } from './diagnostics'
 
 const error = (message: string) => `src/cart.ts(7,3): error TS2322: ${message}\n`
 const output = () => new Output(pickParsers('perl slow.pl'))
@@ -20,13 +21,13 @@ describe('streamed output', () => {
     const raw = readFileSync(join(fixtures, capture), 'utf8')
     const stream = output()
     for (let i = 0; i < raw.length; i += 7) stream.append(raw.slice(i, i + 7))
-    expect(stream.snapshot(true)).toEqual(parseAll(Object.values(parsers), clean(raw)))
+    expect(diagnostics(stream.snapshot(true))).toEqual(parseAll(Object.values(parsers), clean(raw)))
   })
 
   it('finds an error after 5 MB of noise, even in one delivery', () => {
     const stream = output()
     stream.append(`${'x'.repeat(999)}\n`.repeat(5001) + error('late'))
-    expect(stream.snapshot().map((p) => p.message)).toEqual(['late'])
+    expect(diagnostics(stream.snapshot()).map((p) => p.message)).toEqual(['late'])
   })
 
   it.each(captures)('preserves %s across chunk boundaries', (capture) => {
@@ -38,11 +39,11 @@ describe('streamed output', () => {
       const stream = output()
       stream.append('progress\n'.repeat(1000 - split))
       stream.append(`${lines.slice(0, split).join('\n')}\n`)
-      stream.snapshot()
+      diagnostics(stream.snapshot())
       stream.append(`${lines.slice(split).join('\n')}\n`)
-      expect(stream.snapshot(true), `split at line ${split}`).toEqual(expected)
+      expect(diagnostics(stream.snapshot(true)), `split at line ${split}`).toEqual(expected)
       stream.append(`\n${'progress\n'.repeat(1000)}`)
-      expect(stream.snapshot(true), `retired after line ${split}`).toEqual(expected)
+      expect(diagnostics(stream.snapshot(true)), `retired after line ${split}`).toEqual(expected)
     }
   })
 
@@ -51,7 +52,7 @@ describe('streamed output', () => {
     stream.append(error('early'))
     for (let i = 0; i < 15_001; i++) stream.append('progress\n')
     stream.append(error('late'))
-    expect(stream.snapshot().map((p) => p.message)).toEqual(['early', 'late'])
+    expect(diagnostics(stream.snapshot()).map((p) => p.message)).toEqual(['early', 'late'])
   })
 
   it('retains the start of a block when the overlap would split it', () => {
@@ -61,7 +62,7 @@ describe('streamed output', () => {
     stream.append('\n'.repeat(20))
     stream.append('    at add (a.test.js:9:4)\n')
     stream.append(`Test Suites: 1 failed\n${'progress\n'.repeat(1000)}`)
-    expect(stream.snapshot(true)).toEqual([
+    expect(diagnostics(stream.snapshot(true))).toEqual([
       { file: 'a.test.js', line: 9, col: 4, severity: 'error', message: 'adds\nwrong sum', source: 'jest' },
     ])
   })
@@ -70,7 +71,7 @@ describe('streamed output', () => {
     const stream = output()
     stream.append('progress\n'.repeat(997))
     stream.append('Traceback (most recent call last):\n  File "main.py", line 4, in <module>\n    buy()\n')
-    expect(stream.snapshot()).toEqual([])
+    expect(diagnostics(stream.snapshot())).toEqual([])
     stream.append('  File "shop.py", line 9, in buy\n    raise ValueError("empty")\nValueError: empty\n')
     const expected = parseAll(
       [parsers.python],
@@ -83,45 +84,45 @@ describe('streamed output', () => {
         'ValueError: empty',
       ],
     )
-    expect(stream.snapshot()).toEqual(expected)
+    expect(diagnostics(stream.snapshot())).toEqual(expected)
     stream.append('\nprogress\n'.repeat(1000))
-    expect(stream.snapshot(true)).toEqual(expected)
+    expect(diagnostics(stream.snapshot(true))).toEqual(expected)
   })
 
   it('publishes only complete lines and flushes the partial line at the end', () => {
     const stream = output()
     for (const char of error('first').trimEnd()) stream.append(char)
-    expect(stream.snapshot()).toEqual([])
-    expect(stream.snapshot(true).map((p) => p.message)).toEqual(['first'])
+    expect(diagnostics(stream.snapshot())).toEqual([])
+    expect(diagnostics(stream.snapshot(true)).map((p) => p.message)).toEqual(['first'])
     stream.append('\r\n')
-    expect(stream.snapshot().map((p) => p.message)).toEqual(['first'])
+    expect(diagnostics(stream.snapshot()).map((p) => p.message)).toEqual(['first'])
   })
 
   it('replaces a provisional multi-line message as it grows', () => {
     const stream = output()
     stream.append('Traceback (most recent call last):\n  File "shop.py", line 9, in buy\nValueError: empty\n')
-    expect(stream.snapshot()[0].message).toBe('ValueError: empty')
+    expect(diagnostics(stream.snapshot())[0].message).toBe('ValueError: empty')
     stream.append('more detail\n')
-    expect(stream.snapshot()[0].message).toBe('ValueError: empty\nmore detail')
+    expect(diagnostics(stream.snapshot())[0].message).toBe('ValueError: empty\nmore detail')
     stream.append('\n')
-    expect(stream.snapshot(true)).toHaveLength(1)
+    expect(diagnostics(stream.snapshot(true))).toHaveLength(1)
   })
 
   it('handles split escapes, redraws and blank lines', () => {
     const stream = output()
     const raw = `\x1b[31m${error('first').trimEnd()}\x1b[0m\r\n\n10%\r20%\r\n`
     for (const char of raw) stream.append(char)
-    expect(stream.snapshot().map((p) => p.message)).toEqual(['first'])
+    expect(diagnostics(stream.snapshot()).map((p) => p.message)).toEqual(['first'])
     expect(stream.warnings).toEqual([])
   })
 
   it('bounds a huge unterminated line, reports truncation and reads later errors', () => {
     const stream = output()
     stream.append('x'.repeat(5_000_001))
-    expect(stream.snapshot()).toEqual([])
+    expect(diagnostics(stream.snapshot())).toEqual([])
     expect(stream.warnings).toContain('long lines truncated')
     stream.append(`\n${error('late')}`)
-    expect(stream.snapshot().map((p) => p.message)).toEqual(['late'])
+    expect(diagnostics(stream.snapshot()).map((p) => p.message)).toEqual(['late'])
   })
 
   it('reports the cleaned line limit too', () => {
@@ -133,7 +134,7 @@ describe('streamed output', () => {
   it('keeps later problems when candidates overflow and reports the loss', () => {
     const stream = output()
     for (let i = 0; i < 2100; i++) stream.append(error(`error ${i}`))
-    const found = stream.snapshot(true)
+    const found = diagnostics(stream.snapshot(true))
     expect(found).toHaveLength(2000)
     expect(found.at(-1)?.message).toBe('error 2099')
     expect(stream.warnings).toContain('older problems dropped (2000 candidate limit)')
@@ -145,13 +146,70 @@ describe('streamed output', () => {
     const pass = 'Watching for file changes.\n'
     stream.append(error('old') + 'progress\n'.repeat(2000) + pass + error('new') + pass, (line) => {
       if (!lastPass(`${line}\n`)) return
-      latest = stream.snapshot()
+      latest = diagnostics(stream.snapshot())
       stream.reset()
     })
     expect(latest.map((p) => p.message)).toEqual(['new'])
-    expect(stream.snapshot()).toEqual([])
+    expect(diagnostics(stream.snapshot())).toEqual([])
     expect(stream.hasOutput).toBe(false)
     expect(stream.warnings).toEqual([])
+  })
+})
+
+describe('output spans', () => {
+  it('keeps repeated message occurrences tied to their blocks across a chunk edge', () => {
+    const lines = Array.from({ length: 1800 }, () => 'progress')
+    lines[690] = 'src/cart.ts(7,3): error TS2322: repeated'
+    lines[691] = '  more detail'
+    lines[999] = 'src/cart.ts(9,3): error TS2322: repeated'
+    lines[1000] = '  more detail'
+    const raw = `${lines.join('\n')}\n`
+    for (const size of [1, 7, raw.length]) {
+      const stream = new Output([parsers.tsc])
+      for (let i = 0; i < raw.length; i += size) stream.append(raw.slice(i, i + size))
+      expect(stream.snapshot(true).map((p) => [p.line, p.message, p.output])).toEqual([
+        [7, 'repeated\nmore detail', { start: 690, end: 692 }],
+        [9, 'repeated\nmore detail', { start: 999, end: 1001 }],
+      ])
+    }
+  })
+
+  it('dedupes an identical repeated problem without moving its provenance to the later copy', () => {
+    const stream = new Output([parsers.tsc])
+    stream.append('progress\n'.repeat(690) + error('same') + 'progress\n'.repeat(308))
+    stream.append(error('same'))
+    stream.append('progress\n'.repeat(1000))
+    expect(stream.snapshot(true).map((p) => p.output)).toEqual([{ start: 690, end: 691 }])
+  })
+
+  it.each([380, 1380])('retains a complete compiler block with %i detail lines across parser windows', (length) => {
+    const stream = new Output([parsers.gcc])
+    const block = [
+      'src/main.cpp:7:3: error: no matching function',
+      ...Array.from({ length }, (_, i) => `    template detail ${i}`),
+      'src/types.h:4:1: note: candidate declared here',
+    ]
+    stream.append('progress\n'.repeat(950))
+    stream.append(`${block.join('\n')}\n`)
+    stream.append('progress\n'.repeat(1000))
+    const problem = stream.snapshot(true)[0]
+    const span = problem.output
+    if (!span) throw new Error('missing output span')
+    expect(problem.output).toEqual({ start: 950, end: 950 + block.length })
+    expect(
+      stream
+        .retainedOutput(true)
+        .lines.filter((line) => line.number >= span.start && line.number < span.end)
+        .map((line) => line.text),
+    ).toEqual(block)
+  })
+
+  it('marks clipped lines in the retained log and preserves a final partial line', () => {
+    const stream = new Output([parsers.tsc])
+    stream.append(`${'x'.repeat(20_000)}\n${error('last').trimEnd()}`)
+    expect(stream.retainedOutput(true).lines[0].text).toContain('[gleaner: line truncated]')
+    expect(stream.retainedOutput(true).lines[1].text).toContain('error TS2322: last')
+    expect(stream.snapshot(true)[0].output).toEqual({ start: 1, end: 2 })
   })
 })
 
@@ -200,3 +258,7 @@ describe('live cadence', () => {
     expect(publish).toHaveBeenCalledTimes(1)
   })
 })
+
+function parseAll(...args: Parameters<typeof parseOutput>) {
+  return diagnostics(parseOutput(...args))
+}

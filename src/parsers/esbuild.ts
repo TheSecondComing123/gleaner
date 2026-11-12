@@ -15,7 +15,7 @@ export function esbuild(lines: string[]): Problem[] {
     note = undefined
   }
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const head = HEAD.exec(line)
     if (head) {
       flushNote()
@@ -27,10 +27,12 @@ export function esbuild(lines: string[]): Problem[] {
         message: head[2],
         code: head[3],
         source: 'esbuild',
+        output: { start: index, end: index + 1 },
       }
       continue
     }
     if (!current) continue
+    if (current.output) current.output.end = index + 1
 
     const location = LOCATION.exec(line)
     if (location) {

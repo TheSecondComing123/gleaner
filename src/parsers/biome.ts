@@ -15,16 +15,19 @@ const SEVERITY: Record<string, Severity> = {
 
 export function biome(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let output: Problem['output']
   let head: RegExpExecArray | undefined
   let current: Problem | undefined
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const match = HEAD.exec(line)
     if (match) {
+      output = { start: index, end: index + 1 }
       head = match
       current = undefined
       continue
     }
+    if (output) output.end = index + 1
     if (current) {
       if (line.trim()) current.message += `\n${line.trim()}`
       else current = undefined
@@ -40,6 +43,7 @@ export function biome(lines: string[]): Problem[] {
       message: message[2],
       code: head[4],
       source: 'biome',
+      output,
     }
     problems.push(current)
     head = undefined

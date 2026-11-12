@@ -19,12 +19,14 @@ interface Frame {
 
 export function java(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let index = 0
+  let start = 0
   let message: string | undefined
   let frames: Frame[] = []
   let test: string | undefined
   let gradle = false
 
-  const flush = () => {
+  const flush = (end = index) => {
     const user = frames.filter((f) => !LIBRARY.test(f.fn) && (!test || !TEST_LIBRARY.test(f.fn)))
     const at = user[0] ?? frames[0]
     if (message !== undefined && at) {
@@ -34,6 +36,7 @@ export function java(lines: string[]): Problem[] {
         severity: 'error',
         message: test ? `${test}\n${message}` : message,
         source: 'java',
+        output: { start, end },
       }
       // recursion repeats frames
       const seen = new Set([`${at.file}:${at.line}`])
@@ -54,12 +57,14 @@ export function java(lines: string[]): Problem[] {
     gradle = false
   }
 
-  for (const line of lines) {
+  for (index = 0; index < lines.length; index++) {
+    const line = lines[index]
     const surefire = SUREFIRE.exec(line)
     const failure = GRADLE.exec(line)
     const title = surefire?.[1] ?? failure?.[1]
     if (title) {
       flush()
+      start = index
       test = title
       gradle = Boolean(failure)
       message = ''
@@ -71,12 +76,13 @@ export function java(lines: string[]): Problem[] {
         message = location[1]
         frames.push({ fn: test, file: location[2], line: Number(location[3]) })
       }
-      flush()
+      flush(index + 1)
       continue
     }
     const head = HEAD.exec(line)
     if (head) {
       flush()
+      start = index
       message = head[1]
       continue
     }

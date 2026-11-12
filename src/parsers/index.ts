@@ -236,11 +236,14 @@ function split(line: string, separator: RegExp): string[] {
 const firstLine = (p: Problem) => p.message.split('\n')[0]
 
 // dedupe across parsers
-export function parseAll(chosen: Parser[], lines: string[]): Problem[] {
+export function parseAll(chosen: Parser[], lines: string[], offset = 0): Problem[] {
   const kept: Problem[] = []
   const seen = new Map<string, Problem[]>()
   for (const parse of chosen) {
     for (const problem of parse(lines)) {
+      if (problem.output) {
+        problem.output = { start: problem.output.start + offset, end: problem.output.end + offset }
+      }
       const key = `${problem.file}:${problem.line}:${firstLine(problem)}`
       const twins = seen.get(key) ?? []
       if (twins.some((t) => t.col === undefined || problem.col === undefined || t.col === problem.col)) continue

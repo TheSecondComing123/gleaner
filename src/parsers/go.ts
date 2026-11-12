@@ -20,6 +20,7 @@ export function go(lines: string[]): Problem[] {
   let failing = false
   let inPkg = false
   let last: { problem: Problem; prefix: string } | undefined
+  let panicOutput: Problem['output']
   let panic: string | undefined
   let caller = ''
 
@@ -28,11 +29,19 @@ export function go(lines: string[]): Problem[] {
     else held.set(current, [...(held.get(current) ?? []), problem])
   }
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
+    if (panicOutput) panicOutput.end = index + 1
     if (panic !== undefined) {
       const frame = FRAME.exec(line)
       if (frame && !RUNTIME.test(caller)) {
-        problems.push({ file: frame[1], line: Number(frame[2]), severity: 'error', message: panic, source: 'go' })
+        problems.push({
+          file: frame[1],
+          line: Number(frame[2]),
+          severity: 'error',
+          message: panic,
+          source: 'go',
+          output: panicOutput,
+        })
         panic = undefined
       }
       caller = line
@@ -40,6 +49,7 @@ export function go(lines: string[]): Problem[] {
     }
 
     if (last && line.startsWith(last.prefix)) {
+      if (last.problem.output) last.problem.output.end = index + 1
       last.problem.message += `\n${line.trim()}`
       continue
     }
@@ -71,6 +81,7 @@ export function go(lines: string[]): Problem[] {
         severity: 'error',
         message: log[4],
         source: 'go',
+        output: { start: index, end: index + 1 },
       }
       add(problem)
       last = { problem, prefix: `${log[1]}    ` }
@@ -86,6 +97,7 @@ export function go(lines: string[]): Problem[] {
         severity: 'error',
         message: build[4],
         source: 'go',
+        output: { start: index, end: index + 1 },
       }
       problems.push(problem)
       last = { problem, prefix: '\t' }
@@ -95,6 +107,7 @@ export function go(lines: string[]): Problem[] {
     inPkg = false
     const p = PANIC.exec(line)
     if (p) {
+      panicOutput = { start: index, end: index + 1 }
       panic = p[1]
       caller = ''
     }

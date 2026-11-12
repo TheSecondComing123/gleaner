@@ -26,9 +26,10 @@ function column(source: string, caret: number): number {
 
 export function shellcheck(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let start = 0
   let at: { file: string; line: number; source?: string } | undefined
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const gcc = GCC.exec(line)
     if (gcc) {
       const [, file, row, col, kind, message, code] = gcc
@@ -40,11 +41,13 @@ export function shellcheck(lines: string[]): Problem[] {
         message,
         code,
         source: 'shellcheck',
+        output: { start: index, end: index + 1 },
       })
       continue
     }
     const head = HEAD.exec(line)
     if (head) {
+      start = index
       at = { file: head[1], line: Number(head[2]) }
       continue
     }
@@ -67,6 +70,7 @@ export function shellcheck(lines: string[]): Problem[] {
       message,
       code,
       source: 'shellcheck',
+      output: { start, end: index + 1 },
     })
   }
   return problems

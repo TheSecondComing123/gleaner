@@ -226,7 +226,11 @@ function parser(patterns: Pattern[], source: string, fallback: Severity): Parser
       }
       if (matched !== patterns.length) continue
       const found = problem(data, source, fallback)
-      if (found) problems.push(found)
+      if (found) {
+        found.output = { start, end: start + matched }
+        problems.push(found)
+      }
+      const blockStart = start
       start += matched - 1
       // each loop row inherits the header, not the previous row
       if (last.loop) {
@@ -235,7 +239,10 @@ function parser(patterns: Pattern[], source: string, fallback: Severity): Parser
           if (!match) break
           start++
           const found = problem(capture(last, match, beforeLast), source, fallback)
-          if (found) problems.push(found)
+          if (found) {
+            found.output = { start: blockStart, end: start + 1 }
+            problems.push(found)
+          }
         }
       }
     }

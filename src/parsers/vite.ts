@@ -8,12 +8,15 @@ const POSITION = /^.+? \(\d+:\d+\): /
 
 export function vite(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let output: Problem['output']
   let message: string[] | undefined
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     if (START.test(line)) {
+      output = { start: index, end: index + 1 }
       message = []
       continue
     }
+    if (output) output.end = index + 1
     if (!message) continue
     const file = FILE.exec(line)
     if (file) {
@@ -25,6 +28,7 @@ export function vite(lines: string[]): Problem[] {
         severity: 'error',
         message: message.join('\n').replace(POSITION, ''),
         source: 'vite',
+        output,
       })
       message = undefined
     } else if (line) message.push(line)

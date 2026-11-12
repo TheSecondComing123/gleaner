@@ -5,9 +5,10 @@ import { clean } from '../src/clean'
 import { display, mapPosition, type Shown } from '../src/display'
 import { compileMatchers } from '../src/matchers'
 import { Output } from '../src/output'
-import { commandName, parseAll, parsers, pickParsers } from '../src/parsers'
+import { commandName, parseAll as parseOutput, parsers, pickParsers } from '../src/parsers'
 import { resolveFile } from '../src/resolve'
 import { lastPass, WatchPass } from '../src/watch'
+import { diagnostics } from './diagnostics'
 
 describe('clean', () => {
   it('strips colors and shell integration markers', () => {
@@ -92,7 +93,7 @@ describe('pickParsers', () => {
 
   it('keeps fallback parsing for nodemon child tools', () => {
     const lines = clean(readFileSync(join(__dirname, 'fixtures/python/chained.txt'), 'utf8'))
-    expect(parseAll(pickParsers('nodemon app.py'), lines)).toEqual(parsers.python(lines))
+    expect(parseAll(pickParsers('nodemon app.py'), lines)).toEqual(diagnostics(parsers.python(lines)))
     expect(pickParsers('nodemon app.py')).toEqual(Object.values(parsers))
     expect(pickParsers('nodemon app.js')).toEqual(Object.values(parsers))
   })
@@ -680,3 +681,7 @@ describe('mapPosition', () => {
     expect(mapPosition(pos(6, 4), edit([6, 2], [6, 9], 'y'))).toBeUndefined()
   })
 })
+
+function parseAll(...args: Parameters<typeof parseOutput>) {
+  return diagnostics(parseOutput(...args))
+}

@@ -14,6 +14,7 @@ const SUMMARY = /^(?:FAILED|ERROR) (.+?)(?: - (.*))?$/
 const TB_LINE = /^(\S.*\.py):(\d+): (.+)$/
 
 interface Section {
+  start: number
   name: string
   locations: { file: string; line: number; rest: string }[]
   errors: string[]
@@ -22,6 +23,7 @@ interface Section {
 
 export function pytest(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let index = 0
   const seen = new Set<string>()
   // unlocated sections lend text
   const unlocated = new Map<string, string>()
@@ -34,7 +36,7 @@ export function pytest(lines: string[]): Problem[] {
 
   const finish = () => {
     if (!section) return
-    const { name, locations, errors } = section
+    const { name, locations, errors, start } = section
     const sectionText = section.text.join('\n')
     section = undefined
     const indent = Math.min(...errors.filter(Boolean).map((e) => e.search(/\S/)))
@@ -55,6 +57,7 @@ export function pytest(lines: string[]): Problem[] {
       severity: 'error',
       message: message.join('\n') || at.rest.trim() || `${name} failed`,
       source: 'pytest',
+      output: { start, end: index },
     }
     const callers = new Set([`${at.file}:${at.line}`])
     for (const l of user.reverse()) {
@@ -65,11 +68,12 @@ export function pytest(lines: string[]): Problem[] {
     problems.push(problem)
   }
 
-  for (const line of lines) {
+  for (index = 0; index < lines.length; index++) {
+    const line = lines[index]
     const head = SECTION.exec(line)
     if (head) {
       finish()
-      section = { name: head[1], locations: [], errors: [], text: [] }
+      section = { start: index, name: head[1], locations: [], errors: [], text: [] }
       continue
     }
     if (RULE.test(line)) {
@@ -86,6 +90,7 @@ export function pytest(lines: string[]): Problem[] {
           severity: 'error',
           message: tb[3],
           source: 'pytest',
+          output: { start: index, end: index + 1 },
         }
         problems.push(problem)
         oneLine.push(problem)
@@ -115,6 +120,7 @@ export function pytest(lines: string[]): Problem[] {
           ? `${name}: ${summary[2] ?? 'failed'}`
           : (summary[2] ?? unlocated.get(name) ?? 'collection failed'),
         source: 'pytest',
+        output: { start: index, end: index + 1 },
       })
       continue
     }

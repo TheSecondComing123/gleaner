@@ -13,7 +13,7 @@ export function pyright(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let current: Problem | undefined
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const head = HEAD.exec(line)
     if (head) {
       current = {
@@ -23,11 +23,13 @@ export function pyright(lines: string[]): Problem[] {
         severity: SEVERITY[head[4]],
         message: head[5],
         source: 'pyright',
+        output: { start: index, end: index + 1 },
       }
       problems.push(current)
       continue
     }
     const more = MORE.exec(line)
+    if (current?.output && more) current.output.end = index + 1
     if (current && more) current.message += `\n${' '.repeat(more[1].length)}${more[2]}`
     else current = undefined
   }

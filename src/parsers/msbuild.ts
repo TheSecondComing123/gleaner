@@ -14,7 +14,7 @@ export function msbuild(lines: string[]): Problem[] {
   const problems: Problem[] = []
   // summary repeats diagnostics
   const seen = new Set<string>()
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const project = PROJECT.exec(line)
     const m = HEAD.exec(line) ?? (project && [line, project[1], '1', '', '', '', project[2], project[3], project[4]])
     if (!m) continue
@@ -29,8 +29,9 @@ export function msbuild(lines: string[]): Problem[] {
       message,
       code,
       source: 'msbuild',
+      output: { start: index, end: index + 1 },
     }
-    const key = JSON.stringify(problem)
+    const key = JSON.stringify({ ...problem, output: undefined })
     if (seen.has(key)) continue
     seen.add(key)
     problems.push(problem)

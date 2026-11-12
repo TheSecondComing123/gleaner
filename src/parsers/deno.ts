@@ -13,11 +13,12 @@ const ARROW = /^\s*--> (.+):(\d+):(\d+)$/
 
 export function deno(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let output: Problem['output']
   let current: Problem | undefined
   let body: string[] = []
   let note: string | undefined
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const ts = TS_HEAD.exec(line)
     const error = !ts && ERROR_HEAD.exec(line)
     const lint = !ts && !error && LINT_HEAD.exec(line)
@@ -29,11 +30,13 @@ export function deno(lines: string[]): Problem[] {
           ? { severity: 'error', message: lint[2], code: lint[1] }
           : undefined
     if (head) {
-      current = { file: '', line: 0, col: 0, ...head, source: 'deno' }
+      output = { start: index, end: index + 1 }
+      current = { file: '', line: 0, col: 0, ...head, source: 'deno', output }
       body = []
       note = undefined
       continue
     }
+    if (output) output.end = index + 1
     if (!current) continue
 
     const arrow = ARROW.exec(line)

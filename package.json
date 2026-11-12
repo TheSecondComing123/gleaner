@@ -32,6 +32,11 @@
   "contributes": {
     "commands": [
       {
+        "command": "gleaner.showOutput",
+        "title": "Show Output",
+        "category": "Gleaner"
+      },
+      {
         "command": "gleaner.clear",
         "title": "Clear Problems",
         "category": "Gleaner"

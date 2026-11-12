@@ -1,4 +1,5 @@
 import { clean } from './clean'
+import { RetainedOutput } from './history'
 import { parseAll } from './parsers'
 import type { Parser, Problem } from './problem'
 import { isJestPrompt } from './watch'
@@ -13,9 +14,13 @@ const key = (p: Problem) =>
 
 // parsed windows can go; the overlap lets a block finish in the next window.
 export class Output {
+  private retained = new RetainedOutput()
+  private offset = 0
+  private partialCut = false
   private partial = ''
   private lines: string[] = []
   private readonly saved = new Map<string, Problem>()
+  private readonly openBlocks = new Map<string, { start: number; end?: number; source: string }>()
   private readonly losses = new Set<string>()
 
   constructor(private readonly chosen: Parser[]) {}
@@ -27,7 +32,10 @@ export class Output {
       const end = newline < 0 ? chunk.length : newline
       const room = MAX_RAW_LINE - this.partial.length
       this.partial += chunk.slice(start, Math.min(end, start + room))
-      if (end - start > room) this.losses.add('long lines truncated')
+      if (end - start > room) {
+        this.losses.add('long lines truncated')
+        this.partialCut = true
+      }
       if (newline < 0) {
         // jest's compact watch prompt has no newline.
         if (lineReady && isJestPrompt(clean(this.partial, 1).join('\n'))) lineReady(this.complete())
@@ -40,22 +48,39 @@ export class Output {
   }
 
   private complete(): string {
-    const line = clean(`${this.partial}\n`, 1, () => this.losses.add('long lines truncated'))[0] ?? ''
+    const line =
+      clean(`${this.partial}\n`, 1, () => {
+        this.losses.add('long lines truncated')
+        this.partialCut = true
+      })[0] ?? ''
+    this.retained.append(line + (this.partialCut ? ' [gleaner: line truncated]' : ''))
+    this.partialCut = false
     this.partial = ''
+    const index = this.offset + this.lines.length
+    for (const block of this.openBlocks.values()) {
+      if (
+        block.source === 'gcc' &&
+        block.end === undefined &&
+        line &&
+        !/^\s|^.+?:\d+:(?:\d+:)? (?:note|remark):|^In file included from /.test(line)
+      )
+        block.end = index
+    }
     this.lines.push(line)
     if (this.lines.length >= CHUNK_LINES) {
       this.retire()
-      this.losses.add(`older output context dropped (at least ${OVERLAP_LINES} overlap lines retained)`)
+      this.losses.add(`parser context limited to ${OVERLAP_LINES} overlap lines`)
     }
     return line
   }
 
   private retire(): void {
-    const full = parseAll(this.chosen, this.lines)
+    const full = parseAll(this.chosen, this.lines, this.offset)
+    this.closeBlocks(full)
     const expected = new Set(full.map((p) => JSON.stringify(p)))
     for (let cut = this.lines.length - OVERLAP_LINES; cut > 0; cut -= OVERLAP_LINES) {
-      const prefix = parseAll(this.chosen, this.lines.slice(0, cut))
-      const tail = parseAll(this.chosen, this.lines.slice(cut))
+      const prefix = parseAll(this.chosen, this.lines.slice(0, cut), this.offset)
+      const tail = parseAll(this.chosen, this.lines.slice(cut), this.offset + cut)
       const combined = new Map<string, Problem>()
       this.merge(combined, prefix)
       this.merge(combined, tail)
@@ -66,24 +91,57 @@ export class Output {
         this.saved,
         prefix.filter((p) => expected.has(JSON.stringify(p))),
       )
+      this.offset += cut
       this.lines = this.lines.slice(cut)
       return
     }
     // blocks longer than the window exceed the retained context budget.
     const tail = this.lines.slice(-OVERLAP_LINES)
-    const replaceable = new Set(parseAll(this.chosen, tail).map(key))
+    const replaceable = new Set(parseAll(this.chosen, tail, this.offset + this.lines.length - tail.length).map(key))
     this.merge(
       this.saved,
       full.filter((p) => !replaceable.has(key(p))),
     )
+    for (const p of this.saved.values()) {
+      if (p.output?.end === this.offset + this.lines.length)
+        this.openBlocks.set(key(p), { start: p.output.start, source: p.source })
+    }
+    this.offset += this.lines.length - tail.length
     this.lines = tail
   }
 
   snapshot(final = false): Problem[] {
     const tail = final && this.partial ? clean(this.partial, 1, () => this.losses.add('long lines truncated')) : []
     const found = new Map(this.saved)
-    this.merge(found, parseAll(this.chosen, [...this.lines, ...tail]))
-    return [...found.values()]
+    const parsed = parseAll(this.chosen, [...this.lines, ...tail], this.offset)
+    this.closeBlocks(parsed)
+    this.merge(found, parsed)
+    return [...found.values()].map((p) => {
+      const block = this.openBlocks.get(key(p))
+      const output = p.output && { ...p.output }
+      if (output && block?.start === output.start)
+        output.end = block.end ?? this.offset + this.lines.length + tail.length
+      return { ...p, output }
+    })
+  }
+
+  // a block can outgrow parser context; keep its extent until the next problem.
+  private closeBlocks(found: Problem[]): void {
+    for (const [id, block] of this.openBlocks) {
+      if (block.end !== undefined) continue
+      const next = found.filter((p) => key(p) !== id && p.output && p.output.start > block.start)
+      if (next.length) block.end = Math.min(...next.map((p) => p.output?.start ?? Infinity))
+    }
+  }
+
+  retainedOutput(final = false): ReturnType<RetainedOutput['snapshot']> {
+    const partial =
+      final && this.partial
+        ? (clean(this.partial, 1, () => {
+            this.partialCut = true
+          })[0] ?? '') + (this.partialCut ? ' [gleaner: line truncated]' : '')
+        : undefined
+    return this.retained.snapshot(partial)
   }
 
   private merge(into: Map<string, Problem>, found: Problem[]): void {
@@ -95,12 +153,17 @@ export class Output {
         previous &&
         previous.message.length >= problem.message.length &&
         (previous.related?.length ?? 0) >= (problem.related?.length ?? 0)
-      )
+      ) {
+        if (previous.output && problem.output?.start === previous.output.start)
+          previous.output.end = Math.max(previous.output.end, problem.output.end)
         continue
+      }
       into.delete(id)
       into.set(id, problem)
       if (into.size > MAX_CANDIDATES) {
-        into.delete(into.keys().next().value as string)
+        const oldest = into.keys().next().value as string
+        into.delete(oldest)
+        this.openBlocks.delete(oldest)
         this.losses.add(`older problems dropped (${MAX_CANDIDATES} candidate limit)`)
       }
     }
@@ -112,13 +175,21 @@ export class Output {
 
   reset(): void {
     this.partial = ''
+    this.partialCut = false
+    this.offset = 0
+    this.retained = new RetainedOutput()
     this.lines = []
     this.saved.clear()
+    this.openBlocks.clear()
     this.losses.clear()
   }
 
   get warnings(): string[] {
-    return [...this.losses]
+    const retained = this.retained.snapshot()
+    return [
+      ...this.losses,
+      ...(retained.lines.length < retained.lineCount ? ['retained output truncated (512 kib per-run limit)'] : []),
+    ]
   }
 }
 

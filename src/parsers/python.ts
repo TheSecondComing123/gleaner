@@ -21,22 +21,25 @@ interface Frame {
 
 export function python(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let start = 0
   let frames: Frame[] = []
   let current: Problem | undefined
   let group = false
 
-  for (const raw of lines) {
+  for (const [index, raw] of lines.entries()) {
     // `+ ` is decoration only in a group
     if (GROUP_START.test(raw)) group = true
     else if (group && !GROUP_PREFIX.test(raw) && !GROUP_RULE.test(raw)) group = false
     const line = !group ? raw : GROUP_RULE.test(raw) ? '' : raw.replace(GROUP_PREFIX, '')
     if (START.test(line)) {
+      start = index
       frames = []
       current = undefined
       continue
     }
     const frame = FRAME.exec(line)
     if (frame) {
+      if (!frames.length && !START.test(lines[index - 1] ?? '')) start = index
       // bare SyntaxError frame
       current = undefined
       frames.push({ file: frame[1], line: Number(frame[2]), fn: frame[3] })
@@ -44,14 +47,24 @@ export function python(lines: string[]): Problem[] {
     }
     if (current) {
       if (!line || BREAK.test(line)) current = undefined
-      else current.message += `\n${line}`
+      else {
+        current.message += `\n${line}`
+        if (current.output) current.output.end = index + 1
+      }
       continue
     }
     if (!frames.length || !line || line.startsWith(' ')) continue
 
     const user = frames.filter((f) => !LIBRARY.test(f.file))
     const at = user.at(-1) ?? (frames.at(-1) as Frame)
-    current = { file: at.file, line: at.line, severity: 'error', message: line, source: 'python' }
+    current = {
+      file: at.file,
+      line: at.line,
+      severity: 'error',
+      message: line,
+      source: 'python',
+      output: { start, end: index + 1 },
+    }
     // recursion repeats frames
     const seen = new Set([`${at.file}:${at.line}`])
     for (const f of user.reverse()) {

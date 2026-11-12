@@ -20,16 +20,26 @@ const SEVERITY: Record<string, Severity> = {
 export function cppcheck(lines: string[]): Problem[] {
   const problems: Problem[] = []
   let last: Problem | undefined
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const head = HEAD.exec(line)
     if (head) {
       const [, file, row, col, kind, message, code] = head
-      last = { file, line: Number(row), col: Number(col), severity: SEVERITY[kind], message, code, source: 'cppcheck' }
+      last = {
+        file,
+        line: Number(row),
+        col: Number(col),
+        severity: SEVERITY[kind],
+        message,
+        code,
+        source: 'cppcheck',
+        output: { start: index, end: index + 1 },
+      }
       problems.push(last)
       continue
     }
     const note = NOTE.exec(line)
     if (note && last) {
+      if (last.output) last.output.end = index + 1
       const [, file, row, col, message] = note
       last.related = [...(last.related ?? []), { file, line: Number(row), col: Number(col), message }]
     }

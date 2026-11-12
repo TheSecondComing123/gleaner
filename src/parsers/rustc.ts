@@ -14,13 +14,15 @@ const SHORT = /^(.+\.rs):(\d+):(\d+): (error|warning)(?:\[(\w+)\])?: (.*)$/
 
 export function rustc(lines: string[]): Problem[] {
   const problems: Problem[] = []
+  let start = 0
   let pending: { severity: Severity; code?: string; message: string } | undefined
   let current: Problem | undefined
   let sub: string | undefined
   let panic: Problem | undefined
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     if (panic) {
+      if (panic.output) panic.output.end = index + 1
       if (line && !line.startsWith('note: ')) {
         panic.message = panic.message ? `${panic.message}\n${line}` : line
         continue
@@ -39,6 +41,7 @@ export function rustc(lines: string[]): Problem[] {
         code,
         message,
         source: 'rustc',
+        output: { start: index, end: index + 1 },
       })
       current = undefined
       pending = undefined
@@ -47,6 +50,7 @@ export function rustc(lines: string[]): Problem[] {
 
     const head = HEAD.exec(line)
     if (head) {
+      start = index
       pending = { severity: head[1] as Severity, code: head[2], message: head[3] }
       current = undefined
       sub = undefined
@@ -55,7 +59,15 @@ export function rustc(lines: string[]): Problem[] {
 
     const p = PANIC.exec(line)
     if (p) {
-      panic = { file: p[1], line: Number(p[2]), col: Number(p[3]), severity: 'error', message: '', source: 'rustc' }
+      panic = {
+        file: p[1],
+        line: Number(p[2]),
+        col: Number(p[3]),
+        severity: 'error',
+        message: '',
+        source: 'rustc',
+        output: { start: index, end: index + 1 },
+      }
       problems.push(panic)
       current = undefined
       pending = undefined
@@ -64,9 +76,17 @@ export function rustc(lines: string[]): Problem[] {
 
     const arrow = ARROW.exec(line)
     if (arrow) {
+      if (current?.output) current.output.end = index + 1
       const [, file, row, col] = arrow
       if (pending) {
-        current = { file, line: Number(row), col: Number(col), ...pending, source: 'rustc' }
+        current = {
+          file,
+          line: Number(row),
+          col: Number(col),
+          ...pending,
+          source: 'rustc',
+          output: { start, end: index + 1 },
+        }
         problems.push(current)
         pending = undefined
       } else if (current && sub !== undefined) {
@@ -76,6 +96,7 @@ export function rustc(lines: string[]): Problem[] {
       continue
     }
     if (!current) continue
+    if (current.output) current.output.end = index + 1
 
     const s = SUB.exec(line)
     if (s) {
