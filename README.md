@@ -21,6 +21,7 @@ no tasks.json. no problem matchers. nothing to set up.
 - **zero setup.** install it and keep typing the commands you already type.
 - **40+ tools.** compilers, type checkers, linters, test runners and crash traces, out of the box.
 - **more from your extensions.** picks up their problem matchers for commands it doesn't know yet.
+- **live results.** long builds report errors as they go. huge output gets read to the end, with a warning if anything gets cut.
 - **always current.** fix an error and rerun: it's gone. `tsc --watch` and vitest update on every save. every other command keeps its own list.
 - **no noise.** a problem only shows up if its file really exists, so random output never turns into fake errors.
 - **no doubles.** if your language server already shows an error, gleaner doesn't list it again. two commands that report the same error show it once.
