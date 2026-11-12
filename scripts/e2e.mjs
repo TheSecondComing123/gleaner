@@ -50,6 +50,20 @@ export function receipt(items: Item[]): string {
 `,
 )
 
+// the README shot: type-checks fine, crashes at runtime on 'scone'
+writeFileSync(
+  join(demo, 'src', 'receipt.ts'),
+  `const prices: Record<string, number> = { tea: 4.5, coffee: 3 }
+const order = ['tea', 'scone']
+
+function line(name: string): string {
+  return \`\${name.padEnd(8)} $\${prices[name].toFixed(2)}\`
+}
+
+for (const name of order) console.log(line(name))
+`,
+)
+
 // glob chars in a folder name
 mkdirSync(join(demo, 'src', 'app', '[id]'), { recursive: true })
 writeFileSync(join(demo, 'src', 'app', '[id]', 'page.ts'), `export const id: number = 'not a number'\n`)
@@ -115,6 +129,8 @@ writeFileSync(
     'window.commandCenter': false,
     'window.titleBarStyle': 'native',
     'terminal.integrated.initialHint': false,
+    'terminal.integrated.fontFamily': "'MonaspiceAr Nerd Font Mono', 'Comic Mono', monospace",
+    'terminal.integrated.fontSize': 14,
     'workbench.colorCustomizations': {
       '[Catppuccin Mocha]': {
         focusBorder: '#00000000',
@@ -213,21 +229,6 @@ try {
   }
 
   await page.keyboard.press('ControlOrMeta+B')
-  // the squiggle sits under the text layer: put the cursor on it, then show the hover
-  const squiggle = await page.locator('.squiggly-error').last().boundingBox()
-  await page.mouse.click(squiggle.x + squiggle.width / 2, squiggle.y + squiggle.height / 2)
-  await page.keyboard.press('ControlOrMeta+K')
-  await page.keyboard.press('ControlOrMeta+I')
-  await page.locator('.monaco-hover:not(.hidden)').first().waitFor({ timeout: 10_000 })
-  await page.waitForTimeout(800)
-  // 2x, so the README image is sharp
-  const cdp = await page.context().newCDPSession(page)
-  const { data } = await cdp.send('Page.captureScreenshot', {
-    format: 'png',
-    clip: { x: 0, y: 0, width: 1440, height: 820, scale: 2 },
-  })
-  writeFileSync(join(root, 'media', 'screenshot.png'), Buffer.from(data, 'base64'))
-  console.log('saved media/screenshot.png')
 
   // rerun from a second terminal
   writeFileSync(
@@ -340,7 +341,7 @@ try {
 
   // positions follow edits: two lines above cart.ts:7:3, then typing right before it
   const row = async (want, label) => {
-    await page.keyboard.press('ControlOrMeta+Shift+M')
+    await command('Problems: Focus on Problems View')
     let rows = []
     for (let i = 0; i < 50 && !rows.some((r) => r.includes(want)); i++) {
       await page.waitForTimeout(100)
@@ -377,6 +378,56 @@ try {
     console.error(`turned off: status still shows ${await page.getByText(/from terminal/).textContent()}`)
     failed = true
   } else console.log('turned off: nothing from terminal')
+
+  // the README shot: a runtime crash, which no language server sees
+  writeFileSync(settings, JSON.stringify({ ...JSON.parse(readFileSync(settings, 'utf8')), 'gleaner.enable': true }))
+  await page.waitForTimeout(1500)
+  await command('Gleaner: Clear Problems')
+  await command('View: Revert and Close Editor')
+  await page.keyboard.press('ControlOrMeta+P')
+  await page.keyboard.type('receipt.ts')
+  await page.waitForTimeout(500)
+  await page.keyboard.press('Enter')
+  await command('Terminal: Kill All Terminals')
+  await page.keyboard.press('Control+Backquote')
+  await ready()
+  // the editor needs 9 lines; the terminal gets the rest so the TypeError line shows
+  const panel = await page.locator('.part.panel').boundingBox()
+  await page.mouse.move(700, panel.y - 1)
+  await page.mouse.down()
+  await page.mouse.move(700, panel.y - 250, { steps: 10 })
+  await page.mouse.up()
+  // shell banners (and whatever they print about the machine) stay out of the shot
+  await page.keyboard.type('clear')
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(800)
+  await page.keyboard.type('node src/receipt.ts')
+  await page.keyboard.press('Enter')
+  await status(1, 'runtime crash')
+  // the squiggle sits under the text layer: put the cursor on it, then show the hover
+  const squiggle = await page.locator('.squiggly-error').first().boundingBox()
+  await page.mouse.click(squiggle.x + squiggle.width / 2, squiggle.y + squiggle.height / 2)
+  await page.keyboard.press('ControlOrMeta+K')
+  await page.keyboard.press('ControlOrMeta+I')
+  await page.locator('.monaco-hover:not(.hidden)').first().waitFor({ timeout: 10_000 })
+  await page.waitForTimeout(800)
+  // 2x, so the README image is sharp
+  // on a retina screen the capture comes out at 4x whatever devicePixelRatio says, so size it from the png
+  const cdp = await page.context().newCDPSession(page)
+  const capture = async (scale) =>
+    Buffer.from(
+      (
+        await cdp.send('Page.captureScreenshot', {
+          format: 'png',
+          clip: { x: 0, y: 0, width: 1440, height: 820, scale },
+        })
+      ).data,
+      'base64',
+    )
+  let png = await capture(2)
+  if (png.readUInt32BE(16) !== 2880) png = await capture((2 * 2880) / png.readUInt32BE(16))
+  writeFileSync(join(root, 'media', 'screenshot.png'), png)
+  console.log('saved media/screenshot.png')
 } catch (error) {
   console.error(error)
   failed = true
