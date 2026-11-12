@@ -32,6 +32,11 @@
   "contributes": {
     "commands": [
       {
+        "command": "gleaner.copyProblems",
+        "title": "Copy Problems",
+        "category": "Gleaner"
+      },
+      {
         "command": "gleaner.showOutput",
         "title": "Show Output",
         "category": "Gleaner"
@@ -45,6 +50,11 @@
     "configuration": {
       "title": "Gleaner",
       "properties": {
+        "gleaner.runSummaries": {
+          "type": "boolean",
+          "default": false,
+          "description": "Pilot: show what changed after a comparable, complete rerun in the status bar."
+        },
         "gleaner.enable": {
           "type": "boolean",
           "default": true,

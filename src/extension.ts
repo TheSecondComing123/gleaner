@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import * as path from 'node:path'
 import * as vscode from 'vscode'
-import { OutputHistory, type OutputReference } from './history'
+import { registerCopyProblems } from './copy'
+import { incompleteReasons, OutputHistory, type OutputReference, type RunOutput } from './history'
 import { compileMatchers } from './matchers'
 import { LiveUpdates, Output } from './output'
 import { DEFAULT_IGNORED, parsers, pickParsers } from './parsers'
@@ -9,6 +10,7 @@ import type { Problem } from './problem'
 import { type OutputDiagnostic, Problems } from './problems'
 import { mapPath, resolveFile } from './resolve'
 import { MAX_PROBLEMS, type SavedRun } from './session'
+import { type Comparison, compareRuns, comparison, type Delta } from './summary'
 import { registerOutputViewer } from './viewer'
 import { WatchPass } from './watch'
 
@@ -39,6 +41,7 @@ interface Run {
   sealed: boolean
   drainTimedOut: boolean
   reading: Promise<void>
+  baseline?: Comparison
 }
 
 const SEVERITY = {
@@ -51,6 +54,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const problems = new Problems()
   const history = new OutputHistory()
   registerOutputViewer(context, history, problems)
+  registerCopyProblems(context, history, problems)
   problems.hideDuplicates = vscode.workspace.getConfiguration('gleaner').get<boolean>('hideDuplicates', true)
   const log = vscode.window.createOutputChannel('Gleaner')
   const runs = new Map<vscode.TerminalShellExecution, Run>()
@@ -64,6 +68,13 @@ export function activate(context: vscode.ExtensionContext): void {
   let extensionMatchers = readMatchers()
   const warnings = new Map<string, string>()
   const committedWarnings = new Map<string, string>()
+  const comparisons = new Map<string, Comparison>()
+  let summary: { key: string; command: string; folder: string; delta: Delta } | undefined
+  const remember = (key: string, snapshot: Comparison): void => {
+    comparisons.delete(key)
+    comparisons.set(key, snapshot)
+    if (comparisons.size > 50) comparisons.delete(comparisons.keys().next().value as string)
+  }
   const save = (): void => {
     void context.workspaceState.update(SESSION_KEY, problems.save()).then(undefined, (error: unknown) => {
       log.appendLine(`could not save problems: ${String(error)}`)
@@ -72,6 +83,11 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const updateStatus = (): void => {
     const warning = [...warnings.values()].join('\n')
+    const shownSummary = vscode.workspace.getConfiguration('gleaner').get<boolean>('runSummaries', false) && summary
+    const delta = shownSummary ? ` · ${shownSummary.delta.fixed} fixed, ${shownSummary.delta.added} new` : ''
+    const summaryTip = shownSummary
+      ? `\n${shownSummary.command}\n${shownSummary.folder}\nchanges since its previous complete result; until the next command starts.`
+      : ''
     const active = vscode.window.activeTerminal
     if (active && withoutIntegration.has(active)) {
       status.text = '$(warning) Gleaner: no shell integration'
@@ -82,11 +98,12 @@ export function activate(context: vscode.ExtensionContext): void {
         arguments: [vscode.Uri.parse(SHELL_INTEGRATION_DOCS)],
       }
       status.show()
-    } else if (problems.count || warning) {
-      status.text = problems.count
-        ? `$(list-unordered) ${problems.count} from terminal`
-        : '$(warning) Gleaner: output truncated'
-      status.tooltip = `Problems Gleaner found in terminal output. Click to open the Problems panel.${warning ? `\n${warning}` : ''}`
+    } else if (problems.count || warning || shownSummary) {
+      status.text =
+        problems.count || shownSummary
+          ? `$(list-unordered) ${problems.count} from terminal${delta}`
+          : '$(warning) Gleaner: output truncated'
+      status.tooltip = `Problems Gleaner found in terminal output. Click to open the Problems panel.${summaryTip}${warning ? `\n${warning}` : ''}`
       status.command = 'workbench.actions.view.problems'
       status.show()
     } else {
@@ -184,7 +201,7 @@ export function activate(context: vscode.ExtensionContext): void {
     if (run.drainTimedOut) losses.push('output drain timed out; trailing output may be missing')
     if (!current(run, cleared)) return
     const outputId = `${run.id}/${kind === 'pass' ? cycle : cycle + 1}`
-    history.set({
+    const captured: RunOutput = {
       id: outputId,
       command: run.command,
       folder: run.cwds[0] ?? '',
@@ -196,9 +213,15 @@ export function activate(context: vscode.ExtensionContext): void {
       ...(run.output?.retainedOutput(kind === 'final') ?? { lines: [], lineCount: 0 }),
       warnings: [...losses],
       focus: found[0]?.output,
-    })
+      problems: [],
+      incomplete: incompleteReasons(kind, exitCode, losses),
+    }
     if (kind === 'provisional' && run.cycle && !found.length) return
     if (kind === 'final' && exitCode !== 0 && !found.length) {
+      captured.incomplete.push('failed run with no parsed problems; previous diagnostics kept')
+      history.set(captured)
+      remember(run.key, comparison(run.command, [], false))
+      summary = undefined
       restore(run)
       if (losses.length) {
         const warning = `${run.command}: ${losses.join('; ')}`
@@ -250,6 +273,23 @@ export function activate(context: vscode.ExtensionContext): void {
     const show = run.revision === revision
     if (kind === 'provisional' && !show) return
 
+    captured.problems = kept.map(({ problem, file }) => ({ ...problem, file }))
+    captured.warnings = [...losses]
+    captured.incomplete = incompleteReasons(kind, exitCode, losses)
+    const skipped = found.length - real.length
+    if (skipped) captured.incomplete.push(`${skipped} problems skipped (file not found)`)
+    history.set(captured)
+    if (kind !== 'provisional') {
+      // only tsc watch passes have known full scope; test watchers can change filters interactively.
+      const selected = kind === 'pass' ? pickParsers(run.command) : []
+      const scope = kind !== 'pass' || (selected.length === 1 && selected[0] === parsers.tsc)
+      const snapshot = comparison(run.command, captured.problems, !captured.incomplete.length, scope)
+      const delta = compareRuns(run.baseline, snapshot)
+      remember(run.key, snapshot)
+      run.baseline = snapshot
+      if (show) summary = delta ? { key: run.key, command: run.command, folder: captured.folder, delta } : undefined
+    } else if (summary?.key === run.key) summary = undefined
+
     const files = new Map<string, vscode.Diagnostic[]>()
     for (const [i, { file }] of kept.entries()) files.set(file, [...(files.get(file) ?? []), diagnostics[i]])
     problems.set(run.key, files, { provisional: kind === 'provisional', show })
@@ -265,7 +305,6 @@ export function activate(context: vscode.ExtensionContext): void {
       else warnings.delete(run.key)
       updateStatus()
     }
-    const skipped = found.length - real.length
     log.appendLine(
       `${run.command}: ${kind === 'provisional' ? 'live' : `exit ${exitCode ?? '?'}`}, ${kept.length} problem${kept.length === 1 ? '' : 's'}${skipped ? `, ${skipped} skipped (file not found)` : ''}`,
     )
@@ -273,13 +312,18 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const clear = (): void => {
     clears++
-    for (const run of runs.values()) run.live.stop()
+    for (const run of runs.values()) {
+      run.live.stop()
+      run.baseline = undefined
+    }
     for (const timer of ended.values()) clearTimeout(timer)
     ended.clear()
     warnings.clear()
     committedWarnings.clear()
     problems.clear()
     history.clear()
+    comparisons.clear()
+    summary = undefined
     save()
     updateStatus()
   }
@@ -298,6 +342,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand('gleaner.clear', clear),
     vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('gleaner.runSummaries')) updateStatus()
       if (event.affectsConfiguration('gleaner.hideDuplicates')) {
         problems.hideDuplicates = vscode.workspace.getConfiguration('gleaner').get<boolean>('hideDuplicates', true)
         for (const file of problems.files()) problems.render(file, true)
@@ -325,6 +370,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidStartTerminalShellExecution(({ terminal, execution }) => {
       const config = vscode.workspace.getConfiguration('gleaner')
       if (!config.get<boolean>('enable', true)) return
+      summary = undefined
+      updateStatus()
       const ignored = config.get<string[]>('ignoredCommands', DEFAULT_IGNORED)
       if (!pickParsers(execution.commandLine.value, ignored).length) return
       const command = execution.commandLine.value
@@ -361,6 +408,7 @@ export function activate(context: vscode.ExtensionContext): void {
           if (runs.get(execution) === run) void publish(run, 'provisional', undefined, clears)
         }),
         reading: Promise.resolve(),
+        baseline: previous?.baseline ?? comparisons.get(key),
       }
       runs.set(execution, run)
       const stream = execution.read()

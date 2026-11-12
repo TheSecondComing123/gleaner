@@ -1,4 +1,4 @@
-import type { OutputSpan } from './problem'
+import type { OutputSpan, Problem } from './problem'
 
 export const RUN_OUTPUT_BYTES = 512 * 1024
 export const TOTAL_OUTPUT_BYTES = 4 * 1024 * 1024
@@ -27,6 +27,28 @@ export interface RunOutput {
   lineCount: number
   warnings: string[]
   focus?: OutputSpan
+  problems: Problem[]
+  incomplete: string[]
+}
+
+export const runState = (run: Pick<RunOutput, 'state' | 'pass' | 'exitCode'>): string =>
+  run.state === 'pass'
+    ? `watch pass ${run.pass}`
+    : run.state === 'provisional'
+      ? 'running (provisional)'
+      : `exit ${run.exitCode ?? 'unknown'}`
+
+export function incompleteReasons(
+  state: RunOutput['state'],
+  exitCode: number | undefined,
+  warnings: string[],
+): string[] {
+  return [
+    ...(state === 'provisional' ? ['provisional result'] : []),
+    ...(state === 'final' && exitCode === undefined ? ['exit code unknown; run may have been interrupted'] : []),
+    ...(state === 'final' && exitCode !== undefined && exitCode >= 128 ? ['run interrupted or terminated'] : []),
+    ...warnings,
+  ]
 }
 
 const lineBytes = (line: OutputLine): number => Buffer.byteLength(line.text, 'utf8') + 32
@@ -99,17 +121,12 @@ export class OutputHistory {
 }
 
 export function outputDocument(run: RunOutput, span?: OutputSpan): { text: string; selection: OutputSpan } {
-  const state =
-    run.state === 'pass'
-      ? `watch pass ${run.pass}`
-      : run.state === 'provisional'
-        ? 'running'
-        : `exit ${run.exitCode ?? 'unknown'}`
   const lines = [
     `$ ${run.command}`,
     `folder: ${run.folder || 'unknown'}`,
     `started: ${new Date(run.started).toISOString()}`,
-    `${state}: ${new Date(run.updated).toISOString()}`,
+    `${runState(run)}: ${new Date(run.updated).toISOString()}`,
+    `completeness: ${run.incomplete.length ? `incomplete (${run.incomplete.join('; ')})` : 'complete'}`,
     ...run.warnings.map((warning) => `[gleaner: ${warning}]`),
     '',
   ]

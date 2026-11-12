@@ -15,6 +15,8 @@ const run = (id: string, overrides: Partial<RunOutput> = {}): RunOutput => ({
   ],
   lineCount: 2,
   warnings: [],
+  problems: [],
+  incomplete: [],
   ...overrides,
 })
 

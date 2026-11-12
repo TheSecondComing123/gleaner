@@ -10,6 +10,9 @@ const state = vi.hoisted(() => ({
   actions: undefined as vscode.CodeActionProvider | undefined,
   picker: [] as { label: string; run: import('../src/history').RunOutput }[],
   pick: true,
+  pickIndex: 0,
+  clipboard: '',
+  runSummaries: false,
   opened: '',
   selection: undefined as vscode.Range | undefined,
   decorations: [] as vscode.Range[],
@@ -24,7 +27,7 @@ const state = vi.hoisted(() => ({
   contributions: [] as unknown[],
   enabled: true,
   saved: new Map<string, unknown>(),
-  status: { text: '', tooltip: '', visible: false },
+  status: { text: '', tooltip: '', visible: false, command: '' },
 }))
 
 vi.mock('vscode', () => {
@@ -92,6 +95,13 @@ vi.mock('vscode', () => {
       from: (parts: unknown) => parts,
     },
     StatusBarAlignment: { Left: 1 },
+    env: {
+      clipboard: {
+        writeText: async (text: string) => {
+          state.clipboard = text
+        },
+      },
+    },
     extensions: {
       get all() {
         return state.contributions.map((contributes) => ({ id: 'matcher', packageJSON: { contributes } }))
@@ -135,7 +145,13 @@ vi.mock('vscode', () => {
       textDocuments: [],
       getConfiguration: () => ({
         get: (name: string, fallback: unknown) =>
-          name === 'enable' ? state.enabled : name === 'pathMappings' ? state.mappings : fallback,
+          name === 'enable'
+            ? state.enabled
+            : name === 'pathMappings'
+              ? state.mappings
+              : name === 'runSummaries'
+                ? state.runSummaries
+                : fallback,
       }),
       fs: {
         readFile: async () => new TextEncoder().encode('{}'),
@@ -152,7 +168,7 @@ vi.mock('vscode', () => {
       },
       showQuickPick: async (items: typeof state.picker) => {
         state.picker = items
-        return state.pick ? items[0] : undefined
+        return state.pick ? items[state.pickIndex] : undefined
       },
       showTextDocument: async (_document: unknown, options: { selection: vscode.Range }) => {
         state.selection = options.selection
@@ -252,6 +268,9 @@ beforeEach(() => {
   state.providers.clear()
   state.picker = []
   state.pick = true
+  state.pickIndex = 0
+  state.clipboard = ''
+  state.runSummaries = false
   state.opened = ''
   state.information = []
   state.others = []
@@ -655,6 +674,7 @@ describe('run lifecycle', () => {
 })
 
 const shownProblems = () => [...state.shown.values()].flat()
+const copyProblems = () => state.commands.get('gleaner.copyProblems')?.()
 const showOutput = (output?: import('../src/history').OutputReference) =>
   state.commands.get('gleaner.showOutput')?.(output)
 const codeActions = async (diagnostic: vscode.Diagnostic) =>
@@ -778,5 +798,223 @@ describe('problem output provenance', () => {
     expect(shownProblems()[0].output).toBeDefined()
     await showOutput(shownProblems()[0].output)
     expect(state.opened).toContain('error TS2322: current')
+  })
+})
+
+describe('run summaries', () => {
+  it('defaults off, counts occurrences from an immutable baseline, and keeps all-fixed status clickable', async () => {
+    const first = await start()
+    await first.write(error('same') + error('same').replace('(7,3)', '(10,3)'))
+    await first.end(1)
+    state.events.get('edit')?.({
+      document: { uri: { scheme: 'file', fsPath: resolve('/repo/src/cart.ts') } },
+      contentChanges: [{ range: { start: { line: 0, character: 0 }, end: { line: 20, character: 0 } }, text: '' }],
+    })
+    expect(messages()).toEqual([])
+    const second = await start()
+    await second.write(error('same').replace('(7,3)', '(20,8)'))
+    await second.end(1)
+    expect(state.status.text).not.toContain('fixed')
+    state.runSummaries = true
+    state.events.get('config')?.({ affectsConfiguration: (key: string) => key === 'gleaner.runSummaries' })
+    expect(state.status.text).toContain('1 from terminal · 1 fixed, 0 new')
+    expect(state.status.tooltip).toContain('perl slow.pl')
+    expect(state.status.command).toBe('workbench.actions.view.problems')
+    const third = await start()
+    expect(state.status.text).not.toContain('fixed')
+    await third.end(0)
+    expect(state.status.text).toContain('0 from terminal · 1 fixed, 0 new')
+    expect(state.status.visible).toBe(true)
+    state.clear()
+    expect(state.status.visible).toBe(false)
+  })
+
+  it('ignores provisional results and suppresses deltas to or from interrupted or capture-loss results', async () => {
+    state.runSummaries = true
+    const first = await start()
+    await first.write(error('old'))
+    await first.end(1)
+    const interrupted = await start()
+    await interrupted.write(error('partial'))
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(state.status.text).not.toContain('fixed')
+    await interrupted.end(130)
+    expect(messages()).toEqual(['partial'])
+    expect(state.status.text).not.toContain('fixed')
+    const clean = await start()
+    await clean.end(0)
+    expect(state.status.visible).toBe(false)
+    const lost = await start()
+    await lost.write(`${'x'.repeat(20_000)}\n${error('after loss')}`)
+    await lost.end(1)
+    expect(state.status.text).not.toContain('fixed')
+    expect(state.status.tooltip).toContain('long lines truncated')
+    const afterLoss = await start()
+    await afterLoss.end(0)
+    expect(state.status.text).not.toContain('fixed')
+    const unknown = await start()
+    await unknown.write(error('unknown exit'))
+    await unknown.end()
+    const afterUnknown = await start()
+    await afterUnknown.end(0)
+    expect(state.status.text).not.toContain('fixed')
+  })
+
+  it('invalidates a rolled-back interrupted comparison without changing diagnostic rollback', async () => {
+    state.runSummaries = true
+    const first = await start()
+    await first.write(error('old'))
+    await first.end(1)
+    const interrupted = await start()
+    await interrupted.end(130)
+    expect(messages()).toEqual(['old'])
+    await copyProblems()
+    expect(state.clipboard).toContain('previous diagnostics kept')
+    expect(state.clipboard).toContain('incomplete or unknown')
+    const clean = await start()
+    await clean.end(0)
+    expect(state.status.visible).toBe(false)
+  })
+
+  it('drops an active comparison baseline on clear while still allowing its new result', async () => {
+    state.runSummaries = true
+    const first = await start()
+    await first.write(error('old'))
+    await first.end(1)
+    const second = await start()
+    state.clear()
+    await second.write(error('new'))
+    await second.end(1)
+    expect(messages()).toEqual(['new'])
+    expect(state.status.text).not.toContain('fixed')
+    const third = await start()
+    await third.end(0)
+    expect(state.status.text).toContain('0 from terminal · 1 fixed, 0 new')
+  })
+
+  it('requires exact scope and run key, preserves displayed counts, and never summarizes test watch filters', async () => {
+    state.runSummaries = true
+    const first = await start('tsc -p .')
+    await first.write(error('old'))
+    await first.end(1)
+    const changed = await start('tsc -p . ')
+    await changed.end(0)
+    expect(state.status.visible).toBe(false)
+    const different = await start('tsc -p other')
+    await different.write(error('other'))
+    await different.end(1)
+    expect(state.status.text).not.toContain('fixed')
+    const watch = await start('jest --watchAll')
+    await watch.write(readFileSync(join(__dirname, 'watch/jest-watch.txt'), 'utf8'))
+    await watch.write('Ran all test suites.\nWatch Usage\n')
+    expect(state.status.text).not.toContain('fixed')
+    await watch.end(130)
+    const tsc = await start('tsc --watch')
+    await tsc.write(`${error('watch error')}Watching for file changes.\n`)
+    await tsc.write('Watching for file changes.\n')
+    expect(state.status.text).toContain('1 fixed, 0 new')
+    expect(state.status.text).toContain(`${messages().length} from terminal`)
+    await tsc.end(0)
+  })
+
+  it('rejects an older generation and keeps capture warnings alongside another command summary', async () => {
+    state.runSummaries = true
+    const warning = await start('perl warning.pl')
+    await warning.write(`${'x'.repeat(20_000)}\n`)
+    await warning.end(0)
+    const first = await start()
+    await first.write(error('old'))
+    await first.end(1)
+    let release = () => {}
+    state.stat = () =>
+      new Promise<void>((resolve) => {
+        release = resolve
+      })
+    const older = await start()
+    await older.write(error('stale'))
+    await older.end(1)
+    state.stat = async () => {}
+    const newer = await start()
+    await newer.write(error('new'))
+    await newer.end(1)
+    expect(state.status.text).toContain('1 fixed, 1 new')
+    release()
+    await tick()
+    expect(messages()).toEqual(['new'])
+    expect(state.status.text).toContain('1 fixed, 1 new')
+    expect(state.status.tooltip).toContain('long lines truncated')
+  })
+})
+
+describe('copy problems command', () => {
+  it('offers hidden runs with metadata, exports the chosen immutable result, and leaves clipboard on cancel', async () => {
+    const first = await start('tsc -p .')
+    await first.write(error('first'))
+    await first.end(1)
+    const diagnostic = shownProblems()[0]
+    const second = await start('npx tsc -p .')
+    await second.write(error('second'))
+    await second.end(1)
+    state.others = shownProblems().map((d) => ({ ...d, source: 'typescript' }))
+    state.events.get('diagnostics')?.({ uris: [{ scheme: 'file', fsPath: resolve('/repo/src/cart.ts') }] })
+    expect(messages()).toEqual([])
+    await copyProblems()
+    expect(state.picker.map((p) => p.label)).toEqual(['npx tsc -p .', 'tsc -p .'])
+    expect(state.clipboard).toContain('npx tsc -p .')
+    expect(state.clipboard).toContain('error TS2322: second')
+    state.pickIndex = 1
+    state.events.get('edit')?.({
+      document: { uri: { scheme: 'file', fsPath: resolve('/repo/src/cart.ts') } },
+      contentChanges: [{ range: { start: { line: 0, character: 0 }, end: { line: 20, character: 0 } }, text: '' }],
+    })
+    await copyProblems()
+    expect(state.clipboard).toContain('tsc -p .')
+    expect(state.clipboard).not.toContain('npx tsc')
+    expect(state.clipboard).toContain('cart.ts:7:3: error TS2322: first')
+    expect(state.clipboard).toContain('src/cart.ts(7,3): error TS2322: first')
+    expect(diagnostic.message).toBe('first')
+    const copied = state.clipboard
+    state.pick = false
+    await copyProblems()
+    expect(state.clipboard).toBe(copied)
+    state.clear()
+    await copyProblems()
+    expect(state.information.at(-1)).toContain('no runs to copy')
+    expect(state.clipboard).toBe(copied)
+  })
+
+  it('exports provisional and interrupted snapshots, completed watch passes, and restored results honestly', async () => {
+    const first = await start()
+    await first.write(error('live'))
+    await vi.advanceTimersByTimeAsync(1500)
+    await copyProblems()
+    expect(state.clipboard).toContain('running (provisional)')
+    expect(state.clipboard).toContain('incomplete or unknown')
+    await first.end(130)
+    await copyProblems()
+    expect(state.clipboard).toContain('run interrupted')
+    const watch = await start('tsc --watch')
+    await watch.write(`${error('pass')}Watching for file changes.\n`)
+    await copyProblems()
+    expect(state.clipboard).toContain('state: watch pass 1')
+    expect(state.clipboard).not.toContain('exit 0')
+    await watch.end(130)
+    for (const subscription of subscriptions) subscription.dispose()
+    subscriptions = []
+    activate({
+      subscriptions,
+      extension: { id: 'test' },
+      workspaceState: {
+        get: (key: string, fallback: unknown) => state.saved.get(key) ?? fallback,
+        update: async (key: string, value: unknown) => {
+          state.saved.set(key, value)
+        },
+      },
+    } as unknown as vscode.ExtensionContext)
+    await copyProblems()
+    expect(state.clipboard).toContain('state: last session')
+    expect(state.clipboard).toContain('completeness unknown')
+    expect(state.clipboard).toContain('output unavailable')
+    expect(state.clipboard).toContain('perl slow.pl')
   })
 })
