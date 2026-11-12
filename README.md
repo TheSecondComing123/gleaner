@@ -61,17 +61,20 @@ code --install-extension thesecondcoming123.gleaner
 open a terminal in vs code and run your build, linter or tests. that's it.
 
 - the status bar counts what gleaner found. click it to open the problems panel.
+- turn on `gleaner.runSummaries` to see what's fixed and new after a complete rerun of the exact same command. this pilot compares full runs and tsc watch passes, skips incomplete results, and stays until the next command starts, even when all problems are fixed.
 - rerun a command to refresh its problems. if you stop a run with ctrl+c, the last list stays.
 - `tsc --watch`, vitest, `jest --watch` and nodemon refresh the list after each pass.
 - reload the window and the last list comes back, marked "last session". files with unsaved changes are skipped. rerun to refresh it.
 - **gleaner: show output** opens a recent run's output, even when its problems are hidden as duplicates. use a problem's code action to jump to its whole output block.
 - output views are read-only, with the command, folder, time and exit code or watch pass. gleaner keeps up to 512 kib per run and 4 mib across 50 recent runs, evicting the oldest first. cut output is marked.
 - logs stay in memory. last-session problems have no saved output; rerun to get it back.
+- **gleaner: copy problems** lets you pick a run and copy its problems, command, state and output excerpts as markdown.
 - **gleaner: clear problems** in the command palette clears everything.
 
 | setting                     | default                               | what it does                                                                                                                                       |
 | --------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `gleaner.enable`            | `true`                                | turn gleaner on or off                                                                                                                             |
+| `gleaner.runSummaries`      | `false`                               | pilot: show fixed and new counts after a complete, comparable rerun                                                                                |
 | `gleaner.hideDuplicates`    | `true`                                | hide a problem another extension, like a language server, already shows at the same spot                                                           |
 | `gleaner.extensionMatchers` | `true`                                | use problem matchers from installed extensions for commands gleaner doesn't know                                                                   |
 | `gleaner.pathMappings`      | `{}`                                  | map build or container paths to your workspace, like `{ "/app/src": "src" }`; in multi-root workspaces use `${workspaceFolder:name}` as the target |
