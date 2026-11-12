@@ -540,7 +540,8 @@ close($done);
       'completeness: complete',
       'cart.ts:21:3: error TS2322: summary new',
       'src/cart.ts(21,3): error TS2322: summary new',
-    ].every((part) => exported.includes(part))
+      // windows reports the drive letter lowercase
+    ].every((part) => exported.toLowerCase().includes(part.toLowerCase()))
   ) {
     console.log('copy problems: chosen run, command, folder, state, problem and output on clipboard')
   } else {
